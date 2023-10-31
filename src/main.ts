@@ -1132,16 +1132,25 @@ document.querySelector<HTMLButtonElement>('#add_instruction10')!.addEventListene
   if (!quantity.match(/^[0-9]+(\.[0-9]+)?$/)) {
     document.querySelector<HTMLInputElement>('#warn')!.innerText= "invalid quantity!";
     return false;
-  } else {
-    document.querySelector<HTMLParagraphElement>('#warn')!.innerHTML= "&nbsp;";
   }
-  document.querySelector<HTMLInputElement>('#quantity10')!.value= "";
+  var q= parseFloat(quantity);
+
+  const fungible= document.querySelector<HTMLSelectElement>('#fungible10')!.value;
+  if (fungible == "") {
+    document.querySelector<HTMLInputElement>('#warn')!.innerText= "no coins in the worktop!";
+    return false;
+  }
+
+  const recipients= document.querySelector<HTMLTextAreaElement>('#recipients10')!.value.split('\n');
+  if (recipients.length * q > fungibles_in_worktop[fungible]) {
+    document.querySelector<HTMLInputElement>('#warn')!.innerText= "not enough coins in the worktop!";
+    return false;
+  }
+
+  document.querySelector<HTMLParagraphElement>('#warn')!.innerHTML= "&nbsp;";
 
   var transaction_manifest= "";
-  const fungible= document.querySelector<HTMLSelectElement>('#fungible10')!.value;
   const account= document.querySelector<HTMLSelectElement>('#account10')!.value;
-  const recipients= document.querySelector<HTMLTextAreaElement>('#recipients10')!.value.split('\n');
-
   for (var recipient of recipients) {
     recipient= recipient.trim().toLowerCase();
     if (recipient != "") {
@@ -1175,6 +1184,7 @@ document.querySelector<HTMLButtonElement>('#add_instruction10')!.addEventListene
   remove_fungible_from_worktop(fungible, '*');
   document.querySelector<HTMLTextAreaElement>('#transaction_manifest')!.value+= transaction_manifest;
   document.querySelector<HTMLTextAreaElement>('#recipients10')!.value= "";
+  document.querySelector<HTMLInputElement>('#quantity10')!.value= "";
 });
 
 document.querySelector<HTMLInputElement>('#all11')!.addEventListener("change", function() {
