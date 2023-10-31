@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  --radix-connect-button-width: 138px;
+  --radix-connect-button-height: 42px;
+  --radix-connect-button-border-radius: 10px;
+}
+p.warn {
+  color: red;
+}
+textarea {
+  readonly: true;
+  resize: none;
+  rows: 50;
+  cols: 80;
+}
