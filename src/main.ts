@@ -3,7 +3,7 @@ import {RadixDappToolkit, DataRequestBuilder} from '@radixdlt/radix-dapp-toolkit
 import {GatewayApiClient, FungibleResourcesCollectionItemGloballyAggregated, NonFungibleResourcesCollectionItemVaultAggregated,
 	MetadataStringValue, ProgrammaticScryptoSborValueTuple, ProgrammaticScryptoSborValueDecimal, ProgrammaticScryptoSborValueU64} from '@radixdlt/babylon-gateway-api-sdk'
 import {validators_names, pool_units, claim_nft, validators_you_can_stake_to} from './validators.ts'
-import {ociswap_listed_coins} from './ociswap.ts'
+import {ociswap_listed_coins, ociswap_lp_pools, ociswap_lp_names} from './ociswap.ts'
 
 interface fungibles_array {[index: string]: number};
 interface fungibles_array_array {[index: string]: fungibles_array};
@@ -293,13 +293,16 @@ function add_fungible_to_worktop(resource: string, quantity: number) {
         lsu7!.options[lsu7!.options.length]= new Option(symbol, resource);
         send9!.options[send9!.options.length]= new Option(symbol, resource);
       }
-    }
-    if (ociswap_listed_coins[resource] != undefined) {
+    } else if (ociswap_listed_coins[resource] != undefined) {
       const send11= document.querySelector<HTMLSelectElement>('#send11');
       send11!.options[send11!.options.length]= new Option(symbol, resource);
       const send_1_12= document.querySelector<HTMLSelectElement>('#send_1_12');
       send_1_12!.options[send_1_12!.options.length]= new Option(symbol, resource);
       send_1_12!.dispatchEvent(new Event('change'));
+    } else if (ociswap_lp_names[resource] != undefined) {
+      const send13= document.querySelector<HTMLSelectElement>('#send13');
+      send13!.options[send13!.options.length]= new Option(symbol, resource);
+      send13!.dispatchEvent(new Event('change'));
     }
   } else {
     fungibles_in_worktop[resource]+= quantity;
@@ -340,6 +343,7 @@ function remove_fungible_from_worktop(resource: string, quantity: string) {
   const fungible10= document.querySelector<HTMLSelectElement>('#fungible10');
   const send11= document.querySelector<HTMLSelectElement>('#send11');
   const send_1_12= document.querySelector<HTMLSelectElement>('#send_1_12');
+  const send13= document.querySelector<HTMLSelectElement>('#send13');
   if (fungibles_in_worktop[resource] != undefined) {
     if (quantity == '*') {
       delete fungibles_in_worktop[resource];
@@ -368,6 +372,13 @@ function remove_fungible_from_worktop(resource: string, quantity: string) {
 	    break;
 	  }
 	}
+      } else if (ociswap_lp_pools[resource] != undefined) {
+        for (var i= send13!.length - 1; i >= 0; --i) {
+          if ((<HTMLOptionElement>send13![i]).value == resource) {
+            send13!.remove(i);
+	    break;
+	  }
+	}
       }
     } else {
       fungibles_in_worktop[resource]-= parseFloat(quantity);
@@ -382,6 +393,7 @@ function remove_fungible_from_worktop(resource: string, quantity: string) {
     lsu5!.innerHTML= '';
     lsu7!.innerHTML= '';
     send9!.innerHTML= '';
+    send13!.innerHTML= '';
   }
   show_resources_in_worktop();
 }
@@ -435,6 +447,9 @@ function find_fungible_symbol(resource: string) {
   }
   if (ociswap_listed_coins[resource] !== undefined) {
     return ociswap_listed_coins[resource];
+  }
+  if (ociswap_lp_names[resource] !== undefined) {
+    return ociswap_lp_names[resource];
   }
   if (pool_units[resource] !== undefined) {
     return "LSU " + validators_names[pool_units[resource]].trim();
@@ -495,6 +510,7 @@ document.querySelector<HTMLSelectElement>('#action')!.addEventListener("change",
   // --- OCISWAP ---
   document.querySelector<HTMLDivElement>('#div11')!.hidden= (this.selectedIndex != 10); //swap coins on Ociswap
   document.querySelector<HTMLDivElement>('#div12')!.hidden= (this.selectedIndex != 11); //add liquidity to Ociswap
+  document.querySelector<HTMLDivElement>('#div13')!.hidden= (this.selectedIndex != 12); //withdraw liquidity from Ociswap
   if (this.selectedIndex == 10) {
     if (document.querySelector<HTMLSelectElement>('#send11')!.options.length == 0) {
       document.querySelector<HTMLParagraphElement>('#warn')!.innerHTML= "put some coin listed on Ociswap in the worktop first";
@@ -503,15 +519,17 @@ document.querySelector<HTMLSelectElement>('#action')!.addEventListener("change",
     }
   } else if (this.selectedIndex == 11 && document.querySelector<HTMLSelectElement>('#send_2_12')!.options.length == 0) {
     document.querySelector<HTMLParagraphElement>('#warn')!.innerHTML= "put two different coins listed on Ociswap in the worktop first";
+  } else if (this.selectedIndex == 12 && document.querySelector<HTMLSelectElement>('#send13')!.options.length == 0) {
+    document.querySelector<HTMLParagraphElement>('#warn')!.innerHTML= "put some LSUs in the worktop first";
   }
 
   // --- CAVIARNINE ---
-  document.querySelector<HTMLDivElement>('#div7')!.hidden= (this.selectedIndex != 13); //add your LSUs in Caviarnine LSU pool
-  document.querySelector<HTMLDivElement>('#div8')!.hidden= (this.selectedIndex != 14); //retrieve LSUs from Caviarnine LSU pool
-  document.querySelector<HTMLDivElement>('#div9')!.hidden= (this.selectedIndex != 15); //swap LSUs on Caviarnine
-  if ((this.selectedIndex == 13 || this.selectedIndex == 15) && document.querySelector<HTMLSelectElement>('#lsu7')!.options.length == 0 ) {
+  document.querySelector<HTMLDivElement>('#div7')!.hidden= (this.selectedIndex != 14); //add your LSUs in Caviarnine LSU pool
+  document.querySelector<HTMLDivElement>('#div8')!.hidden= (this.selectedIndex != 15); //retrieve LSUs from Caviarnine LSU pool
+  document.querySelector<HTMLDivElement>('#div9')!.hidden= (this.selectedIndex != 16); //swap LSUs on Caviarnine
+  if ((this.selectedIndex == 14 || this.selectedIndex == 16) && document.querySelector<HTMLSelectElement>('#lsu7')!.options.length == 0 ) {
     document.querySelector<HTMLParagraphElement>('#warn')!.innerHTML= "put some LSUs in the worktop first";
-  } else if (this.selectedIndex == 14 && (fungibles_in_worktop[lsulp] == undefined || fungibles_in_worktop[lsulp] == 0)) {
+  } else if (this.selectedIndex == 15 && (fungibles_in_worktop[lsulp] == undefined || fungibles_in_worktop[lsulp] == 0)) {
     document.querySelector<HTMLParagraphElement>('#warn')!.innerHTML= "put some LSULPs in the worktop first";
   }
 });
@@ -1400,8 +1418,10 @@ document.querySelector<HTMLButtonElement>('#add_instruction12')!.addEventListene
           return false;
         }
         r2.json().then(async (j2) => {
-	  if (j2.y_amount.token > quantity2 || j2.x_amount.token > quantity1) {
-	    if (j2.y_amount.token > quantity2) {
+	  const amount_x= parseFloat(j2.x_amount.token);
+	  const amount_y= parseFloat(j2.y_amount.token);
+	  if (amount_y > quantity2 || amount_x > quantity1) {
+	    if (amount_y > quantity2) {
 	      limit_condition= 'y_amount=' + quantity2;
 	      all= send2;
 	    } else {
@@ -1414,29 +1434,22 @@ document.querySelector<HTMLButtonElement>('#add_instruction12')!.addEventListene
                 return false;
               }
               r3.json().then((j3) => {
-                lp_quantity= j3.liquidity_amount;
-	        quantity1= j3.x_amount.token;
-	        quantity2= j3.y_amount.token;
+                lp_quantity= parseFloat(j3.liquidity_amount);
+	        quantity1= parseFloat(j3.x_amount.token);
+	        quantity2= parseFloat(j3.y_amount.token);
 	      });
 	    });
 	  } else {
-            lp_quantity= j2.liquidity_amount;
-	    quantity1= j2.x_amount.token;
-	    quantity2= j2.y_amount.token;
+            lp_quantity= parseFloat(j2.liquidity_amount);
+	    quantity1= parseFloat(j2.x_amount.token);
+	    quantity2= parseFloat(j2.y_amount.token);
 	  }
   
-	  const response= await gatewayApi.state.innerClient.stateEntityDetails({
-            stateEntityDetailsRequest: {
-              addresses: Array(component)
-            }
-          });
-	  for (var item of response.items[0].metadata.items) {
-	    if (item.key == 'lp_address') {
-	      lp_token= (<MetadataStringValue>item.value.typed).value;
+          for (var lp of Object.keys(ociswap_lp_pools)) {
+	    if (component == ociswap_lp_pools[lp]) {
+	      lp_token= lp;
+	      break;
 	    }
-	  }
-	  if (fungibles_symbols[lp_token] == undefined) {
-	    fungibles_symbols[lp_token]= 'Ociswap LP ' + j1.data[0].name;
 	  }
 
           const textarea= document.querySelector<HTMLTextAreaElement>('#transaction_manifest');
@@ -1479,6 +1492,93 @@ document.querySelector<HTMLButtonElement>('#add_instruction12')!.addEventListene
       });
     });
   });
+});
+
+document.querySelector<HTMLInputElement>('#send13')!.addEventListener("change", function() {
+  const send13= document.querySelector<HTMLSelectElement>('#send13')!.value;
+  if (!document.querySelector<HTMLInputElement>('#all13')!.checked) {
+    document.querySelector<HTMLInputElement>('#quantity13')!.value= number_to_string(fungibles_in_worktop[send13]);
+  }
+});
+
+document.querySelector<HTMLInputElement>('#all13')!.addEventListener("change", function() {
+  if (!document.querySelector<HTMLInputElement>('#all13')!.checked) {
+    document.querySelector<HTMLInputElement>('#quantity13')!.value= number_to_string(fungibles_in_worktop[document.querySelector<HTMLSelectElement>('#send13')!.value]);
+    document.querySelector<HTMLInputElement>('#quantity13')!.disabled= false;
+  } else {
+    document.querySelector<HTMLInputElement>('#quantity13')!.value= '';
+    document.querySelector<HTMLInputElement>('#quantity13')!.disabled= true;
+  }
+});
+
+document.querySelector<HTMLButtonElement>('#add_instruction13')!.addEventListener("click", async function() {
+  document.querySelector<HTMLParagraphElement>('#warn')!.innerHTML= "&nbsp;";
+
+  const send13= document.querySelector<HTMLSelectElement>('#send13');
+  if (send13!.selectedIndex < 0) {
+    document.querySelector<HTMLParagraphElement>('#warn')!.innerHTML= "select coins to send";
+    return false;
+  }
+
+  var quantity13= 0;
+  if (document.querySelector<HTMLInputElement>('#all13')!.checked) {
+    quantity13= fungibles_in_worktop[send13!.value];
+  } else {
+    const q= document.querySelector<HTMLSelectElement>('#quantity13')!.value;
+    if (!q.match(/^[0-9]+(\.[0-9]+)?$/)) {
+      document.querySelector<HTMLInputElement>('#warn')!.innerText= "invalid quantity!";
+      return false;
+    }
+    quantity13= parseFloat(q);
+  }
+
+  const component= ociswap_lp_pools[send13!.value];
+  var receive1= "";
+  var receive2= "";
+  const options= {method: 'GET', headers: {accept: 'application/json'}};
+  fetch('https://api.ociswap.com/pools/' + component, options).then((r1) => {
+    if (!r1.ok) {
+      document.querySelector<HTMLParagraphElement>('#warn')!.innerHTML= "something went wrong";
+      return false;
+    }
+    r1.json().then(async (j1) => {
+      receive1= j1.x.token.address;
+      receive2= j1.y.token.address;
+
+      fetch('https://api.ociswap.com/preview/remove-liquidity?pool_address=' + component + '&liquidity_amount=' + quantity13, options).then((r2) => {
+        if (!r2.ok) {
+          document.querySelector<HTMLParagraphElement>('#warn')!.innerHTML= "something went wrong";
+          return false;
+        }
+        r2.json().then(async (j2) => {
+          add_fungible_to_worktop(receive1, parseFloat(j2.x_amount.token));
+          add_fungible_to_worktop(receive2, parseFloat(j2.y_amount.token));
+        });
+      });
+
+    });
+  });
+
+  const textarea= document.querySelector<HTMLTextAreaElement>('#transaction_manifest');
+  if (document.querySelector<HTMLInputElement>('#all13')!.checked) {
+    textarea!.value+=
+      'TAKE_ALL_FROM_WORKTOP\n' +
+      '    Address("' + send13!.value + '")\n' +
+      '    Bucket("bucket' + bucket_number + '")\n;\n';
+    remove_fungible_from_worktop(send13!.value, '*');
+  } else {
+    textarea!.value+=
+      'TAKE_FROM_WORKTOP\n' +
+      '    Address("' + send13!.value + '")\n' +
+      '    Decimal("' + quantity13 + '")\n' +
+      '    Bucket("bucket' + bucket_number + '")\n;\n';
+    remove_fungible_from_worktop(send13!.value, String(quantity13));
+  }
+  textarea!.value+=
+    'CALL_METHOD\n' +
+    '    Address("' + component + '")\n' +
+    '    "remove_liquidity"\n' +
+    '    Bucket("bucket' + bucket_number++ + '")\n;\n';
 });
 
 async function send_to_wallet() {
