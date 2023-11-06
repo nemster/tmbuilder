@@ -24,6 +24,7 @@
         <option>claim your unstaked XRDs</option>
         <option>--- OCISWAP ---</option>
         <option>swap coins at Ociswap</option>
+        <option>add liquidity to Ociswap</option>
         <option>--- CAVIARNINE ---</option>
         <option>add your LSUs in Caviarnine LSU pool</option>
         <option>retrieve LSUs from Caviarnine LSU pool</option>
@@ -231,6 +232,22 @@
       </div>
     </div>
 
+    <div id="div12" hidden="true">
+      <div>
+	coin 1 to send: <select id="send_1_12">
+	</select>
+	quantity: <input type="text" id="quantity_1_12" disabled="true">
+	all <input type="checkbox" id="all12" checked="true">
+      </div>
+      <div>
+        coin 2 to send: <select id="send_2_12">
+        </select>
+      </div>
+      <div>
+        <input type="button" value="add instructions" id="add_instruction12">
+      </div>
+    </div>
+
     <div>&nbsp;</div>
     <div>
       resources in worktop:
@@ -247,6 +264,9 @@
     </div>
     <div>
       <input type="button" value="send to wallet" id="send_to_wallet">
+    </div>
+    <div>
+      <p>For educational purposes only, use at your own risk.</p>
     </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
