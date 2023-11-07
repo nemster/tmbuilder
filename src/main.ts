@@ -576,23 +576,33 @@ document.querySelector<HTMLButtonElement>('#add_instruction1')!.addEventListener
   const selectFungible1= document.querySelector<HTMLSelectElement>('#fungible1');
   const selectNonFungible1= document.querySelector<HTMLSelectElement>('#non_fungible1');
 
-  document.querySelector<HTMLParagraphElement>('#warn')!.innerHTML= "&nbsp;";
+  if (selectFungible1!.selectedIndex < 1 && selectNonFungible1!.selectedIndex < 1) {
+    document.querySelector<HTMLParagraphElement>('#warn')!.innerText= "no coins selected";
+    return false;
+  } else {
+    document.querySelector<HTMLParagraphElement>('#warn')!.innerHTML= "&nbsp;";
+  }
 
   if (selectFungible1!.selectedIndex > 0) {
     const quantity= document.querySelector<HTMLInputElement>('#quantity1')!.value;
     if (!quantity.match(/^[0-9]+(\.[0-9]+)?$/)) {
       document.querySelector<HTMLParagraphElement>('#warn')!.innerText= "invalid quantity!";
-    } else if (parseFloat(quantity) > 0) {
-      const resource= selectFungible1!.value;
-      document.querySelector<HTMLTextAreaElement>('#transaction_manifest')!.value+=
-        'CALL_METHOD\n' +
-        '    Address("' + account + '")\n' +
-        '    "withdraw"\n' +
-        '    Address("' + resource + '")\n' +
-        '    Decimal("' + quantity + '")\n;\n';
-      const q= parseFloat(quantity);
-      add_fungible_to_worktop(resource, q);
-      remove_fungible_from_account(account, resource, q);
+    } else {
+      var q= parseFloat(quantity);
+      if (q > 0) {
+        const resource= selectFungible1!.value;
+	if (q > fungibles_in_accounts[account][resource]) {
+	  q= fungibles_in_accounts[account][resource];
+	}
+        document.querySelector<HTMLTextAreaElement>('#transaction_manifest')!.value+=
+          'CALL_METHOD\n' +
+          '    Address("' + account + '")\n' +
+          '    "withdraw"\n' +
+          '    Address("' + resource + '")\n' +
+          '    Decimal("' + String(q) + '")\n;\n';
+        add_fungible_to_worktop(resource, q);
+        remove_fungible_from_account(account, resource, q);
+      }
     }
   }
 
@@ -628,20 +638,31 @@ document.querySelector<HTMLInputElement>('#worktop2')!.addEventListener("change"
 });
 
 document.querySelector<HTMLInputElement>('#all2')!.addEventListener("change", function() {
-  document.querySelector<HTMLInputElement>('#quantity2')!.disabled= this.checked || document.querySelector<HTMLInputElement>('#worktop2')!.checked;
-  if (this.checked) {
-    document.querySelector<HTMLInputElement>('#quantity2')!.value= "";
+  const quantity2= document.querySelector<HTMLInputElement>('#quantity2');
+  if (this.checked || document.querySelector<HTMLInputElement>('#worktop2')!.checked) {
+    quantity2!.disabled= true;
+    quantity2!.value= "";
+  } else {
+    quantity2!.disabled= false;
+    const fungible2= document.querySelector<HTMLSelectElement>('#fungible2')!.value;
+    if (fungible2 != "") {
+      quantity2!.value= String(fungibles_in_worktop[fungible2]);
+    }
   }
 });
 
 document.querySelector<HTMLSelectElement>('#fungible2')!.addEventListener("change", function() {
+  const all2= document.querySelector<HTMLInputElement>('#all2');
+  const quantity2= document.querySelector<HTMLInputElement>('#quantity2');
   if (this.selectedIndex > 0) {
-    document.querySelector<HTMLInputElement>('#all2')!.disabled= false;
+    all2!.disabled= false;
+    if (!all2!.checked) {
+      quantity2!.value= String(fungibles_in_worktop[this.value]);
+    }
   } else {
-    document.querySelector<HTMLInputElement>('#all2')!.disabled= true;
-    document.querySelector<HTMLInputElement>('#all2')!.checked= true;
-    document.querySelector<HTMLInputElement>('#quantity2')!.disabled= true;
-    document.querySelector<HTMLInputElement>('#quantity2')!.value= "";
+    all2!.disabled= true;
+    quantity2!.disabled= true;
+    quantity2!.value= "";
   }
 });
 
@@ -666,7 +687,7 @@ document.querySelector<HTMLButtonElement>('#add_instruction2')!.addEventListener
     remove_non_fungible_from_worktop('*');
 
   } else {
-    const resource= document.querySelector<HTMLInputElement>('#fungible2')!.value;
+    const resource= document.querySelector<HTMLSelectElement>('#fungible2')!.value;
     if (resource.length > 0) {
       if (document.querySelector<HTMLInputElement>('#all2')!.checked) {
         document.querySelector<HTMLTextAreaElement>('#transaction_manifest')!.value+=
@@ -701,7 +722,7 @@ document.querySelector<HTMLButtonElement>('#add_instruction2')!.addEventListener
       }
     }
 
-    const non_fungible= document.querySelector<HTMLInputElement>('#non_fungible2')!.value;
+    const non_fungible= document.querySelector<HTMLSelectElement>('#non_fungible2')!.value;
     if (non_fungible.length > 0) {
       const res= non_fungible.split(' ');
       if (res[1] == unknown_nft_id) {
@@ -725,6 +746,8 @@ document.querySelector<HTMLButtonElement>('#add_instruction2')!.addEventListener
       remove_non_fungible_from_worktop(non_fungible);
     }
   }
+  document.querySelector<HTMLSelectElement>('#fungible2')!.selectedIndex= 0;
+  document.querySelector<HTMLSelectElement>('#non_fungible2')!.selectedIndex= 0;
 });
 
 document.querySelector<HTMLInputElement>('#worktop3')!.addEventListener("change", function() {
