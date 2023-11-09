@@ -10,10 +10,8 @@ then
   jq -r '.data[] | (.address + " " + .baseToken + " " + .basePool + " " + .quotePool)' >$DEFIPLAZA
 fi
 
-echo 'export const dfp2= "resource_rdx1thyqj6yn4rmc8awxqhz6d60q9t677tre0ervrqpzfp4fzc20s4cmce";' >src/defiplaza.ts
-
 echo 'export const defiplaza_listed_coins: {[key: string]: string}= {
-  "resource_rdx1thyqj6yn4rmc8awxqhz6d60q9t677tre0ervrqpzfp4fzc20s4cmce": "dfp2 DefiPlaza",' >>src/defiplaza.ts
+  "resource_rdx1thyqj6yn4rmc8awxqhz6d60q9t677tre0ervrqpzfp4fzc20s4cmce": "dfp2 DefiPlaza",' >src/defiplaza.ts
 cat $DEFIPLAZA |
   while read COMPONENT TOKEN POOL1 POOL2
   do
@@ -34,22 +32,6 @@ cat $DEFIPLAZA |
              for (i in a)
                print "  \"" i "\": \"" a[i] "\","
            }' >>src/defiplaza.ts
-  done
-echo '};' >>src/defiplaza.ts
-
-echo 'export const defiplaza_pool1: {[key: string]: string}= {' >>src/defiplaza.ts
-cat $DEFIPLAZA |
-  while read COMPONENT TOKEN POOL1 POOL2
-  do
-    echo "  \"$TOKEN\": \"$POOL1\"," >>src/defiplaza.ts
-  done
-echo '};' >>src/defiplaza.ts
-
-echo 'export const defiplaza_pool2: {[key: string]: string}= {' >>src/defiplaza.ts
-cat $DEFIPLAZA |
-  while read COMPONENT TOKEN POOL1 POOL2
-  do
-    echo "  \"$TOKEN\": \"$POOL2\"," >>src/defiplaza.ts
   done
 echo '};' >>src/defiplaza.ts
 

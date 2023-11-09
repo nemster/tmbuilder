@@ -10,3 +10,5 @@ npm run build
 
 rm /var/www/tmbuilder/assets/ -Rf
 mv dist/* /var/www/tmbuilder/
+
+cp defiplaza.php /var/www/tmbuilder/

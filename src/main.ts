@@ -4,7 +4,7 @@ import {GatewayApiClient, FungibleResourcesCollectionItemGloballyAggregated, Non
 	MetadataStringValue, ProgrammaticScryptoSborValueTuple, ProgrammaticScryptoSborValueDecimal, ProgrammaticScryptoSborValueU64} from '@radixdlt/babylon-gateway-api-sdk'
 import {validators_names, pool_units, claim_nft, validators_you_can_stake_to} from './validators.ts'
 import {ociswap_listed_coins, ociswap_lp_pools, ociswap_lp_names} from './ociswap.ts'
-import {dfp2, defiplaza_listed_coins, defiplaza_pool1, defiplaza_pool2} from './defiplaza.ts'
+import {defiplaza_listed_coins} from './defiplaza.ts'
 
 interface fungibles_array {[index: string]: number};
 interface fungibles_array_array {[index: string]: fungibles_array};
@@ -25,7 +25,7 @@ var non_fungibles_symbols: {[key: string]: string}= {
   "resource_rdx1ngxzt7uq9l2wm5gd8vefcq5pkwcqwrn530a98p72mnkjzjev8hlxdn": "STT Gable Transient Token"
 };
 const defiplaza_component= "component_rdx1cze7e7437y9pmntk94w72eyanngw522j8yf07aa27frn63m9ezkfeu";
-const defiplaza_fees= 0.0015;
+//const defiplaza_fees= 0.0015;
 var bucket_number= 1;
 var proof_number= 1;
 const epsilon= 0.000001;
@@ -1725,39 +1725,6 @@ document.querySelector<HTMLInputElement>('#all16')!.addEventListener("change", f
   }
 });
 
-async function defiplaza_swap(resource1: string, resource2: string, quantity: number) {
-  var quantity_resource1= 0;
-  var quantity_resource2= 0;
-  var resource: string;
-  if (resource1 == dfp2) {
-    resource= resource2;
-  } else {
-    resource= resource1;
-  }
-
-  var response= await gatewayApi.state.innerClient.stateEntityDetails({
-    stateEntityDetailsRequest: {
-      addresses: Array(
-	defiplaza_pool1[resource],
-	defiplaza_pool2[resource],
-      ),
-      aggregation_level: "Global"
-    }
-  });
-
-  for (var pool of response.items) {
-    for (var res of pool.fungible_resources!.items) {
-      if (res.resource_address == resource1) {
-	quantity_resource1+= parseFloat((<FungibleResourcesCollectionItemGloballyAggregated>res).amount);
-      } else {
-        quantity_resource2+= parseFloat((<FungibleResourcesCollectionItemGloballyAggregated>res).amount);
-      }
-    }
-  }
- 
-  return quantity_resource2 - (quantity_resource1 * (quantity_resource2 / (quantity_resource1 + quantity))); 
-}
-
 document.querySelector<HTMLButtonElement>('#add_instruction16')!.addEventListener("click", async function() {
   document.querySelector<HTMLParagraphElement>('#warn')!.innerHTML= "&nbsp;";
 
@@ -1800,22 +1767,21 @@ document.querySelector<HTMLButtonElement>('#add_instruction16')!.addEventListene
   }
 
   const receive16= document.querySelector<HTMLSelectElement>('#receive16')!.value;
-  var quantity_receive: number;
-  if (send16 == dfp2) {
-    quantity_receive= await defiplaza_swap(send16, receive16, quantity16 * (1 - defiplaza_fees));
-  } else if (receive16 == dfp2) {
-    quantity_receive= (1 - defiplaza_fees) * await defiplaza_swap(send16, receive16, quantity16);
-  } else {
-    quantity_receive= await defiplaza_swap(send16, dfp2, quantity16);
-    quantity_receive= await defiplaza_swap(dfp2, receive16, quantity_receive * (1 - defiplaza_fees));
-  }
-  add_fungible_to_worktop(receive16, quantity_receive);
-  document.querySelector<HTMLTextAreaElement>('#transaction_manifest')!.value+=
-    'CALL_METHOD\n' +
-    '    Address("' + defiplaza_component + '")\n' +
-    '    "swap"\n' +
-    '    Bucket("bucket' + bucket_number++ + '")\n' +
-    '    Address("' + receive16 + '")\n;\n';
+
+  const url= 'https://tmbuilder.stakingcoins.eu/defiplaza.php?inputToken=' + send16 + '&outputToken=' + receive16 + '&inputAmount=' + quantity16;
+  fetch(url).then((r) => {
+    if (r.ok) {
+      r.json().then((j) => {
+        add_fungible_to_worktop(receive16, j.quoteToken.amount);
+        document.querySelector<HTMLTextAreaElement>('#transaction_manifest')!.value+=
+          'CALL_METHOD\n' +
+          '    Address("' + defiplaza_component + '")\n' +
+          '    "swap"\n' +
+          '    Bucket("bucket' + bucket_number++ + '")\n' +
+          '    Address("' + receive16 + '")\n;\n';
+      });
+    }
+  });
   document.querySelector<HTMLSelectElement>('#send16')!.dispatchEvent(new Event('change'));
 });
 
