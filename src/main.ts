@@ -4,6 +4,7 @@ import {GatewayApiClient, FungibleResourcesCollectionItemGloballyAggregated, Non
 	MetadataStringValue, ProgrammaticScryptoSborValueTuple, ProgrammaticScryptoSborValueDecimal, ProgrammaticScryptoSborValueU64} from '@radixdlt/babylon-gateway-api-sdk'
 import {validators_names, pool_units, claim_nft, validators_you_can_stake_to} from './validators.ts'
 import {ociswap_listed_coins, ociswap_lp_pools, ociswap_lp_names} from './ociswap.ts'
+import {dfp2, defiplaza_listed_coins, defiplaza_pool1, defiplaza_pool2} from './defiplaza.ts'
 
 interface fungibles_array {[index: string]: number};
 interface fungibles_array_array {[index: string]: fungibles_array};
@@ -23,6 +24,8 @@ const gable_nft= "resource_rdx1ngxzt7uq9l2wm5gd8vefcq5pkwcqwrn530a98p72mnkjzjev8
 var non_fungibles_symbols: {[key: string]: string}= {
   "resource_rdx1ngxzt7uq9l2wm5gd8vefcq5pkwcqwrn530a98p72mnkjzjev8hlxdn": "STT Gable Transient Token"
 };
+const defiplaza_component= "component_rdx1cze7e7437y9pmntk94w72eyanngw522j8yf07aa27frn63m9ezkfeu";
+const defiplaza_fees= 0.0015;
 var bucket_number= 1;
 var proof_number= 1;
 const epsilon= 0.000001;
@@ -299,16 +302,23 @@ function add_fungible_to_worktop(resource: string, quantity: number) {
         lsu7!.options[lsu7!.options.length]= new Option(symbol, resource);
         send9!.options[send9!.options.length]= new Option(symbol, resource);
       }
-    } else if (ociswap_listed_coins[resource] != undefined) {
-      const send11= document.querySelector<HTMLSelectElement>('#send11');
-      send11!.options[send11!.options.length]= new Option(symbol, resource);
-      const send_1_12= document.querySelector<HTMLSelectElement>('#send_1_12');
-      send_1_12!.options[send_1_12!.options.length]= new Option(symbol, resource);
-      send_1_12!.dispatchEvent(new Event('change'));
-    } else if (ociswap_lp_names[resource] != undefined) {
-      const send13= document.querySelector<HTMLSelectElement>('#send13');
-      send13!.options[send13!.options.length]= new Option(symbol, resource);
-      send13!.dispatchEvent(new Event('change'));
+    } else {
+      if (ociswap_listed_coins[resource] != undefined) {
+        const send11= document.querySelector<HTMLSelectElement>('#send11');
+        send11!.options[send11!.options.length]= new Option(symbol, resource);
+        const send_1_12= document.querySelector<HTMLSelectElement>('#send_1_12');
+        send_1_12!.options[send_1_12!.options.length]= new Option(symbol, resource);
+        send_1_12!.dispatchEvent(new Event('change'));
+      } else if (ociswap_lp_names[resource] != undefined) {
+        const send13= document.querySelector<HTMLSelectElement>('#send13');
+        send13!.options[send13!.options.length]= new Option(symbol, resource);
+        send13!.dispatchEvent(new Event('change'));
+      }
+      if (defiplaza_listed_coins[resource] != undefined) {
+        const send16= document.querySelector<HTMLSelectElement>('#send16');
+        send16!.options[send16!.options.length]= new Option(symbol, resource);
+        send16!.dispatchEvent(new Event('change'));
+      }
     }
   } else {
     fungibles_in_worktop[resource]+= quantity;
@@ -350,6 +360,7 @@ function remove_fungible_from_worktop(resource: string, quantity: string) {
   const send11= document.querySelector<HTMLSelectElement>('#send11');
   const send_1_12= document.querySelector<HTMLSelectElement>('#send_1_12');
   const send13= document.querySelector<HTMLSelectElement>('#send13');
+  const send16= document.querySelector<HTMLSelectElement>('#send16');
   if (fungibles_in_worktop[resource] != undefined) {
     if (quantity == '*') {
       delete fungibles_in_worktop[resource];
@@ -386,6 +397,14 @@ function remove_fungible_from_worktop(resource: string, quantity: string) {
 	  }
 	}
       }
+      if (defiplaza_listed_coins[resource] != undefined) {
+        for (var i= send16!.length - 1; i >= 0; --i) {
+          if ((<HTMLOptionElement>send16![i]).value == resource) {
+            send16!.remove(i);
+	    break;
+	  }
+	}
+      }
     } else {
       fungibles_in_worktop[resource]-= parseFloat(quantity);
       if (fungibles_in_worktop[resource] < epsilon) {
@@ -400,6 +419,7 @@ function remove_fungible_from_worktop(resource: string, quantity: string) {
     lsu7!.innerHTML= '';
     send9!.innerHTML= '';
     send13!.innerHTML= '';
+    send16!.innerHTML= '';
   }
   show_resources_in_worktop();
 }
@@ -459,6 +479,9 @@ function find_fungible_symbol(resource: string) {
   }
   if (pool_units[resource] !== undefined) {
     return "LSU " + validators_names[pool_units[resource]].trim();
+  }
+  if (defiplaza_listed_coins[resource] !== undefined) {
+    return defiplaza_listed_coins[resource];
   }
   return resource;
 }
@@ -544,6 +567,12 @@ document.querySelector<HTMLSelectElement>('#action')!.addEventListener("change",
   document.querySelector<HTMLDivElement>('#div15')!.hidden= (this.selectedIndex != 19); //repay flashloan
   if (this.selectedIndex == 15 && (gable_loan_quantity == 0)) {
     document.querySelector<HTMLParagraphElement>('#warn')!.innerHTML= "get a loan first";
+  }
+
+  // --- DEFIPLAZA ---
+  document.querySelector<HTMLDivElement>('#div16')!.hidden= (this.selectedIndex != 21); //swap coins at DefiPlaza
+  if ((this.selectedIndex == 21) && document.querySelector<HTMLSelectElement>('#send16')!.options.length == 0 ) {
+    document.querySelector<HTMLParagraphElement>('#warn')!.innerHTML= "put some coin listed on DefiPlaza in the worktop first";
   }
 });
 
@@ -1671,6 +1700,124 @@ document.querySelector<HTMLButtonElement>('#add_instruction15')!.addEventListene
   gable_loan_quantity= 0;
   remove_fungible_from_worktop(xrd, String(xrd_to_refund));
   remove_non_fungible_from_worktop(gable_nft + ' ' + unknown_nft_id);
+});
+
+document.querySelector<HTMLInputElement>('#send16')!.addEventListener("change", function() {
+  const send16= document.querySelector<HTMLSelectElement>('#send16')!.value;
+  const receive16= document.querySelector<HTMLSelectElement>('#receive16');
+  if (!document.querySelector<HTMLInputElement>('#all16')!.checked) {
+    document.querySelector<HTMLInputElement>('#quantity16')!.value= String(fungibles_in_worktop[send16]);
+  }
+  receive16!.innerHTML= "";
+  for (var receive of Object.keys(defiplaza_listed_coins)) {
+    if (receive != send16) {
+      receive16!.options[receive16!.options.length]= new Option(find_fungible_symbol(receive), receive);
+    }
+  }
+});
+
+document.querySelector<HTMLInputElement>('#all16')!.addEventListener("change", function() {
+  if (!document.querySelector<HTMLInputElement>('#all16')!.checked) {
+    document.querySelector<HTMLInputElement>('#quantity16')!.value= String(fungibles_in_worktop[document.querySelector<HTMLSelectElement>('#send16')!.value]);
+    document.querySelector<HTMLInputElement>('#quantity16')!.disabled= false;
+  } else {
+    document.querySelector<HTMLInputElement>('#quantity16')!.value= '';
+    document.querySelector<HTMLInputElement>('#quantity16')!.disabled= true;
+  }
+});
+
+async function defiplaza_swap(resource1: string, resource2: string, quantity: number) {
+  var quantity_resource1= 0;
+  var quantity_resource2= 0;
+  var resource: string;
+  if (resource1 == dfp2) {
+    resource= resource2;
+  } else {
+    resource= resource1;
+  }
+
+  var response= await gatewayApi.state.innerClient.stateEntityDetails({
+    stateEntityDetailsRequest: {
+      addresses: Array(
+	defiplaza_pool1[resource],
+	defiplaza_pool2[resource],
+      ),
+      aggregation_level: "Global"
+    }
+  });
+
+  for (var pool of response.items) {
+    for (var res of pool.fungible_resources!.items) {
+      if (res.resource_address == resource1) {
+	quantity_resource1+= parseFloat((<FungibleResourcesCollectionItemGloballyAggregated>res).amount);
+      } else {
+        quantity_resource2+= parseFloat((<FungibleResourcesCollectionItemGloballyAggregated>res).amount);
+      }
+    }
+  }
+ 
+  return quantity_resource2 - (quantity_resource1 * (quantity_resource2 / (quantity_resource1 + quantity))); 
+}
+
+document.querySelector<HTMLButtonElement>('#add_instruction16')!.addEventListener("click", async function() {
+  document.querySelector<HTMLParagraphElement>('#warn')!.innerHTML= "&nbsp;";
+
+  const send16= document.querySelector<HTMLSelectElement>('#send16')!.value;
+  if (send16 == "") {
+    document.querySelector<HTMLParagraphElement>('#warn')!.innerHTML= "select a coin to send";
+    return false;
+  }
+
+  var quantity16: number;
+  if (document.querySelector<HTMLInputElement>('#all16')!.checked) {
+    quantity16= fungibles_in_worktop[send16];
+    remove_fungible_from_worktop(send16, '*');
+    document.querySelector<HTMLTextAreaElement>('#transaction_manifest')!.value+=
+      'TAKE_ALL_FROM_WORKTOP\n' +
+      '    Address("' + send16 + '")\n' +
+      '    Bucket("bucket' + bucket_number + '")\n;\n';
+  } else {
+    const q= document.querySelector<HTMLSelectElement>('#quantity16')!.value;
+    if (!q.match(/^[0-9]+(\.[0-9]+)?$/)) {
+      document.querySelector<HTMLInputElement>('#warn')!.innerText= "invalid quantity!";
+      return false;
+    }
+    if (parseFloat(q) > fungibles_in_worktop[send16]) {
+      quantity16= fungibles_in_worktop[send16];
+      remove_fungible_from_worktop(send16, '*');
+      document.querySelector<HTMLTextAreaElement>('#transaction_manifest')!.value+=
+        'TAKE_ALL_FROM_WORKTOP\n' +
+        '    Address("' + send16 + '")\n' +
+        '    Bucket("bucket' + bucket_number + '")\n;\n'
+    } else {
+      quantity16= parseFloat(q);
+      remove_fungible_from_worktop(send16, q);
+      document.querySelector<HTMLTextAreaElement>('#transaction_manifest')!.value+=
+        'TAKE_FROM_WORKTOP\n' +
+        '    Address("' + send16 + '")\n' +
+        '    Decimal("' + q + '")\n' +
+        '    Bucket("bucket' + bucket_number + '")\n;\n'
+    }
+  }
+
+  const receive16= document.querySelector<HTMLSelectElement>('#receive16')!.value;
+  var quantity_receive: number;
+  if (send16 == dfp2) {
+    quantity_receive= await defiplaza_swap(send16, receive16, quantity16 * (1 - defiplaza_fees));
+  } else if (receive16 == dfp2) {
+    quantity_receive= (1 - defiplaza_fees) * await defiplaza_swap(send16, receive16, quantity16);
+  } else {
+    quantity_receive= await defiplaza_swap(send16, dfp2, quantity16);
+    quantity_receive= await defiplaza_swap(dfp2, receive16, quantity_receive * (1 - defiplaza_fees));
+  }
+  add_fungible_to_worktop(receive16, quantity_receive);
+  document.querySelector<HTMLTextAreaElement>('#transaction_manifest')!.value+=
+    'CALL_METHOD\n' +
+    '    Address("' + defiplaza_component + '")\n' +
+    '    "swap"\n' +
+    '    Bucket("bucket' + bucket_number++ + '")\n' +
+    '    Address("' + receive16 + '")\n;\n';
+  document.querySelector<HTMLSelectElement>('#send16')!.dispatchEvent(new Event('change'));
 });
 
 async function send_to_wallet() {
