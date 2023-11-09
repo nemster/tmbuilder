@@ -78,7 +78,6 @@ const caviarnine_enabled_validators: {[key: string]: number}= {
   "validator_rdx1s0txh4cx4nd7eh5nsxyt7h7njja5galwj602x57e9r2dszv6h2aahj": 1,
   "validator_rdx1sdauznj9luja8v7vd4jndmlp449tcr9qxkx6fkm87lxkn0lq6m9mn0": 1,
   "validator_rdx1svfawmdwc77092hzhd6rzlay0tg4g8dw2sd37mu7skaqjlsq624rfa": 1,
-  "validator_rdx1sde3jp4g6ldh2mg4af0v0sq3c8en4agk3p7p63zcv58l5h05sej4kh": 1,
   "validator_rdx1sdk493n96m2v8t0st6hgrdmdua8y6kp84lcwv35qr7umvj7ar4x3e8": 1,
   "validator_rdx1swqzqfll4r6h45e6rxx7p45vk9nn74mk0zlts4r3td2fj85kaekq0t": 1,
   "validator_rdx1sv856az023f380u0gzezaf50djcvcmpzf4ntv5au9xzt68sqjra7n3": 1,
