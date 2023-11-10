@@ -5,6 +5,7 @@ import {GatewayApiClient, FungibleResourcesCollectionItemGloballyAggregated, Non
 import {validators_names, pool_units, claim_nft, validators_you_can_stake_to} from './validators.ts'
 import {ociswap_listed_coins, ociswap_lp_pools, ociswap_lp_names} from './ociswap.ts'
 import {defiplaza_listed_coins} from './defiplaza.ts'
+import {alphadex_listed_coins} from './alphadex'
 
 interface fungibles_array {[index: string]: number};
 interface fungibles_array_array {[index: string]: fungibles_array};
@@ -119,7 +120,7 @@ const rdt = RadixDappToolkit({
   dAppDefinitionAddress: 'account_rdx128asp59jepvktdmpu43p3fkwcenpa996u4reqq6uh7qsdeeplvc0kj',
   networkId: 1,
   applicationName: 'tmbuilder',
-  applicationVersion: '0.4.0',
+  applicationVersion: '0.5.0',
 })
 rdt.walletApi.setRequestData(
   DataRequestBuilder.persona(),
@@ -318,6 +319,11 @@ function add_fungible_to_worktop(resource: string, quantity: number) {
         send16!.options[send16!.options.length]= new Option(symbol, resource);
         send16!.dispatchEvent(new Event('change'));
       }
+      if (alphadex_listed_coins[resource] != undefined) {
+        const send17= document.querySelector<HTMLSelectElement>('#send17');
+        send17!.options[send17!.options.length]= new Option(symbol, resource);
+        send17!.dispatchEvent(new Event('change'));
+      }
     }
   } else {
     fungibles_in_worktop[resource]+= quantity;
@@ -482,6 +488,9 @@ function find_fungible_symbol(resource: string) {
   if (defiplaza_listed_coins[resource] !== undefined) {
     return defiplaza_listed_coins[resource];
   }
+  if (alphadex_listed_coins[resource] !== undefined) {
+    return alphadex_listed_coins[resource];
+  }
   return resource;
 }
 
@@ -572,6 +581,12 @@ document.querySelector<HTMLSelectElement>('#action')!.addEventListener("change",
   document.querySelector<HTMLDivElement>('#div16')!.hidden= (this.selectedIndex != 21); //swap coins at DefiPlaza
   if ((this.selectedIndex == 21) && document.querySelector<HTMLSelectElement>('#send16')!.options.length == 0 ) {
     document.querySelector<HTMLParagraphElement>('#warn')!.innerHTML= "put some coin listed on DefiPlaza in the worktop first";
+  }
+
+  // --- ALPHADEX ---
+  document.querySelector<HTMLDivElement>('#div17')!.hidden= (this.selectedIndex != 23); //swap coins at AlphaDEX
+  if ((this.selectedIndex == 23) && document.querySelector<HTMLSelectElement>('#send17')!.options.length == 0 ) {
+    document.querySelector<HTMLParagraphElement>('#warn')!.innerHTML= "put some coin listed on AlphaDEX in the worktop first";
   }
 });
 
@@ -1783,6 +1798,129 @@ document.querySelector<HTMLButtonElement>('#add_instruction16')!.addEventListene
     }
   });
   document.querySelector<HTMLSelectElement>('#send16')!.dispatchEvent(new Event('change'));
+});
+
+document.querySelector<HTMLInputElement>('#send17')!.addEventListener("change", function() {
+  const send17= document.querySelector<HTMLSelectElement>('#send17')!.value;
+  const receive17= document.querySelector<HTMLSelectElement>('#receive17');
+  if (!document.querySelector<HTMLInputElement>('#all17')!.checked) {
+    document.querySelector<HTMLInputElement>('#quantity17')!.value= String(fungibles_in_worktop[send17]);
+  }
+  receive17!.innerHTML= "";
+  for (var receive of Object.keys(alphadex_listed_coins)) {
+    if (receive != send17) {
+      receive17!.options[receive17!.options.length]= new Option(find_fungible_symbol(receive), receive);
+    }
+  }
+});
+
+document.querySelector<HTMLInputElement>('#all17')!.addEventListener("change", function() {
+  if (!document.querySelector<HTMLInputElement>('#all17')!.checked) {
+    document.querySelector<HTMLInputElement>('#quantity17')!.value= String(fungibles_in_worktop[document.querySelector<HTMLSelectElement>('#send17')!.value]);
+    document.querySelector<HTMLInputElement>('#quantity17')!.disabled= false;
+  } else {
+    document.querySelector<HTMLInputElement>('#quantity17')!.value= '';
+    document.querySelector<HTMLInputElement>('#quantity17')!.disabled= true;
+  }
+});
+
+document.querySelector<HTMLButtonElement>('#add_instruction17')!.addEventListener("click", async function() {
+  document.querySelector<HTMLParagraphElement>('#warn')!.innerHTML= "&nbsp;";
+
+  const send17= document.querySelector<HTMLSelectElement>('#send17')!.value;
+  if (send17 == "") {
+    document.querySelector<HTMLParagraphElement>('#warn')!.innerHTML= "select a coin to send";
+    return false;
+  }
+
+  var quantity17: number;
+  if (document.querySelector<HTMLInputElement>('#all17')!.checked) {
+    quantity17= fungibles_in_worktop[send17];
+  } else {
+    const q= document.querySelector<HTMLSelectElement>('#quantity17')!.value;
+    if (!q.match(/^[0-9]+(\.[0-9]+)?$/)) {
+      document.querySelector<HTMLInputElement>('#warn')!.innerText= "invalid quantity!";
+      return false;
+    }
+    if (parseFloat(q) > fungibles_in_worktop[send17]) {
+      quantity17= fungibles_in_worktop[send17];
+    } else {
+      quantity17= parseFloat(q);
+    }
+  }
+
+  const receive17= document.querySelector<HTMLSelectElement>('#receive17')!.value;
+  const body= JSON.stringify({
+      fromTokenAddress: send17,
+      fromTokenAmount: String(quantity17),
+      toTokenAddress: receive17,
+      maxSlippage: "1",
+      platformFee: "0.001"
+  });
+
+  fetch('https://api.alphadex.net/v0/quote/swap', {
+    method: 'POST',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: body
+  }).then((r1) => {
+    if (r1.status != 200 && r1.status != 406) {
+      document.querySelector<HTMLParagraphElement>('#warn')!.innerHTML= "something went wrong";
+      return false;
+    } 
+    r1.json().then(async (j1) => {
+      if (r1.status == 200) {
+        if (quantity17 == fungibles_in_worktop[send17]) {
+          remove_fungible_from_worktop(send17, '*');
+          document.querySelector<HTMLTextAreaElement>('#transaction_manifest')!.value+=
+            'TAKE_ALL_FROM_WORKTOP\n' +
+            '    Address("' + send17 + '")\n' +
+            '    Bucket("bucket' + bucket_number + '")\n;\n';
+        } else {
+          remove_fungible_from_worktop(send17, String(quantity17));
+          document.querySelector<HTMLTextAreaElement>('#transaction_manifest')!.value+=
+            'TAKE_FROM_WORKTOP\n' +
+            '    Address("' + send17 + '")\n' +
+            '    Decimal("' + quantity17 + '")\n' +
+            '    Bucket("bucket' + bucket_number + '")\n;\n'
+        }
+      } else {
+	quantity17= j1.quotes[0].fromAmount - epsilon;
+        remove_fungible_from_worktop(send17, String(quantity17));
+        document.querySelector<HTMLTextAreaElement>('#transaction_manifest')!.value+=
+          'TAKE_FROM_WORKTOP\n' +
+          '    Address("' + send17 + '")\n' +
+          '    Decimal("' + quantity17 + '")\n' +
+          '    Bucket("bucket' + bucket_number + '")\n;\n'
+      }
+      var next= "";
+      for (var swaps of j1.quotes) {
+	var to_coin: string;
+	if (send17 == xrd || next != "") {
+	  to_coin= receive17;
+	} else {
+	  to_coin= xrd;
+	}
+        document.querySelector<HTMLTextAreaElement>('#transaction_manifest')!.value+=
+	  next +
+          'CALL_METHOD\n' +
+          '    Address("' +  swaps.pairAddress + '")\n' +
+          '    "swap"\n' +
+          '    Bucket("bucket' + bucket_number++ + '")\n' +
+	  '    Decimal("100")\n' +
+	  '    5u32\n;\n';
+	if (to_coin == receive17) {
+	  add_fungible_to_worktop(receive17, swaps.toAmount);
+	} else {
+	  next= 'TAKE_ALL_FROM_WORKTOP\n' +
+		'    Address("' + to_coin + '")\n' +
+		'    Bucket("bucket' + bucket_number + '")\n;\n';
+	}
+      }
+    });
+  });
 });
 
 async function send_to_wallet() {
