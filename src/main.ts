@@ -1,7 +1,8 @@
 import './style.css'
 import {RadixDappToolkit, DataRequestBuilder} from '@radixdlt/radix-dapp-toolkit'
 import {GatewayApiClient, FungibleResourcesCollectionItemGloballyAggregated, NonFungibleResourcesCollectionItemVaultAggregated,
-	MetadataStringValue, ProgrammaticScryptoSborValueTuple, ProgrammaticScryptoSborValueDecimal, ProgrammaticScryptoSborValueU64} from '@radixdlt/babylon-gateway-api-sdk'
+	MetadataStringValue, ProgrammaticScryptoSborValueTuple, ProgrammaticScryptoSborValueDecimal, ProgrammaticScryptoSborValueU64,
+        ProgrammaticScryptoSborValueString} from '@radixdlt/babylon-gateway-api-sdk'
 import {validators_names, pool_units, claim_nft, validators_you_can_stake_to} from './validators.ts'
 import {ociswap_listed_coins, ociswap_lp_pools, ociswap_lp_names} from './ociswap.ts'
 import {defiplaza_listed_coins} from './defiplaza.ts'
@@ -26,7 +27,6 @@ var non_fungibles_symbols: {[key: string]: string}= {
   "resource_rdx1ngxzt7uq9l2wm5gd8vefcq5pkwcqwrn530a98p72mnkjzjev8hlxdn": "STT Gable Transient Token"
 };
 const defiplaza_component= "component_rdx1cze7e7437y9pmntk94w72eyanngw522j8yf07aa27frn63m9ezkfeu";
-//const defiplaza_fees= 0.0015;
 var bucket_number= 1;
 var proof_number= 1;
 const epsilon= 0.000001;
@@ -36,6 +36,9 @@ const lsulp= "resource_rdx1thksg5ng70g9mmy9ne7wz0sc7auzrrwy7fmgcxzel2gvp8pj0xxfm
 const unknown_nft_id= "???";
 var claim_amount: {[key: string]: number}= {};
 var claim_epoch: {[key: string]: number}= {};
+const backeum_trophies= "resource_rdx1ng8ugxt6tj0e22fvf6js4e3x5k8uwaqvz9tl8u924u54h7zxeh6jnp";
+const my_backeum_collection_id= "component_rdx1cqzr66e6vc5mp7hsqjjnyzmhdzmamafnn7dfyc2yn7mz7r3g7k3mwp";
+var donor= false;
 const caviarnine_enabled_validators: {[key: string]: number}= {
   "validator_rdx1s0g5uuw3a7ad7akueetzq5lpejzp9uw5glv2qnflvymgendvepgduj": 1,
   "validator_rdx1s0lz5v68gtqwswu7lrx9yrjte4ts0l2saphmplsz68nsv2aux0xvfq": 1,
@@ -223,6 +226,18 @@ rdt.walletApi.walletData$.subscribe((walletData) => {
 	    while (non_fungibles_in_accounts[value.address][i] != undefined) {
 	      i++;
 	    }
+            if (non_fungible.resource_address == backeum_trophies) {
+              get_non_fungible_data(backeum_trophies, id).then((v) => {
+                for (var nf of v.non_fungible_ids) {
+                  for (var field of (<ProgrammaticScryptoSborValueTuple>nf.data!.programmatic_json).fields) {
+                    if (field.field_name == 'collection_id' && (<ProgrammaticScryptoSborValueString>field).value == my_backeum_collection_id) {
+		      donor= true;
+                      document.querySelector<HTMLParagraphElement>('#footer')!.innerText= "Thank you for supporting me on Backeum!";
+		    }
+		  }
+		}
+	      });
+            }
 	    non_fungibles_in_accounts[value.address][i]= non_fungible.resource_address + ' ' + id;
 	    if (non_fungible.resource_address == lsu_pool_receipt) {
               const nft7= document.querySelector<HTMLSelectElement>('#nft7');
@@ -1850,12 +1865,18 @@ document.querySelector<HTMLButtonElement>('#add_instruction17')!.addEventListene
   }
 
   const receive17= document.querySelector<HTMLSelectElement>('#receive17')!.value;
+  var fee_badge= "5";
+  var fee= "0.001"
+  if (donor) {
+    fee_badge= "6";
+    fee= "0";
+  }
   const body= JSON.stringify({
       fromTokenAddress: send17,
       fromTokenAmount: String(quantity17),
       toTokenAddress: receive17,
       maxSlippage: "1",
-      platformFee: "0.001"
+      platformFee: fee
   });
 
   fetch('https://api.alphadex.net/v0/quote/swap', {
@@ -1910,7 +1931,7 @@ document.querySelector<HTMLButtonElement>('#add_instruction17')!.addEventListene
           '    "swap"\n' +
           '    Bucket("bucket' + bucket_number++ + '")\n' +
 	  '    Decimal("100")\n' +
-	  '    5u32\n;\n';
+	  '    ' + fee_badge + 'u32\n;\n';
 	if (to_coin == receive17) {
 	  add_fungible_to_worktop(receive17, swaps.toAmount);
 	} else {
