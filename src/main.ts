@@ -271,7 +271,9 @@ rdt.walletApi.walletData$.subscribe((walletData) => {
 
 const validatorSelect4= document.querySelector<HTMLSelectElement>('#validator4');
 for (var validator of Object.keys(validators_you_can_stake_to)) {
-  validatorSelect4!.options[validatorSelect4!.options.length]= new Option(validators_names[validator].trim(), validator);
+  if (validator != "validator_rdx1sva6pmkgm5yacumw4p6k0xsfnqg598xkj9p4e2a58dl6gcrqpx7z86") {
+    validatorSelect4!.options[validatorSelect4!.options.length]= new Option(validators_names[validator].trim(), validator);
+  }
 }
 
 const lsuSelect8= document.querySelector<HTMLSelectElement>('#lsu8');
