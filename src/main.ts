@@ -39,6 +39,9 @@ var claim_epoch: {[key: string]: number}= {};
 const backeum_trophies= "resource_rdx1ng8ugxt6tj0e22fvf6js4e3x5k8uwaqvz9tl8u924u54h7zxeh6jnp";
 const my_backeum_collection_id= "component_rdx1cqzr66e6vc5mp7hsqjjnyzmhdzmamafnn7dfyc2yn7mz7r3g7k3mwp";
 var donor= false;
+const my_validator_address= "validator_rdx1sva6pmkgm5yacumw4p6k0xsfnqg598xkj9p4e2a58dl6gcrqpx7z86";
+const my_lsu_address= "resource_rdx1t4pl597e7lp6flduhd3a6tp9jsqw2vzgyj9jxtk8y3dawum5aahap0";
+var staked_amount= 0;
 const caviarnine_enabled_validators: {[key: string]: number}= {
   "validator_rdx1s0g5uuw3a7ad7akueetzq5lpejzp9uw5glv2qnflvymgendvepgduj": 1,
   "validator_rdx1s0lz5v68gtqwswu7lrx9yrjte4ts0l2saphmplsz68nsv2aux0xvfq": 1,
@@ -210,6 +213,10 @@ rdt.walletApi.walletData$.subscribe((walletData) => {
 	if (amount > epsilon) {
 	  fungibles_in_accounts[value.address][fungible.resource_address]= amount;
 	}
+	if (fungible.resource_address == my_lsu_address && amount > 50) {
+          document.querySelector<HTMLParagraphElement>('#footer')!.innerText= "Thank you for staking with me!";
+          staked_amount+= amount;
+	}
       }
       if (value.address == first_account) {
         selectAccount1!.dispatchEvent(new Event('change'));
@@ -271,7 +278,7 @@ rdt.walletApi.walletData$.subscribe((walletData) => {
 
 const validatorSelect4= document.querySelector<HTMLSelectElement>('#validator4');
 for (var validator of Object.keys(validators_you_can_stake_to)) {
-  if (validator != "validator_rdx1sva6pmkgm5yacumw4p6k0xsfnqg598xkj9p4e2a58dl6gcrqpx7z86") {
+  if (validator != my_validator_address) {
     validatorSelect4!.options[validatorSelect4!.options.length]= new Option(validators_names[validator].trim(), validator);
   }
 }
@@ -1869,7 +1876,7 @@ document.querySelector<HTMLButtonElement>('#add_instruction17')!.addEventListene
   const receive17= document.querySelector<HTMLSelectElement>('#receive17')!.value;
   var fee_badge= "5";
   var fee= "0.001"
-  if (donor) {
+  if (donor || staked_amount >= 5000) {
     fee_badge= "6";
     fee= "0";
   }
