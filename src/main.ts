@@ -22,7 +22,9 @@ var fungibles_symbols: {[key: string]: string}= {};
 var gable_loan_quantity= 0;
 var gable_loan_fees= 0.001;
 const gable_component= "component_rdx1cpmh7lyg0hx6efv5q79lv6rqxdqpuh27y99nzm0jpwu2u44ne243ws";
-const gable_nft= "resource_rdx1ngxzt7uq9l2wm5gd8vefcq5pkwcqwrn530a98p72mnkjzjev8hlxdn";
+const gable_transient_nft= "resource_rdx1ngxzt7uq9l2wm5gd8vefcq5pkwcqwrn530a98p72mnkjzjev8hlxdn";
+const gable_lsu= "resource_rdx1thrz4g8g83802lumrtrdsrhjd6k5uxhxhgkrwjg0jn75cvxfc99nap";
+const gable_liquidity_nft= "resource_rdx1nfxg3t4eyls2qycqqrp6df8wkz3n2r04ex20443jtsgz5c23wsf74w";
 var non_fungibles_symbols: {[key: string]: string}= {
   "resource_rdx1ngxzt7uq9l2wm5gd8vefcq5pkwcqwrn530a98p72mnkjzjev8hlxdn": "STT Gable Transient Token"
 };
@@ -597,19 +599,22 @@ document.querySelector<HTMLSelectElement>('#action')!.addEventListener("change",
   // --- GABLE ---
   document.querySelector<HTMLDivElement>('#div14')!.hidden= (this.selectedIndex != 18); //get flashloan
   document.querySelector<HTMLDivElement>('#div15')!.hidden= (this.selectedIndex != 19); //repay flashloan
-  if (this.selectedIndex == 15 && (gable_loan_quantity == 0)) {
+  document.querySelector<HTMLDivElement>('#div18')!.hidden= (this.selectedIndex != 20); //provide liquidity to Gable
+  if (this.selectedIndex == 19 && gable_loan_quantity == 0) {
     document.querySelector<HTMLParagraphElement>('#warn')!.innerHTML= "get a loan first";
+  } else if (this.selectedIndex == 20 && (fungibles_in_worktop[gable_lsu] == undefined || fungibles_in_worktop[gable_lsu] == 0)) {
+    document.querySelector<HTMLParagraphElement>('#warn')!.innerHTML= "put some Gable LSUs in the worktop first";
   }
 
   // --- DEFIPLAZA ---
-  document.querySelector<HTMLDivElement>('#div16')!.hidden= (this.selectedIndex != 21); //swap coins at DefiPlaza
-  if ((this.selectedIndex == 21) && document.querySelector<HTMLSelectElement>('#send16')!.options.length == 0 ) {
+  document.querySelector<HTMLDivElement>('#div16')!.hidden= (this.selectedIndex != 22); //swap coins at DefiPlaza
+  if ((this.selectedIndex == 22) && document.querySelector<HTMLSelectElement>('#send16')!.options.length == 0 ) {
     document.querySelector<HTMLParagraphElement>('#warn')!.innerHTML= "put some coin listed on DefiPlaza in the worktop first";
   }
 
   // --- ALPHADEX ---
-  document.querySelector<HTMLDivElement>('#div17')!.hidden= (this.selectedIndex != 23); //swap coins at AlphaDEX
-  if ((this.selectedIndex == 23) && document.querySelector<HTMLSelectElement>('#send17')!.options.length == 0 ) {
+  document.querySelector<HTMLDivElement>('#div17')!.hidden= (this.selectedIndex != 24); //swap coins at AlphaDEX
+  if ((this.selectedIndex == 24) && document.querySelector<HTMLSelectElement>('#send17')!.options.length == 0 ) {
     document.querySelector<HTMLParagraphElement>('#warn')!.innerHTML= "put some coin listed on AlphaDEX in the worktop first";
   }
 });
@@ -1705,7 +1710,7 @@ document.querySelector<HTMLButtonElement>('#add_instruction14')!.addEventListene
     '    Decimal("' + quantity + '")\n;\n';
   gable_loan_quantity= parseFloat(quantity);
   add_fungible_to_worktop(xrd, gable_loan_quantity);
-  add_non_fungible_to_worktop(gable_nft + ' ' + unknown_nft_id);
+  add_non_fungible_to_worktop(gable_transient_nft + ' ' + unknown_nft_id);
 });
 
 document.querySelector<HTMLButtonElement>('#add_instruction15')!.addEventListener("click", function() {
@@ -1728,7 +1733,7 @@ document.querySelector<HTMLButtonElement>('#add_instruction15')!.addEventListene
     '    Decimal("' + xrd_to_refund + '")\n' +
     '    Bucket("bucket' + bucket_number + '")\n;\n' +
     'TAKE_ALL_FROM_WORKTOP\n' +
-    '    Address("' + gable_nft + '")\n' +
+    '    Address("' + gable_transient_nft + '")\n' +
     '    Bucket("bucket' + (bucket_number + 1) + '")\n;\n' +
     'CALL_METHOD\n' +
     '    Address("' + gable_component + '")\n' +
@@ -1737,7 +1742,7 @@ document.querySelector<HTMLButtonElement>('#add_instruction15')!.addEventListene
     '    Bucket("bucket' + bucket_number++ + '")\n;\n';
   gable_loan_quantity= 0;
   remove_fungible_from_worktop(xrd, String(xrd_to_refund));
-  remove_non_fungible_from_worktop(gable_nft + ' ' + unknown_nft_id);
+  remove_non_fungible_from_worktop(gable_transient_nft + ' ' + unknown_nft_id);
 });
 
 document.querySelector<HTMLInputElement>('#send16')!.addEventListener("change", function() {
@@ -1951,6 +1956,59 @@ document.querySelector<HTMLButtonElement>('#add_instruction17')!.addEventListene
       }
     });
   });
+});
+
+document.querySelector<HTMLInputElement>('#all18')!.addEventListener("change", function() {
+  if (!document.querySelector<HTMLInputElement>('#all18')!.checked) {
+    if (fungibles_in_worktop[gable_lsu] != undefined) {
+      document.querySelector<HTMLInputElement>('#quantity18')!.value= String(fungibles_in_worktop[gable_lsu]);
+    }
+    document.querySelector<HTMLInputElement>('#quantity18')!.disabled= false;
+  } else {
+    document.querySelector<HTMLInputElement>('#quantity18')!.value= '';
+    document.querySelector<HTMLInputElement>('#quantity18')!.disabled= true;
+  }
+});
+
+document.querySelector<HTMLButtonElement>('#add_instruction18')!.addEventListener("click", async function() {
+  document.querySelector<HTMLParagraphElement>('#warn')!.innerHTML= "&nbsp;";
+
+  var quantity18: number;
+  if (document.querySelector<HTMLInputElement>('#all18')!.checked) {
+    quantity18= fungibles_in_worktop[gable_lsu];
+  } else {
+    const q= document.querySelector<HTMLSelectElement>('#quantity18')!.value;
+    if (!q.match(/^[0-9]+(\.[0-9]+)?$/)) {
+      document.querySelector<HTMLInputElement>('#warn')!.innerText= "invalid quantity!";
+      return false;
+    }
+    if (parseFloat(q) > fungibles_in_worktop[gable_lsu]) {
+      quantity18= fungibles_in_worktop[gable_lsu];
+    } else {
+      quantity18= parseFloat(q);
+    }
+  }
+
+  if (quantity18 == fungibles_in_worktop[gable_lsu]) {
+    remove_fungible_from_worktop(gable_lsu, '*');
+    document.querySelector<HTMLTextAreaElement>('#transaction_manifest')!.value+=
+      'TAKE_ALL_FROM_WORKTOP\n' +
+      '    Address("' + gable_lsu + '")\n' +
+      '    Bucket("bucket' + bucket_number + '")\n;\n';
+  } else {
+    remove_fungible_from_worktop(gable_lsu, String(quantity18));
+    document.querySelector<HTMLTextAreaElement>('#transaction_manifest')!.value+=
+      'TAKE_FROM_WORKTOP\n' +
+      '    Address("' + gable_lsu + '")\n' +
+      '    Decimal("' + quantity18 + '")\n' +
+      '    Bucket("bucket' + bucket_number + '")\n;\n';
+  }
+  document.querySelector<HTMLTextAreaElement>('#transaction_manifest')!.value+=
+    'CALL_METHOD\n' +
+    '    Address("' + gable_component + '")\n' +
+    '    "deposit_lsu"\n' +
+    '    Bucket("bucket' + bucket_number++ + '")\n;\n';
+  add_non_fungible_to_worktop(gable_liquidity_nft + ' ' + unknown_nft_id);
 });
 
 async function send_to_wallet() {
