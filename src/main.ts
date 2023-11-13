@@ -1880,17 +1880,15 @@ document.querySelector<HTMLButtonElement>('#add_instruction17')!.addEventListene
 
   const receive17= document.querySelector<HTMLSelectElement>('#receive17')!.value;
   var fee_badge= "5";
-  var fee= "0.001"
   if (donor || staked_amount >= 5000) {
     fee_badge= "6";
-    fee= "0";
   }
   const body= JSON.stringify({
       fromTokenAddress: send17,
       fromTokenAmount: String(quantity17),
       toTokenAddress: receive17,
       maxSlippage: "1",
-      platformFee: fee
+      platformId: fee_badge
   });
 
   fetch('https://api.alphadex.net/v0/quote/swap', {
