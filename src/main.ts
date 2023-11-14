@@ -6,7 +6,8 @@ import {GatewayApiClient, FungibleResourcesCollectionItemGloballyAggregated, Non
 import {validators_names, pool_units, claim_nft, validators_you_can_stake_to} from './validators.ts'
 import {ociswap_listed_coins, ociswap_lp_pools, ociswap_lp_names} from './ociswap.ts'
 import {defiplaza_listed_coins} from './defiplaza.ts'
-import {alphadex_listed_coins} from './alphadex'
+import {alphadex_listed_coins} from './alphadex.ts'
+import {radixplanet_listed_coins} from './radixplanet.ts'
 
 interface fungibles_array {[index: string]: number};
 interface fungibles_array_array {[index: string]: fungibles_array};
@@ -516,6 +517,9 @@ function find_fungible_symbol(resource: string) {
   }
   if (alphadex_listed_coins[resource] !== undefined) {
     return alphadex_listed_coins[resource];
+  }
+  if (radixplanet_listed_coins[resource] !== undefined) {
+    return radixplanet_listed_coins[resource];
   }
   return resource;
 }
