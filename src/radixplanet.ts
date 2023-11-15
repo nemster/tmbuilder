@@ -52,7 +52,7 @@ export const radixplanet_pools: {[key: string]: radixplanet_pool}= {
   "component_rdx1cruqpdzqdwwchr4c20wq9rrckm0g7dg6k06lkfsp7y2wlhpnk7qtkq": {name: "wBTC_IDA", resources: ["resource_rdx1tkmwanknxau3f62kvufsk7sn80gaqhtllz8dasuq2en7nzdfka4t2t", "resource_rdx1tht8xmacjp30r9s8ymw2m200munnq78ja2dpaza8k9frpncaz94t88"], fees: 0.009, lp: ""},
   "component_rdx1cz2pu2cymeuh2fqpc52venkw49657rqy0vhgnwymqyvqpyw72vcktj": {name: "wBTC_FLOOP", resources: ["resource_rdx1t5pyvlaas0ljxy0wytm5gvyamyv896m69njqdmm2stukr3xexc2up9", "resource_rdx1tht8xmacjp30r9s8ymw2m200munnq78ja2dpaza8k9frpncaz94t88"], fees: 0.009, lp: ""},
   "component_rdx1cr6c0myfwrjgj0sytujsajze7c83kgdpj6nu0puxkd4v7pwyj46tfu": {name: "wBTC_DFP2", resources: ["resource_rdx1t5ywq4c6nd2lxkemkv4uzt8v7x7smjcguzq5sgafwtasa6luq7fclq", "resource_rdx1tht8xmacjp30r9s8ymw2m200munnq78ja2dpaza8k9frpncaz94t88"], fees: 0.009, lp: ""},
-  "component_rdx1cpm5ufq9r68fdntrlct9esdamd6krunmlq8pqg5a9ggrddqgjqq9ej": {name: "XRD_FLOOP_PLANET", resources: ["resource_rdx1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxradxrd", "resource_rdx1t5pyvlaas0ljxy0wytm5gvyamyv896m69njqdmm2stukr3xexc2up9"], fees: 0.009, lp: "resource_rdx1th8wh9ufdlrzuzgqhayyyt5qpkmaw8edhxkxapcyswwcax7udrrv4u"},
+  "component_rdx1cpm5ufq9r68fdntrlct9esdamd6krunmlq8pqg5a9ggrddqgjqq9ej": {name: "XRD_FLOOP_PLANET", resources: ["resource_rdx1t5pyvlaas0ljxy0wytm5gvyamyv896m69njqdmm2stukr3xexc2up9", "resource_rdx1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxradxrd"], fees: 0.009, lp: "resource_rdx1th8wh9ufdlrzuzgqhayyyt5qpkmaw8edhxkxapcyswwcax7udrrv4u"},
 };
 export const radixplanet_listed_coins: {[key: string]: string}= {
   "resource_rdx1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxradxrd": "XRD Radix",
