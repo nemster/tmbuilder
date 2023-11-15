@@ -19,7 +19,10 @@ var non_fungibles_in_worktop= [] as string[];
 var fungibles_in_accounts: fungibles_array_array= {};
 var non_fungibles_in_accounts: non_fungibles_array_array= {};
 const xrd= 'resource_rdx1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxradxrd';
-var fungibles_symbols: {[key: string]: string}= {};
+const weft= "resource_rdx1tk3fxrz75ghllrqhyq8e574rkf4lsq2x5a0vegxwlh3defv225cth3";
+var fungibles_symbols: {[key: string]: string}= {
+  "resource_rdx1tk3fxrz75ghllrqhyq8e574rkf4lsq2x5a0vegxwlh3defv225cth3": "WEFT Weft Finance"
+};
 var gable_loan_quantity= 0;
 var gable_loan_fees= 0.001;
 const gable_component= "component_rdx1cpmh7lyg0hx6efv5q79lv6rqxdqpuh27y99nzm0jpwu2u44ne243ws";
@@ -27,7 +30,8 @@ const gable_transient_nft= "resource_rdx1ngxzt7uq9l2wm5gd8vefcq5pkwcqwrn530a98p7
 const gable_lsu= "resource_rdx1thrz4g8g83802lumrtrdsrhjd6k5uxhxhgkrwjg0jn75cvxfc99nap";
 const gable_liquidity_nft= "resource_rdx1nfxg3t4eyls2qycqqrp6df8wkz3n2r04ex20443jtsgz5c23wsf74w";
 var non_fungibles_symbols: {[key: string]: string}= {
-  "resource_rdx1ngxzt7uq9l2wm5gd8vefcq5pkwcqwrn530a98p72mnkjzjev8hlxdn": "STT Gable Transient Token"
+  "resource_rdx1ngxzt7uq9l2wm5gd8vefcq5pkwcqwrn530a98p72mnkjzjev8hlxdn": "STT Gable Transient Token",
+  "resource_rdx1nt3vrt8xtdal6gn7ddv0zfzvxpqylxyfmr97setz8r3amhhk90yqmg": "Weft Claimer Nft"
 };
 const defiplaza_component= "component_rdx1cze7e7437y9pmntk94w72eyanngw522j8yf07aa27frn63m9ezkfeu";
 var bucket_number= 1;
@@ -45,6 +49,7 @@ var donor= false;
 const my_validator_address= "validator_rdx1sva6pmkgm5yacumw4p6k0xsfnqg598xkj9p4e2a58dl6gcrqpx7z86";
 const my_lsu_address= "resource_rdx1t4pl597e7lp6flduhd3a6tp9jsqw2vzgyj9jxtk8y3dawum5aahap0";
 var staked_amount= 0;
+const weft_claimer_nft= "resource_rdx1nt3vrt8xtdal6gn7ddv0zfzvxpqylxyfmr97setz8r3amhhk90yqmg";
 const caviarnine_enabled_validators: {[key: string]: number}= {
   "validator_rdx1s0g5uuw3a7ad7akueetzq5lpejzp9uw5glv2qnflvymgendvepgduj": 1,
   "validator_rdx1s0lz5v68gtqwswu7lrx9yrjte4ts0l2saphmplsz68nsv2aux0xvfq": 1,
@@ -236,7 +241,11 @@ rdt.walletApi.walletData$.subscribe((walletData) => {
 	    while (non_fungibles_in_accounts[value.address][i] != undefined) {
 	      i++;
 	    }
-            if (non_fungible.resource_address == backeum_trophies) {
+	    non_fungibles_in_accounts[value.address][i]= non_fungible.resource_address + ' ' + id;
+	    if (non_fungible.resource_address == weft_claimer_nft) {
+	      const nft20= document.querySelector<HTMLSelectElement>('#nft20');
+	      nft20!.options[nft20!.options.length]= new Option(id, value.address + ' ' + id);
+	    } else if (non_fungible.resource_address == backeum_trophies) {
               get_non_fungible_data(backeum_trophies, id).then((v) => {
                 for (var nf of v.non_fungible_ids) {
                   for (var field of (<ProgrammaticScryptoSborValueTuple>nf.data!.programmatic_json).fields) {
@@ -247,14 +256,13 @@ rdt.walletApi.walletData$.subscribe((walletData) => {
 		  }
 		}
 	      });
-            }
-	    non_fungibles_in_accounts[value.address][i]= non_fungible.resource_address + ' ' + id;
-	    if (non_fungible.resource_address == lsu_pool_receipt) {
+            } else if (non_fungible.resource_address == lsu_pool_receipt) {
               const nft7= document.querySelector<HTMLSelectElement>('#nft7');
 	      nft7!.options[nft7!.options.length]= new Option(id, value.address + ' ' + id);
               const nft8= document.querySelector<HTMLSelectElement>('#nft8');
 	      nft8!.options[nft8!.options.length]= new Option(id, value.address + ' ' + id);
 	    }
+// value.address should be non_fungible.resource_address ???
 	    if (claim_nft[value.address] != undefined) {
 	      get_non_fungible_data(value.address, id).then((v) => {
 		for (var nf of v.non_fungible_ids) {
@@ -644,6 +652,12 @@ document.querySelector<HTMLSelectElement>('#action')!.addEventListener("change",
   document.querySelector<HTMLDivElement>('#div19')!.hidden= (this.selectedIndex != 26); //swap coins at RadixPlanet
   if ((this.selectedIndex == 26) && document.querySelector<HTMLSelectElement>('#send19')!.options.length == 0 ) {
     document.querySelector<HTMLParagraphElement>('#warn')!.innerHTML= "put some coin listed on RadixPlanet in the worktop first";
+  }
+
+  // --- WEFT ---
+  document.querySelector<HTMLDivElement>('#div20')!.hidden= (this.selectedIndex != 28); //redeem your WEFT
+  if ((this.selectedIndex == 28) && document.querySelector<HTMLSelectElement>('#nft20')!.options.length == 0 ) {
+    document.querySelector<HTMLParagraphElement>('#warn')!.innerHTML= "you don't have a Weft Claimer NFT";
   }
 });
 
@@ -2150,6 +2164,36 @@ document.querySelector<HTMLButtonElement>('#add_instruction19')!.addEventListene
       '        )\n' +
       '    )\n;\n';
   });
+});
+
+document.querySelector<HTMLButtonElement>('#add_instruction20')!.addEventListener("click", function() {
+  const nft= document.querySelector<HTMLSelectElement>('#nft20')!.value;
+  if (nft) {
+    document.querySelector<HTMLParagraphElement>('#warn')!.innerHTML= "&nbsp;";
+  } else {
+    document.querySelector<HTMLParagraphElement>('#warn')!.innerHTML= "you don't have a Weft Claimer NFT";
+    return false;
+  }
+
+  const a_i= nft.split(' ');
+
+  document.querySelector<HTMLTextAreaElement>('#transaction_manifest')!.value+=
+    'CALL_METHOD\n' +
+    '    Address("' + a_i[0] + '")\n' +
+    '    "create_proof_of_non_fungibles"\n' +
+    '    Address("' + weft_claimer_nft + '")\n' +
+    '    Array<NonFungibleLocalId>(\n' +
+    '        NonFungibleLocalId("' + a_i[1] + '")\n' +
+    '    )\n;\n' +
+    'POP_FROM_AUTH_ZONE\n' +
+    '    Proof("proof' + proof_number + '")\n;\n' +
+    'CALL_METHOD\n' +
+    '    Address("component_rdx1crys4t0nvfjzwvsa2pt3zgsmaaaqql8squkannhzcfh36j6u993dnz")\n' +
+    '    "claim"\n' +
+    '    1u8\n' +
+    '    Decimal("1")\n' +
+    '    Proof("proof' + proof_number++ + '")\n;\n';
+  add_fungible_to_worktop(weft, 0);
 });
 
 async function send_to_wallet() {
