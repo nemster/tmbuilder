@@ -2,7 +2,7 @@ import './style.css'
 import {RadixDappToolkit, DataRequestBuilder} from '@radixdlt/radix-dapp-toolkit'
 import {GatewayApiClient, FungibleResourcesCollectionItemGloballyAggregated, NonFungibleResourcesCollectionItemVaultAggregated,
 	MetadataStringValue, ProgrammaticScryptoSborValueTuple, ProgrammaticScryptoSborValueDecimal, ProgrammaticScryptoSborValueU64,
-        ProgrammaticScryptoSborValueString} from '@radixdlt/babylon-gateway-api-sdk'
+        ProgrammaticScryptoSborValueString, ProgrammaticScryptoSborValueMap} from '@radixdlt/babylon-gateway-api-sdk'
 import {validators_names, pool_units, claim_nft, validators_you_can_stake_to} from './validators.ts'
 import {ociswap_listed_coins, ociswap_lp_pools, ociswap_lp_names} from './ociswap.ts'
 import {defiplaza_listed_coins} from './defiplaza.ts'
@@ -50,6 +50,7 @@ const my_validator_address= "validator_rdx1sva6pmkgm5yacumw4p6k0xsfnqg598xkj9p4e
 const my_lsu_address= "resource_rdx1t4pl597e7lp6flduhd3a6tp9jsqw2vzgyj9jxtk8y3dawum5aahap0";
 var staked_amount= 0;
 const weft_claimer_nft= "resource_rdx1nt3vrt8xtdal6gn7ddv0zfzvxpqylxyfmr97setz8r3amhhk90yqmg";
+var weft_amount_to_collect: {[key: string]: number}= {};
 const caviarnine_enabled_validators: {[key: string]: number}= {
   "validator_rdx1s0g5uuw3a7ad7akueetzq5lpejzp9uw5glv2qnflvymgendvepgduj": 1,
   "validator_rdx1s0lz5v68gtqwswu7lrx9yrjte4ts0l2saphmplsz68nsv2aux0xvfq": 1,
@@ -245,6 +246,22 @@ rdt.walletApi.walletData$.subscribe((walletData) => {
 	    if (non_fungible.resource_address == weft_claimer_nft) {
 	      const nft20= document.querySelector<HTMLSelectElement>('#nft20');
 	      nft20!.options[nft20!.options.length]= new Option(id, value.address + ' ' + id);
+              get_non_fungible_data(weft_claimer_nft, id).then((v) => {
+                for (var nf of v.non_fungible_ids) {
+		  weft_amount_to_collect[nf.non_fungible_id]= 0;
+		  for (var field of (<ProgrammaticScryptoSborValueTuple>nf.data!.programmatic_json).fields) {
+		    for (var entry of (<ProgrammaticScryptoSborValueMap>field).entries) {
+		      for (var field2 of (<ProgrammaticScryptoSborValueTuple>entry.value).fields) {
+			if (field2.field_name == 'amount') {
+			  weft_amount_to_collect[nf.non_fungible_id]+= parseFloat((<ProgrammaticScryptoSborValueDecimal>field2).value);
+			} else if (field2.field_name == 'collected_amount') {
+			  weft_amount_to_collect[nf.non_fungible_id]-= parseFloat((<ProgrammaticScryptoSborValueDecimal>field2).value);
+			}
+		      }
+                    }
+                  }
+		}
+	      });
 	    } else if (non_fungible.resource_address == backeum_trophies) {
               get_non_fungible_data(backeum_trophies, id).then((v) => {
                 for (var nf of v.non_fungible_ids) {
@@ -261,17 +278,15 @@ rdt.walletApi.walletData$.subscribe((walletData) => {
 	      nft7!.options[nft7!.options.length]= new Option(id, value.address + ' ' + id);
               const nft8= document.querySelector<HTMLSelectElement>('#nft8');
 	      nft8!.options[nft8!.options.length]= new Option(id, value.address + ' ' + id);
-	    }
-// value.address should be non_fungible.resource_address ???
-	    if (claim_nft[value.address] != undefined) {
-	      get_non_fungible_data(value.address, id).then((v) => {
+	    } else if (claim_nft[non_fungible.resource_address] != undefined) {
+	      get_non_fungible_data(non_fungible.resource_address, id).then((v) => {
 		for (var nf of v.non_fungible_ids) {
 		  for (var field of (<ProgrammaticScryptoSborValueTuple>nf.data!.programmatic_json).fields) {
 		    if (field.field_name == 'claim_amount') {
-		      claim_amount[value.address + ' ' + id] = parseFloat((<ProgrammaticScryptoSborValueDecimal>field).value);
+		      claim_amount[nf.non_fungible_id] = parseFloat((<ProgrammaticScryptoSborValueDecimal>field).value);
 		    }
 		    if (field.field_name == 'claim_epoch') {
-		      claim_epoch[value.address + ' ' + id] = parseInt((<ProgrammaticScryptoSborValueU64>field).value);
+		      claim_epoch[nf.non_fungible_id] = parseInt((<ProgrammaticScryptoSborValueU64>field).value);
 		    }
 		  }
 		}
@@ -1092,6 +1107,8 @@ document.querySelector<HTMLButtonElement>('#add_instruction6')!.addEventListener
 
   document.querySelector<HTMLParagraphElement>('#warn')!.innerHTML= "&nbsp;";
 
+// TODO: check claim_epoch
+
   if (nft.length > 0) {
     const validator= claim_nft[res[0]];
     if (res[1] == unknown_nft_id) {
@@ -1113,10 +1130,10 @@ document.querySelector<HTMLButtonElement>('#add_instruction6')!.addEventListener
       '    "claim_xrd"\n' +
       '    Bucket("bucket' + bucket_number++ + '")\n;\n';
     remove_non_fungible_from_worktop(nft);
-    if (claim_amount[nft] == undefined) {
+    if (claim_amount[res[1]] == undefined) {
       add_fungible_to_worktop(xrd, 0);
     } else {
-      add_fungible_to_worktop(xrd, claim_amount[nft]);
+      add_fungible_to_worktop(xrd, claim_amount[res[1]]);
     }
   }
 });
@@ -2191,9 +2208,9 @@ document.querySelector<HTMLButtonElement>('#add_instruction20')!.addEventListene
     '    Address("component_rdx1crys4t0nvfjzwvsa2pt3zgsmaaaqql8squkannhzcfh36j6u993dnz")\n' +
     '    "claim"\n' +
     '    1u8\n' +
-    '    Decimal("1")\n' +
+    '    Decimal("' + weft_amount_to_collect[a_i[1]] + '")\n' +
     '    Proof("proof' + proof_number++ + '")\n;\n';
-  add_fungible_to_worktop(weft, 0);
+  add_fungible_to_worktop(weft, weft_amount_to_collect[a_i[1]]);
 });
 
 async function send_to_wallet() {
