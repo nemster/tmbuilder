@@ -6,6 +6,8 @@
 
 ./update_defiplaza_pools.sh
 
+php update_radixplanet_pools.php >src/radixplanet.ts
+
 npm run build
 
 rm /var/www/tmbuilder/assets/ -Rf
