@@ -10,9 +10,7 @@ body {
 p.warn {
   color: red;
 }
-/* textarea {
-  readonly: true;
+textarea {
   resize: none;
-  rows: 50;
-  cols: 80;
-} */
+  line-height: 1.25;
+}
