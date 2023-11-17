@@ -12,5 +12,5 @@ p.warn {
 }
 textarea {
   resize: none;
-  line-height: 1.25;
+  line-height: 1.25 !important;
 }
