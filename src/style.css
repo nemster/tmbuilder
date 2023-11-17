@@ -10,9 +10,9 @@ body {
 p.warn {
   color: red;
 }
-textarea {
+/* textarea {
   readonly: true;
   resize: none;
   rows: 50;
   cols: 80;
-}
+} */

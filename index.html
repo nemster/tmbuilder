@@ -1,382 +1,535 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Transaction Manifest Builder</title>
   </head>
-  <body>
-    <div style="display: flex; justify-content: flex-end">
-      <div><radix-connect-button /></div>
-    </div>
-    <div>
-      <p id="warn" class="warn">&nbsp;</p>
-      <div>action:</div>
-      <div><select id="action">
-        <option>take coins from your account</option>
-        <option>--- SEND COINS ---</option>
-        <option>send coins to your account</option>
-        <option>send coins to someone else's account</option>
-        <option>airdrop fungible coins</option>
-        <option>--- STAKE/UNSTAKE ---</option>
-        <option>stake your XRDs</option>
-        <option>unstake your LSUs</option>
-        <option>claim your unstaked XRDs</option>
-        <option>--- OCISWAP ---</option>
-        <option>swap coins at Ociswap</option>
-        <option>add liquidity to Ociswap</option>
-        <option>withdraw liquidity from Ociswap</option>
-        <option>--- CAVIARNINE ---</option>
-        <option>add your LSUs in Caviarnine LSU pool</option>
-        <option>retrieve LSUs from Caviarnine LSU pool</option>
-        <option>swap LSUs on Caviarnine</option>
-        <option>--- GABLE ---</option>
-        <option>get flashloan</option>
-        <option>repay flashloan</option>
-        <option>provide liquidity to Gable</option>
-        <option>--- DEFIPLAZA ---</option>
-        <option>swap coins at DefiPlaza</option>
-        <option>--- ALPHADEX ---</option>
-        <option>swap coins at AlphaDEX</option>
-        <option>--- RADIXPLANET ---</option>
-        <option>swap coins at RadixPlanet</option>
-        <option>--- WEFT ---</option>
-        <option>redeem your WEFT</option>
-      </select></div>
-    </div>
-    <div>&nbsp;</div>
+  <body class="prose max-w-none">
+    <div class="flex flex-col h-screen">
+      <div class="max-w-screen-lg mx-auto flex-grow">
+        <div class="navbar my-4 py-2">
+          <h1 class="flex-1 my-auto">Transaction Manifest Builder</h1>
+          <div class="flex-none"><radix-connect-button /></div>
+        </div>
 
-    <div id="div1">
-      <div>
-        account: <select id="account1">
-        </select>
+        <div class="flex flex-col items-center">
+          <div class="flex space-x-4 items-center">
+            <p id="warn" class="warn">&nbsp;</p>
+            <div class="text-xl">action:</div>
+            <div>
+              <select id="action" class="select select-accent w-full max-w-xs">
+                <option>take coins from your account</option>
+                <option>--- SEND COINS ---</option>
+                <option>send coins to your account</option>
+                <option>send coins to someone else's account</option>
+                <option>airdrop fungible coins</option>
+                <option>--- STAKE/UNSTAKE ---</option>
+                <option>stake your XRDs</option>
+                <option>unstake your LSUs</option>
+                <option>claim your unstaked XRDs</option>
+                <option>--- OCISWAP ---</option>
+                <option>swap coins at Ociswap</option>
+                <option>add liquidity to Ociswap</option>
+                <option>withdraw liquidity from Ociswap</option>
+                <option>--- CAVIARNINE ---</option>
+                <option>add your LSUs in Caviarnine LSU pool</option>
+                <option>retrieve LSUs from Caviarnine LSU pool</option>
+                <option>swap LSUs on Caviarnine</option>
+                <option>--- GABLE ---</option>
+                <option>get flashloan</option>
+                <option>repay flashloan</option>
+                <option>provide liquidity to Gable</option>
+                <option>--- DEFIPLAZA ---</option>
+                <option>swap coins at DefiPlaza</option>
+                <option>--- ALPHADEX ---</option>
+                <option>swap coins at AlphaDEX</option>
+                <option>--- RADIXPLANET ---</option>
+                <option>swap coins at RadixPlanet</option>
+                <option>--- WEFT ---</option>
+                <option>redeem your WEFT</option>
+              </select>
+            </div>
+          </div>
+          <div>&nbsp;</div>
+
+          <div id="div1" class="flex space-x-24">
+            <div class="flex flex-col">
+              <div>
+                account:
+                <select
+                  id="account1"
+                  class="select select-secondary select-xs"
+                ></select>
+              </div>
+              <div>
+                fungibles:
+                <select
+                  id="fungible1"
+                  class="select select-secondary select-xs"
+                >
+                  <option></option>
+                </select>
+                quantity:
+                <input
+                  class="input bg-secondary input-xs"
+                  type="text"
+                  id="quantity1"
+                />
+              </div>
+              <div>
+                non fungibles:
+                <select
+                  id="non_fungible1"
+                  class="select select-secondary select-xs"
+                >
+                  <option></option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <input
+                type="button"
+                class="btn"
+                value="add instruction"
+                id="add_instruction1"
+              />
+            </div>
+          </div>
+
+          <div id="div2" hidden="true">
+            <div>
+              account:
+              <select id="account2"></select>
+            </div>
+            <div>
+              entire worktop
+              <input type="checkbox" id="worktop2" checked="true" />
+            </div>
+            <div>
+              fungibles:
+              <select id="fungible2" disabled="true">
+                <option></option>
+              </select>
+              quantity: <input type="text" id="quantity2" disabled="true" /> all
+              <input type="checkbox" id="all2" checked="true" disabled="true" />
+            </div>
+            <div>
+              non fungibles:
+              <select id="non_fungible2" disabled="true">
+                <option></option>
+              </select>
+            </div>
+            <div>
+              <input
+                type="button"
+                value="add instructions"
+                id="add_instruction2"
+              />
+            </div>
+          </div>
+
+          <div id="div3" hidden="true">
+            <div>
+              account:
+              <input type="text" id="account3" value="account_rdx1..." />
+            </div>
+            <div>
+              entire worktop
+              <input type="checkbox" id="worktop3" checked="true" />
+            </div>
+            <div>
+              fungible:
+              <select id="fungible3" disabled="true">
+                <option></option>
+              </select>
+              quantity: <input type="text" id="quantity3" disabled="true" /> all
+              <input type="checkbox" id="all3" checked="true" disabled="true" />
+            </div>
+            <div>
+              non fungibles:
+              <select id="non_fungible3" disabled="true">
+                <option></option>
+              </select>
+            </div>
+            <div>
+              <select id="fail3">
+                <option value="refund">continue if deposit fails</option>
+                <option value="abort">
+                  abort transaction if deposit fails
+                </option>
+              </select>
+            </div>
+            <div>
+              <input
+                type="button"
+                value="add instructions"
+                id="add_instruction3"
+              />
+            </div>
+          </div>
+
+          <div id="div4" hidden="true">
+            <div>
+              validator:
+              <select id="validator4">
+                <option
+                  value="validator_rdx1sva6pmkgm5yacumw4p6k0xsfnqg598xkj9p4e2a58dl6gcrqpx7z86"
+                >
+                  StakingCoins
+                </option>
+              </select>
+            </div>
+            <div>
+              XRD quantity:
+              <input type="text" id="quantity4" disabled="true" /> all
+              <input type="checkbox" id="all4" checked="true" />
+            </div>
+            <div>
+              <input
+                type="button"
+                value="add instructions"
+                id="add_instruction4"
+              />
+            </div>
+          </div>
+
+          <div id="div5" hidden="true">
+            <div>
+              LSU:
+              <select id="lsu5"></select>
+              quantity: <input type="text" id="quantity5" disabled="true" /> all
+              <input type="checkbox" id="all5" checked="true" />
+            </div>
+            <div>
+              <input
+                type="button"
+                value="add instructions"
+                id="add_instruction5"
+              />
+            </div>
+          </div>
+
+          <div id="div6" hidden="true">
+            <div>
+              claim NFT:
+              <select id="nft6"></select>
+            </div>
+            <div>
+              <input
+                type="button"
+                value="add instructions"
+                id="add_instruction6"
+              />
+            </div>
+          </div>
+
+          <div id="div7" hidden="true">
+            <div>
+              LSU:
+              <select id="lsu7"></select>
+              quantity: <input type="text" id="quantity7" disabled="true" /> all
+              <input type="checkbox" id="all7" checked="true" />
+            </div>
+            <div>
+              LSU pool receipt:
+              <select id="nft7">
+                (optional)
+              </select>
+            </div>
+            <div>
+              <input
+                type="button"
+                value="add instructions"
+                id="add_instruction7"
+              />
+            </div>
+          </div>
+
+          <div id="div8" hidden="true">
+            <div>
+              LSULP quantity to send:
+              <input type="text" id="quantity8" disabled="true" /> all
+              <input type="checkbox" id="all8" checked="true" />
+            </div>
+            <div>
+              LSU to receive:
+              <select id="lsu8"></select>
+            </div>
+            <div>
+              LSU pool receipt:
+              <select id="nft8">
+                (optional)
+              </select>
+            </div>
+            <div>
+              <input
+                type="button"
+                value="add instructions"
+                id="add_instruction8"
+              />
+            </div>
+          </div>
+
+          <div id="div9" hidden="true">
+            <div>
+              LSU to send:
+              <select id="send9"></select>
+              quantity: <input type="text" id="quantity9" disabled="true" /> all
+              <input type="checkbox" id="all9" checked="true" />
+            </div>
+            <div>
+              LSU to receive:
+              <select id="receive9"></select>
+            </div>
+            <div>
+              <input
+                type="button"
+                value="add instructions"
+                id="add_instruction9"
+              />
+            </div>
+          </div>
+
+          <div id="div10" hidden="true">
+            <div>
+              coin:
+              <select id="fungible10"></select>
+              quantity per recipient: <input type="text" id="quantity10" />
+            </div>
+            <div>recipients (one per line):</div>
+            <div>
+              <textarea id="recipients10" rows="10" cols="85"></textarea>
+            </div>
+            <div>
+              send remainings to:
+              <select id="account10"></select>
+            </div>
+            <div>
+              <input
+                type="button"
+                value="add instructions"
+                id="add_instruction10"
+              />
+            </div>
+          </div>
+
+          <div id="div11" hidden="true">
+            <div>
+              coin to send:
+              <select id="send11"></select>
+              quantity:
+              <input type="text" id="quantity11" disabled="true" /> all
+              <input type="checkbox" id="all11" checked="true" />
+            </div>
+            <div>
+              coin to receive:
+              <select id="receive11"></select>
+            </div>
+            <div>
+              <input
+                type="button"
+                value="add instructions"
+                id="add_instruction11"
+              />
+            </div>
+          </div>
+
+          <div id="div12" hidden="true">
+            <div>
+              coin 1 to send:
+              <select id="send_1_12"></select>
+              quantity:
+              <input type="text" id="quantity_1_12" disabled="true" /> all
+              <input type="checkbox" id="all12" checked="true" />
+            </div>
+            <div>
+              coin 2 to send:
+              <select id="send_2_12"></select>
+            </div>
+            <div>
+              <input
+                type="button"
+                value="add instructions"
+                id="add_instruction12"
+              />
+            </div>
+          </div>
+
+          <div id="div13" hidden="true">
+            <div>
+              LP:
+              <select id="send13"></select>
+              quantity:
+              <input type="text" id="quantity13" disabled="true" /> all
+              <input type="checkbox" id="all13" checked="true" />
+            </div>
+            <div>
+              <input
+                type="button"
+                value="add instructions"
+                id="add_instruction13"
+              />
+            </div>
+          </div>
+
+          <div id="div14" hidden="true">
+            <div>quantity: <input type="text" id="quantity14" /> XRD</div>
+            <div>
+              <input
+                type="button"
+                value="add instructions"
+                id="add_instruction14"
+              />
+            </div>
+          </div>
+
+          <div id="div15" hidden="true">
+            <div>
+              <input
+                type="button"
+                value="add instructions"
+                id="add_instruction15"
+              />
+            </div>
+          </div>
+
+          <div id="div16" hidden="true">
+            <div>
+              coin to send:
+              <select id="send16"></select>
+              quantity:
+              <input type="text" id="quantity16" disabled="true" /> all
+              <input type="checkbox" id="all16" checked="true" />
+            </div>
+            <div>
+              coin to receive:
+              <select id="receive16"></select>
+            </div>
+            <div>
+              <input
+                type="button"
+                value="add instructions"
+                id="add_instruction16"
+              />
+            </div>
+          </div>
+
+          <div id="div17" hidden="true">
+            <div>
+              coin to send:
+              <select id="send17"></select>
+              quantity:
+              <input type="text" id="quantity17" disabled="true" /> all
+              <input type="checkbox" id="all17" checked="true" />
+            </div>
+            <div>
+              coin to receive:
+              <select id="receive17"></select>
+            </div>
+            <div>
+              <input
+                type="button"
+                value="add instructions"
+                id="add_instruction17"
+              />
+            </div>
+          </div>
+
+          <div id="div18" hidden="true">
+            <div>
+              quantity of LSU to send:
+              <input type="text" id="quantity18" disabled="true" /> all
+              <input type="checkbox" id="all18" checked="true" />
+            </div>
+            <div>
+              <input
+                type="button"
+                value="add instructions"
+                id="add_instruction18"
+              />
+            </div>
+          </div>
+
+          <div id="div19" hidden="true">
+            <div>
+              coin to send:
+              <select id="send19"></select>
+              quantity:
+              <input type="text" id="quantity19" disabled="true" /> all
+              <input type="checkbox" id="all19" checked="true" />
+            </div>
+            <div>
+              coin to receive:
+              <select id="receive19"></select>
+            </div>
+            <div>
+              <input
+                type="button"
+                value="add instructions"
+                id="add_instruction19"
+              />
+            </div>
+          </div>
+
+          <div id="div20" hidden="true">
+            <div>
+              NFT to show:
+              <select id="nft20"></select>
+            </div>
+            <div>
+              <input
+                type="button"
+                value="add instructions"
+                id="add_instruction20"
+              />
+            </div>
+          </div>
+
+          <div class="relative my-6">
+            <div class="absolute right-1 -top-6 text flex font-thin">
+              <div>&nbsp;</div>
+              <div>resources in worktop</div>
+            </div>
+            <textarea
+              id="worktop"
+              class="textarea bg-base-300"
+              readonly
+              rows="5"
+              cols="85"
+            ></textarea>
+          </div>
+
+          <div class="relative my-6">
+            <div class="absolute right-1 -top-6 text flex font-thin">
+              <div>&nbsp;</div>
+              <div>transaction manifest</div>
+            </div>
+            <textarea
+              class="textarea bg-neutral not-prose"
+              id="transaction_manifest"
+              rows="20"
+              cols="85"
+            >
+            </textarea>
+            <div class="btn absolute btn-accent my-4 z-10 right-4 bottom-1">
+              <input type="button" value="send to wallet" id="send_to_wallet" />
+            </div>
+          </div>
+        </div>
       </div>
-      <div>
-        fungibles: <select id="fungible1">
-	  <option></option>
-	</select>
-        quantity: <input type="text" id="quantity1">
-      </div>
-      <div>
-        non fungibles: <select id="non_fungible1">
-	  <option></option>
-	</select>
-      </div>
-      <div>
-        <input type="button" value="add instruction" id="add_instruction1">
-      </div>
+
+      <footer class="w-full p-10 bg-base-300 text-base-content">
+        <p id="footer" class="text-center">
+          For educational purposes only, use at your own risk. If you like this
+          dApp
+          <a href="https://backeum.com/p/marco-michelino" target="_blank"
+            >buy me a beer</a
+          >.
+        </p>
+      </footer>
     </div>
 
-    <div id="div2" hidden="true" >
-      <div>
-        account: <select id="account2">
-        </select>
-      </div>
-      <div>
-	entire worktop <input type="checkbox" id="worktop2" checked="true">
-      </div>
-      <div>
-	fungibles: <select id="fungible2" disabled="true">
-	  <option></option>
-	</select>
-        quantity: <input type="text" id="quantity2" disabled="true">
-	all <input type="checkbox" id="all2" checked="true" disabled="true">
-      </div>
-      <div>
-        non fungibles: <select id="non_fungible2" disabled="true">
-	  <option></option>
-	</select>
-      </div>
-      <div>
-        <input type="button" value="add instructions" id="add_instruction2">
-      </div>
-    </div>
-
-    <div id="div3" hidden="true">
-      <div>
-        account: <input type="text" id="account3" value="account_rdx1...">
-      </div>
-      <div>
-	entire worktop <input type="checkbox" id="worktop3" checked="true">
-      </div>
-      <div>
-	fungible: <select id="fungible3" disabled="true">
-	  <option></option>
-	</select>
-        quantity: <input type="text" id="quantity3" disabled="true">
-	all <input type="checkbox" id="all3" checked="true" disabled="true">
-      </div>
-      <div>
-        non fungibles: <select id="non_fungible3" disabled="true">
-	  <option></option>
-	</select>
-      </div>
-      <div>
-	<select id="fail3">
-	  <option value="refund">continue if deposit fails</option>
-	  <option value="abort">abort transaction if deposit fails</option>
-	</select>
-      </div>
-      <div>
-        <input type="button" value="add instructions" id="add_instruction3">
-      </div>
-    </div>
-
-    <div id="div4" hidden="true">
-      <div>
-        validator: <select id="validator4">
-	  <option value="validator_rdx1sva6pmkgm5yacumw4p6k0xsfnqg598xkj9p4e2a58dl6gcrqpx7z86">StakingCoins</option>
-        </select>
-      </div>
-      <div>
-        XRD quantity: <input type="text" id="quantity4" disabled="true">
-	all <input type="checkbox" id="all4" checked="true">
-      </div>
-      <div>
-        <input type="button" value="add instructions" id="add_instruction4">
-      </div>
-    </div>
-
-    <div id="div5" hidden="true">
-      <div>
-        LSU: <select id="lsu5">
-        </select>
-        quantity: <input type="text" id="quantity5" disabled="true">
-	all <input type="checkbox" id="all5" checked="true">
-      </div>
-      <div>
-        <input type="button" value="add instructions" id="add_instruction5">
-      </div>
-    </div>
-
-    <div id="div6" hidden="true">
-      <div>
-        claim NFT: <select id="nft6">
-        </select>
-      </div>
-      <div>
-        <input type="button" value="add instructions" id="add_instruction6">
-      </div>
-    </div>
-
-    <div id="div7" hidden="true">
-      <div>
-        LSU: <select id="lsu7">
-        </select>
-        quantity: <input type="text" id="quantity7" disabled="true">
-	all <input type="checkbox" id="all7" checked="true">
-      </div>
-      <div>
-        LSU pool receipt: <select id="nft7"> (optional)
-        </select>
-      </div>
-      <div>
-        <input type="button" value="add instructions" id="add_instruction7">
-      </div>
-    </div>
-
-    <div id="div8" hidden="true">
-      <div>
-        LSULP quantity to send: <input type="text" id="quantity8" disabled="true">
-	all <input type="checkbox" id="all8" checked="true">
-      </div>
-      <div>
-        LSU to receive: <select id="lsu8">
-        </select>
-      </div>
-      <div>
-        LSU pool receipt: <select id="nft8"> (optional)
-        </select>
-      </div>
-      <div>
-        <input type="button" value="add instructions" id="add_instruction8">
-      </div>
-    </div>
-
-    <div id="div9" hidden="true">
-      <div>
-	LSU to send: <select id="send9">
-	</select>
-	quantity: <input type="text" id="quantity9" disabled="true">
-	all <input type="checkbox" id="all9" checked="true">
-      </div>
-      <div>
-        LSU to receive: <select id="receive9">
-        </select>
-      </div>
-      <div>
-        <input type="button" value="add instructions" id="add_instruction9">
-      </div>
-    </div>
-
-    <div id="div10" hidden="true">
-      <div>
-	coin: <select id="fungible10">
-	</select>
-        quantity per recipient: <input type="text" id="quantity10">
-      </div>
-      <div>
-        recipients (one per line):
-      </div>
-      <div>
-        <textarea id="recipients10" rows="10" cols="85"></textarea>
-      </div>
-      <div>
-        send remainings to: <select id="account10">
-        </select>
-      </div>
-      <div>
-        <input type="button" value="add instructions" id="add_instruction10">
-      </div>
-    </div>
-
-    <div id="div11" hidden="true">
-      <div>
-	coin to send: <select id="send11">
-	</select>
-	quantity: <input type="text" id="quantity11" disabled="true">
-	all <input type="checkbox" id="all11" checked="true">
-      </div>
-      <div>
-        coin to receive: <select id="receive11">
-        </select>
-      </div>
-      <div>
-        <input type="button" value="add instructions" id="add_instruction11">
-      </div>
-    </div>
-
-    <div id="div12" hidden="true">
-      <div>
-	coin 1 to send: <select id="send_1_12">
-	</select>
-	quantity: <input type="text" id="quantity_1_12" disabled="true">
-	all <input type="checkbox" id="all12" checked="true">
-      </div>
-      <div>
-        coin 2 to send: <select id="send_2_12">
-        </select>
-      </div>
-      <div>
-        <input type="button" value="add instructions" id="add_instruction12">
-      </div>
-    </div>
-
-    <div id="div13" hidden="true">
-      <div>
-	LP: <select id="send13">
-	</select>
-	quantity: <input type="text" id="quantity13" disabled="true">
-	all <input type="checkbox" id="all13" checked="true">
-      </div>
-      <div>
-        <input type="button" value="add instructions" id="add_instruction13">
-      </div>
-    </div>
-
-    <div id="div14" hidden="true">
-      <div>
-	quantity: <input type="text" id="quantity14"> XRD
-      </div>
-      <div>
-        <input type="button" value="add instructions" id="add_instruction14">
-      </div>
-    </div>
-
-    <div id="div15" hidden="true">
-      <div>
-        <input type="button" value="add instructions" id="add_instruction15">
-      </div>
-    </div>
-
-    <div id="div16" hidden="true">
-      <div>
-	coin to send: <select id="send16">
-	</select>
-	quantity: <input type="text" id="quantity16" disabled="true">
-	all <input type="checkbox" id="all16" checked="true">
-      </div>
-      <div>
-        coin to receive: <select id="receive16">
-        </select>
-      </div>
-      <div>
-        <input type="button" value="add instructions" id="add_instruction16">
-      </div>
-    </div>
-
-    <div id="div17" hidden="true">
-      <div>
-	coin to send: <select id="send17">
-	</select>
-	quantity: <input type="text" id="quantity17" disabled="true">
-	all <input type="checkbox" id="all17" checked="true">
-      </div>
-      <div>
-        coin to receive: <select id="receive17">
-        </select>
-      </div>
-      <div>
-        <input type="button" value="add instructions" id="add_instruction17">
-      </div>
-    </div>
-
-    <div id="div18" hidden="true">
-      <div>
-	quantity of LSU to send: <input type="text" id="quantity18" disabled="true">
-	all <input type="checkbox" id="all18" checked="true">
-      </div>
-      <div>
-        <input type="button" value="add instructions" id="add_instruction18">
-      </div>
-    </div>
-
-    <div id="div19" hidden="true">
-      <div>
-	coin to send: <select id="send19">
-	</select>
-	quantity: <input type="text" id="quantity19" disabled="true">
-	all <input type="checkbox" id="all19" checked="true">
-      </div>
-      <div>
-        coin to receive: <select id="receive19">
-        </select>
-      </div>
-      <div>
-        <input type="button" value="add instructions" id="add_instruction19">
-      </div>
-    </div>
-
-    <div id="div20" hidden="true">
-      <div>
-	NFT to show: <select id="nft20">
-	</select>
-      </div>
-      <div>
-        <input type="button" value="add instructions" id="add_instruction20">
-      </div>
-    </div>
-
-    <div>&nbsp;</div>
-    <div>
-      resources in worktop:
-    </div>
-    <div>
-      <textarea id="worktop" readonly rows="5" cols="85"></textarea>
-    </div>
-    <div>&nbsp;</div>
-    <div>
-      transaction manifest:
-    </div>
-    <div>
-      <textarea id="transaction_manifest" rows="20" cols="85"></textarea>
-    </div>
-    <div>
-      <input type="button" value="send to wallet" id="send_to_wallet">
-    </div>
-    <div>
-      <p id="footer">For educational purposes only, use at your own risk. If you like this dApp <a href="https://backeum.com/p/marco-michelino" target="_blank">buy me a beer</a>.</p>
-    </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
