@@ -1,16 +1,9 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import {
-    add_fungible_to_worktop,
-    add_non_fungible_to_worktop,
-    find_fungible_symbol,
-    find_non_fungible_symbol,
-    fungibles_in_accounts,
-    non_fungibles_in_accounts,
-    number_to_string,
-    remove_fungible_from_account,
-  } from "../../content";
+  import { number_to_string } from "../../content";
   import { accounts } from "../stores/accounts";
+  import { worktop } from "../stores/worktop";
+  import type { WalletFungible, WalletNonFungible } from "../stores/accounts";
+  import AddActionButton from "../AddActionButton.svelte";
 
   function withdrawString(account: string, resource: string, q: number) {
     return `CALL_METHOD
@@ -21,175 +14,164 @@
 ;
 `;
   }
+  let fungibleSelect: HTMLSelectElement | null = null;
+  let nonFungibleSelect: HTMLSelectElement | null = null;
 
-  let selectedAccount: { address: string; label: string };
-
-  let fungibles: Map<string, number> = new Map();
-  let selectedFungible: string | null = null;
+  let accountAddress: string | null = null;
+  let fungibles: Map<string, WalletFungible> = new Map();
+  let fungibleAddress: string;
   let fungibleQuantity = "";
 
-  let nonFungibles: string[] = [];
-  let selectedNonFungible: string | null = null;
+  let nonFungibles: Map<string, WalletNonFungible> = new Map();
+  let nonFungibleKey: string;
 
-  // $: means react on changes to variables in scope
-  $: {
-    if (selectedAccount) {
-      // TODO: move to store, the updates are not currently working
-      if (fungibles_in_accounts) {
-        for (const [key, value] of Object.entries(
-          fungibles_in_accounts[selectedAccount.address]
-        )) {
-          fungibles.set(key, value);
-        }
-      }
+  $: if ($accounts.size > 0 && !accountAddress) {
+    const [firstKey] = $accounts.keys();
+    accountAddress = firstKey;
+  }
 
-      if (non_fungibles_in_accounts) {
-        nonFungibles = non_fungibles_in_accounts[selectedAccount.address];
-      }
+  $: if (accountAddress) {
+    fungibles = $accounts.get(accountAddress)!.fungibles;
+    nonFungibles = $accounts.get(accountAddress)!.nonFungibles;
+  }
+
+  function handleFungibleChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    fungibleAddress = target?.value;
+    if (fungibleAddress !== "") {
+      fungibleQuantity = number_to_string(
+        fungibles.get(fungibleAddress)?.amount || 0
+      );
+      nonFungibleSelect!.value = "";
+      nonFungibleSelect!.dispatchEvent(new Event("change"));
+    } else {
+      fungibleQuantity = "";
     }
   }
 
-  $: {
-    // only one or the other at a time, TODO: show visually
-    if (selectedFungible) {
-      selectedNonFungible = null;
-      fungibleQuantity = number_to_string(fungibles.get(selectedFungible) || 0);
-    } else if (selectedNonFungible) {
-      selectedFungible = null;
-    }
-    if ($accounts.length > 0) {
-      selectedAccount = $accounts[0];
+  function handleNonFungibleChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    nonFungibleKey = target?.value;
+    if (nonFungibleKey) {
+      fungibleSelect!.value = "";
+      fungibleSelect!.dispatchEvent(new Event("change"));
     }
   }
 
-  onMount(() => {
-    document
-      .querySelector<HTMLButtonElement>("#add_instruction1")!
-      .addEventListener("click", function () {
-        // TODO: refactor validation
-        if (!selectedFungible && !selectedNonFungible) {
-          document.querySelector<HTMLParagraphElement>("#warn")!.innerText =
-            "no coins selected";
-          return false;
-        } else {
-          document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
-            "&nbsp;";
-        }
+  function resetSelectors() {
+    fungibleSelect!.value = "";
+    fungibleSelect!.dispatchEvent(new Event("change"));
+    nonFungibleSelect!.value = "";
+    nonFungibleSelect!.dispatchEvent(new Event("change"));
+  }
 
-        if (selectedFungible !== null) {
-          if (!fungibleQuantity.match(/^[0-9]+(\.[0-9]+)?$/)) {
-            document.querySelector<HTMLParagraphElement>("#warn")!.innerText =
-              "invalid quantity!";
-          } else {
-            var q = parseFloat(fungibleQuantity);
-            if (q > 0) {
-              const resource = selectedFungible;
-              const account = selectedAccount.address;
-              if (q > fungibles_in_accounts[account][resource]) {
-                q = fungibles_in_accounts[account][resource];
-              }
-              document.querySelector<HTMLTextAreaElement>(
-                "#transaction_manifest"
-              )!.value += withdrawString(account, resource, q);
-              add_fungible_to_worktop(resource, q);
-              remove_fungible_from_account(account, resource, q);
-            }
+  function handleAddAction() {
+    // TODO: refactor validation
+    console.log(fungibleAddress, fungibleQuantity, nonFungibleKey);
+    if (!fungibleAddress && !nonFungibleKey) {
+      document.querySelector<HTMLParagraphElement>("#warn")!.innerText =
+        "no coins selected";
+      return false;
+    } else {
+      document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
+        "&nbsp;";
+    }
+
+    if (fungibleAddress !== "") {
+      if (!fungibleQuantity.match(/^[0-9]+(\.[0-9]+)?$/)) {
+        document.querySelector<HTMLParagraphElement>("#warn")!.innerText =
+          "invalid quantity!";
+      } else {
+        var q = parseFloat(fungibleQuantity);
+        if (q > 0) {
+          if (q > fungibles.get(fungibleAddress)!.amount) {
+            q = fungibles.get(fungibleAddress)!.amount;
           }
-        }
-
-        if (selectedNonFungible !== null) {
-          const non_fungible = selectedNonFungible.split(" ");
-          const account = selectedAccount.address;
           document.querySelector<HTMLTextAreaElement>(
             "#transaction_manifest"
-          )!.value +=
-            "CALL_METHOD\n" +
-            '    Address("' +
-            account +
-            '")\n' +
-            '    "withdraw_non_fungibles"\n' +
-            '    Address("' +
-            non_fungible[0] +
-            '")\n' +
-            '    Array<NonFungibleLocalId>(\n        NonFungibleLocalId("' +
-            non_fungible[1] +
-            '")\n    )\n;\n';
-          add_non_fungible_to_worktop(selectedNonFungible);
-          const i =
-            non_fungibles_in_accounts[account].indexOf(selectedNonFungible);
-          if (i != -1) {
-            non_fungibles_in_accounts[account].splice(i, 1);
-          }
+          )!.value += withdrawString(accountAddress!, fungibleAddress, q);
+          worktop.addFungible(fungibles.get(fungibleAddress)!);
+          accounts.removeFungible(accountAddress!, fungibleAddress, q);
+          resetSelectors();
         }
-
-        document
-          .querySelector<HTMLSelectElement>("#account1")!
-          .dispatchEvent(new Event("change"));
-      });
-  });
+      }
+    } else if (nonFungibleKey !== "") {
+      const nonFungible = nonFungibles.get(nonFungibleKey)!;
+      document.querySelector<HTMLTextAreaElement>(
+        "#transaction_manifest"
+      )!.value +=
+        "CALL_METHOD\n" +
+        '    Address("' +
+        accountAddress +
+        '")\n' +
+        '    "withdraw_non_fungibles"\n' +
+        '    Address("' +
+        nonFungible.address +
+        '")\n' +
+        '    Array<NonFungibleLocalId>(\n        NonFungibleLocalId("' +
+        nonFungible.id +
+        '")\n    )\n;\n';
+      worktop.addNonFungible(nonFungibles.get(nonFungibleKey)!);
+      accounts.removeNonFungible(accountAddress!, nonFungibleKey);
+      resetSelectors();
+    }
+  }
 </script>
 
-<div id="div1" class="flex space-x-24">
-  <div class="flex flex-col">
-    <label>
+<div class="flex space-x-12 w-full place-items-end">
+  <div class="flex flex-col flex-grow space-y-4">
+    <label class="flex justify-between">
       Account
       <select
-        id="account1"
-        class="select select-secondary select-xs"
-        bind:value={selectedAccount}
+        class="select select-secondary select-xs w-3/5 text-end"
+        bind:value={accountAddress}
       >
-        {#each $accounts as account}
-          <option value={account}>{account.label}</option>
+        {#each Array.from($accounts) as [_addr, account]}
+          <option value={account.address}>{account.label}</option>
         {/each}
       </select>
     </label>
 
-    <label class="flex space-x-2"
-      >Fungibles
-      <select
-        id="fungible1"
-        class="select select-secondary select-xs"
-        bind:value={selectedFungible}
-      >
-        <option value={null} />
-        {#each Array.from(fungibles) as [symbol, _]}
-          <option value={symbol}>{find_fungible_symbol(symbol)}</option>
-        {/each}
-      </select>
-
-      <label>
+    <div class="flex flex-col">
+      <label class="flex justify-between"
+        >Fungibles
+        <select
+          bind:this={fungibleSelect}
+          class="select select-secondary select-xs w-3/5 text-end"
+          on:change={handleFungibleChange}
+        >
+          <option value={""} />
+          {#each Array.from(fungibles.values()) as fungible}
+            <option value={fungible.address}>{fungible.symbol}</option>
+          {/each}
+        </select>
+      </label>
+      <label class="flex justify-between">
         Quantity
         <input
-          class="input bg-secondary input-xs"
+          class="input bg-secondary input-xs w-3/5 text-end"
           type="text"
-          id="quantity1"
           bind:value={fungibleQuantity}
         /></label
       >
-    </label>
+    </div>
 
-    <label>
-      Non fungibles:
+    <label class="flex justify-between">
+      Non fungibles
       <select
-        id="non_fungible1"
-        class="select select-secondary select-xs"
-        bind:value={selectedNonFungible}
+        bind:this={nonFungibleSelect}
+        class="select select-secondary select-xs w-3/5 text-end"
+        on:change={handleNonFungibleChange}
       >
-        <option value={null} />
-        {#each nonFungibles as nonFungible}
-          <option value={nonFungible}
-            >{find_non_fungible_symbol(nonFungible)}</option
-          >
+        <option value={""} />
+        {#each Array.from(nonFungibles.values()) as nonFungible}
+          <option value={nonFungible.key}>{nonFungible.symbol}</option>
         {/each}
       </select>
     </label>
   </div>
+
   <div>
-    <input
-      type="button"
-      class="btn"
-      value="add instruction"
-      id="add_instruction1"
-    />
+    <AddActionButton {handleAddAction} />
   </div>
 </div>

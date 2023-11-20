@@ -5,6 +5,7 @@
   import Action from "./lib/Action.svelte";
   import Navbar from "./lib/Navbar.svelte";
   import Footer from "./lib/Footer.svelte";
+  import Worktop from "./lib/Worktop.svelte";
 
   onMount(() => {
     initContent();
@@ -16,21 +17,10 @@
     <div class="max-w-screen-lg mx-auto flex-grow">
       <Navbar />
 
-      <div class="flex flex-col items-center">
+      <div class="flex flex-col space-y-12">
         <Action />
 
-        <div class="relative my-6">
-          <div class="absolute right-1 -top-6 text flex font-thin">
-            <div>resources in worktop</div>
-          </div>
-          <textarea
-            id="worktop"
-            class="textarea bg-base-300"
-            readonly
-            rows="5"
-            cols="85"
-          />
-        </div>
+        <Worktop />
 
         <div class="relative my-6">
           <div class="absolute right-1 -top-6 text flex font-thin">

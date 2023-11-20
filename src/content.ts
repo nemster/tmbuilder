@@ -83,7 +83,7 @@ const defiplaza_component =
   "component_rdx1cze7e7437y9pmntk94w72eyanngw522j8yf07aa27frn63m9ezkfeu";
 var bucket_number = 1;
 var proof_number = 1;
-const epsilon = 0.000001;
+export const EPSILON = 0.000001;
 const lsu_pool_receipt =
   "resource_rdx1nt3frmqu4v57dy55e90n0k3uy352zyy89vszzamvjld6vqvr98rls9";
 const lsu_pool =
@@ -186,7 +186,6 @@ const caviarnine_enabled_validators: { [key: string]: number } = {
   validator_rdx1s0qtrarfm5eu9ewvtzud96q9mjm2u63qr99newtm6h28q9slmz9jdp: 1,
 };
 
-// TODO: move to stores and subscribe to changes
 export let fungibles_in_worktop: { [key: string]: number } = {};
 export let non_fungibles_in_worktop = [] as string[];
 export let fungibles_in_accounts: fungibles_array_array = {};
@@ -236,22 +235,6 @@ export function number_to_string(num: number) {
     str = str.slice(0, -1) + (parseInt(str.slice(-1)) - 1);
   }
   return str;
-}
-
-function show_resources_in_worktop() {
-  var resources = "";
-  for (var fungible of Object.keys(fungibles_in_worktop)) {
-    resources +=
-      find_fungible_symbol(fungible) +
-      " " +
-      fungibles_in_worktop[fungible] +
-      "\n";
-  }
-  for (var non_fungible of non_fungibles_in_worktop) {
-    var res = non_fungible.split(" ");
-    resources += find_non_fungible_symbol(res[0]) + " " + res[1] + "\n";
-  }
-  document.querySelector<HTMLTextAreaElement>("#worktop")!.value = resources;
 }
 
 export function add_fungible_to_worktop(resource: string, quantity: number) {
@@ -326,18 +309,6 @@ export function add_fungible_to_worktop(resource: string, quantity: number) {
   } else {
     fungibles_in_worktop[resource] += quantity;
   }
-  show_resources_in_worktop();
-}
-
-export function remove_fungible_from_account(
-  account: string,
-  resource: string,
-  quantity: number
-) {
-  fungibles_in_accounts[account][resource] -= quantity;
-  if (fungibles_in_accounts[account][resource] < epsilon) {
-    fungibles_in_accounts[account][resource] = 0;
-  }
 }
 
 export function add_non_fungible_to_worktop(resource: string) {
@@ -364,7 +335,6 @@ export function add_non_fungible_to_worktop(resource: string) {
         resource
       );
     }
-    show_resources_in_worktop();
   }
 }
 
@@ -456,7 +426,7 @@ export function remove_fungible_from_worktop(
       }
     } else {
       fungibles_in_worktop[resource] -= parseFloat(quantity);
-      if (fungibles_in_worktop[resource] < epsilon) {
+      if (fungibles_in_worktop[resource] < EPSILON) {
         fungibles_in_worktop[resource] = 0;
       }
     }
@@ -471,7 +441,6 @@ export function remove_fungible_from_worktop(
     send16!.innerHTML = "";
     send19!.innerHTML = "";
   }
-  show_resources_in_worktop();
 }
 
 export function remove_non_fungible_from_worktop(non_fungible: string) {
@@ -514,7 +483,6 @@ export function remove_non_fungible_from_worktop(non_fungible: string) {
       }
     }
   }
-  show_resources_in_worktop();
 }
 
 export function initContent() {
@@ -574,23 +542,10 @@ export function initContent() {
   }
 
   rdt.walletApi.walletData$.subscribe((walletData) => {
-    for (var account of walletData.accounts) {
-      accounts.update((accounts) => {
-        // replace account if it already exists
-        const index = accounts.findIndex((a) => a.address == account.address);
-        if (index > -1) {
-          accounts[index] = account;
-        } else {
-          // add account if it doesn't exist
-          accounts.push(account);
-        }
-
-        return accounts;
-      });
-      fungibles_in_accounts[account.address] = {};
-      non_fungibles_in_accounts[account.address] = [];
+    for (let account of walletData.accounts) {
+      accounts.updateAccount(account.address, account.label);
       get_fungibles(account.address).then((value) => {
-        for (var fungible of value.items) {
+        for (let fungible of value.items) {
           if (
             find_fungible_symbol(fungible.resource_address) ==
             fungible.resource_address
@@ -610,15 +565,20 @@ export function initContent() {
                 )).value;
             }
           }
-          var amount = parseFloat(
+          let amount = parseFloat(
             (<FungibleResourcesCollectionItemGloballyAggregated>fungible).amount
           );
           if (fungible.resource_address == xrd) {
             amount -= 10;
           }
-          if (amount > epsilon) {
-            fungibles_in_accounts[value.address][fungible.resource_address] =
-              amount;
+          if (amount > EPSILON) {
+            const symbol = find_fungible_symbol(fungible.resource_address);
+            accounts.updateFungible(
+              value.address,
+              fungible.resource_address,
+              amount,
+              symbol
+            );
           }
           if (fungible.resource_address == my_lsu_address && amount > 50) {
             document.querySelector<HTMLParagraphElement>("#footer")!.innerText =
@@ -636,16 +596,19 @@ export function initContent() {
               MetadataStringValue
             >non_fungible.explicit_metadata!.items[0].value.typed).value;
           }
-          for (var item of (<NonFungibleResourcesCollectionItemVaultAggregated>(
+          for (let item of (<NonFungibleResourcesCollectionItemVaultAggregated>(
             non_fungible
           )).vaults.items) {
-            for (var id of item!.items!) {
-              var i = 0;
-              while (non_fungibles_in_accounts[value.address][i] != undefined) {
-                i++;
-              }
-              non_fungibles_in_accounts[value.address][i] =
-                non_fungible.resource_address + " " + id;
+            for (let id of item!.items!) {
+              const symbol = find_non_fungible_symbol(
+                non_fungible.resource_address
+              );
+              accounts.updateNonFungible(
+                value.address,
+                non_fungible.resource_address,
+                symbol,
+                id
+              );
               if (non_fungible.resource_address == weft_claimer_nft) {
                 const nft20 =
                   document.querySelector<HTMLSelectElement>("#nft20");
@@ -654,14 +617,14 @@ export function initContent() {
                   value.address + " " + id
                 );
                 get_non_fungible_data(weft_claimer_nft, id).then((v) => {
-                  for (var nf of v.non_fungible_ids) {
+                  for (let nf of v.non_fungible_ids) {
                     weft_amount_to_collect[nf.non_fungible_id] = 0;
-                    for (var field of (<ProgrammaticScryptoSborValueTuple>(
+                    for (let field of (<ProgrammaticScryptoSborValueTuple>(
                       nf.data!.programmatic_json
                     )).fields) {
-                      for (var entry of (<ProgrammaticScryptoSborValueMap>field)
+                      for (let entry of (<ProgrammaticScryptoSborValueMap>field)
                         .entries) {
-                        for (var field2 of (<ProgrammaticScryptoSborValueTuple>(
+                        for (let field2 of (<ProgrammaticScryptoSborValueTuple>(
                           entry.value
                         )).fields) {
                           if (field2.field_name == "amount") {
@@ -684,8 +647,8 @@ export function initContent() {
                 });
               } else if (non_fungible.resource_address == backeum_trophies) {
                 get_non_fungible_data(backeum_trophies, id).then((v) => {
-                  for (var nf of v.non_fungible_ids) {
-                    for (var field of (<ProgrammaticScryptoSborValueTuple>(
+                  for (let nf of v.non_fungible_ids) {
+                    for (let field of (<ProgrammaticScryptoSborValueTuple>(
                       nf.data!.programmatic_json
                     )).fields) {
                       if (
@@ -2651,7 +2614,7 @@ export function initContent() {
                 '")\n;\n';
             }
           } else {
-            quantity17 = j1.quotes[0].fromAmount - epsilon;
+            quantity17 = j1.quotes[0].fromAmount - EPSILON;
             remove_fungible_from_worktop(send17, String(quantity17));
             document.querySelector<HTMLTextAreaElement>(
               "#transaction_manifest"
