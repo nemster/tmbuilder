@@ -21,11 +21,12 @@
   <div class="absolute right-1 -top-6 text flex font-thin">
     <div>resources in worktop</div>
   </div>
-  <textarea
-    value={text}
-    class="textarea bg-base-300"
-    readonly
-    rows="5"
-    cols="85"
-  />
+  <textarea id="worktop" value={text} class="textarea bg-base-300" readonly />
 </div>
+
+<style>
+  #worktop {
+    width: 100%;
+    min-height: 16em;
+  }
+</style>

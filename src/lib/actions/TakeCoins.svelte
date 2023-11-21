@@ -1,19 +1,20 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import { number_to_string } from "../../content";
   import { accounts } from "../stores/accounts";
   import { worktop } from "../stores/worktop";
+  import { manifest } from "../stores/transaction";
   import type { WalletFungible, WalletNonFungible } from "../stores/accounts";
   import AddActionButton from "../AddActionButton.svelte";
+  import { addActionError } from "../stores/errors";
+  import commands from "../commands";
 
-  function withdrawString(account: string, resource: string, q: number) {
-    return `CALL_METHOD
-    Address("${account}")
-    "withdraw"
-    Address("${resource}")
-    Decimal("${q}")
-;
-`;
-  }
+  const NO_COINS_SELECTED = "no coins selected!";
+
+  onMount(() => {
+    addActionError.set("");
+  });
+
   let fungibleSelect: HTMLSelectElement | null = null;
   let nonFungibleSelect: HTMLSelectElement | null = null;
 
@@ -44,6 +45,9 @@
       );
       nonFungibleSelect!.value = "";
       nonFungibleSelect!.dispatchEvent(new Event("change"));
+      if ($addActionError === NO_COINS_SELECTED) {
+        addActionError.set("");
+      }
     } else {
       fungibleQuantity = "";
     }
@@ -55,6 +59,9 @@
     if (nonFungibleKey) {
       fungibleSelect!.value = "";
       fungibleSelect!.dispatchEvent(new Event("change"));
+      if ($addActionError === NO_COINS_SELECTED) {
+        addActionError.set("");
+      }
     }
   }
 
@@ -66,55 +73,51 @@
   }
 
   function handleAddAction() {
-    // TODO: refactor validation
-    console.log(fungibleAddress, fungibleQuantity, nonFungibleKey);
-    if (!fungibleAddress && !nonFungibleKey) {
-      document.querySelector<HTMLParagraphElement>("#warn")!.innerText =
-        "no coins selected";
-      return false;
-    } else {
-      document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
-        "&nbsp;";
+    if (!accountAddress) {
+      addActionError.set("no account selected!");
+      return;
     }
+    if (!fungibleAddress && !nonFungibleKey) {
+      addActionError.set(NO_COINS_SELECTED);
+      return;
+    } else {
+      addActionError.set("");
+    }
+
+    let command = "";
 
     if (fungibleAddress !== "") {
       if (!fungibleQuantity.match(/^[0-9]+(\.[0-9]+)?$/)) {
-        document.querySelector<HTMLParagraphElement>("#warn")!.innerText =
-          "invalid quantity!";
+        addActionError.set("invalid quantity!");
       } else {
         var q = parseFloat(fungibleQuantity);
         if (q > 0) {
           if (q > fungibles.get(fungibleAddress)!.amount) {
             q = fungibles.get(fungibleAddress)!.amount;
           }
-          document.querySelector<HTMLTextAreaElement>(
-            "#transaction_manifest"
-          )!.value += withdrawString(accountAddress!, fungibleAddress, q);
+          command = commands.withdraw(accountAddress, fungibleAddress, q);
+
           worktop.addFungible(fungibles.get(fungibleAddress)!);
-          accounts.removeFungible(accountAddress!, fungibleAddress, q);
+          accounts.removeFungible(accountAddress, fungibleAddress, q);
           resetSelectors();
         }
       }
     } else if (nonFungibleKey !== "") {
       const nonFungible = nonFungibles.get(nonFungibleKey)!;
-      document.querySelector<HTMLTextAreaElement>(
-        "#transaction_manifest"
-      )!.value +=
-        "CALL_METHOD\n" +
-        '    Address("' +
-        accountAddress +
-        '")\n' +
-        '    "withdraw_non_fungibles"\n' +
-        '    Address("' +
-        nonFungible.address +
-        '")\n' +
-        '    Array<NonFungibleLocalId>(\n        NonFungibleLocalId("' +
-        nonFungible.id +
-        '")\n    )\n;\n';
+      command = commands.withdrawNonFungibles(
+        accountAddress,
+        nonFungible.address,
+        nonFungible.id
+      );
       worktop.addNonFungible(nonFungibles.get(nonFungibleKey)!);
-      accounts.removeNonFungible(accountAddress!, nonFungibleKey);
+      accounts.removeNonFungible(accountAddress, nonFungibleKey);
       resetSelectors();
+    } else {
+      addActionError.set(NO_COINS_SELECTED);
+      return;
     }
+
+    manifest.update((m) => m + command);
   }
 </script>
 
@@ -165,7 +168,9 @@
       >
         <option value={""} />
         {#each Array.from(nonFungibles.values()) as nonFungible}
-          <option value={nonFungible.key}>{nonFungible.symbol}</option>
+          <option value={nonFungible.key}
+            >{`${nonFungible.symbol} ${nonFungible.id}`}</option
+          >
         {/each}
       </select>
     </label>

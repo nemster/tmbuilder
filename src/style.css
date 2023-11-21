@@ -7,9 +7,6 @@ body {
   --radix-connect-button-height: 42px;
   --radix-connect-button-border-radius: 10px;
 }
-p.warn {
-  color: red;
-}
 textarea {
   resize: none;
   line-height: 1.25 !important;

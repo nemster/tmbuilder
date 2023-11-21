@@ -1,6 +1,7 @@
 <script lang="ts">
   import TakeCoins from "./actions/TakeCoins.svelte";
   import SendCoinsToSelf from "./actions/SendCoinsToSelf.svelte";
+  import Error from "./Error.svelte";
 
   let actions = {
     TakeCoins,
@@ -14,10 +15,17 @@
   }
 </script>
 
-<div class="w-full rounded-box border-dashed border-4 border-accent p-4">
+<div
+  class="flex flex-col rounded-box border-dashed border-4 border-accent p-4 space-y-2"
+>
   <div class="flex space-x-4 justify-between w-full">
-    <p id="warn" class="warn">&nbsp;</p>
-    <div>
+    <div class="flex flex-1 justify-start min-w-0">
+      <Error
+        text="Warning: Invalid email address! Some other very very very long text in the error message!"
+      />
+    </div>
+
+    <div class="flex flex-1 justify-end">
       <select
         on:change={handleActionChange}
         id="action"
