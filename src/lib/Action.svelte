@@ -3,40 +3,13 @@
   import SendCoinsToSelf from "./actions/SendCoinsToSelf.svelte";
   import Error from "./Error.svelte";
 
-  let actions = {
-    TakeCoins,
-    SendCoinsToSelf,
-  };
-
-  let SelectedAction = actions.TakeCoins;
-
-  function handleActionChange(event: any) {
-    SelectedAction = event.target.value;
+  interface Action {
+    component: any;
+    description: string;
+    disabled: boolean;
   }
-</script>
-
-<div
-  class="flex flex-col rounded-box border-dashed border-4 border-accent p-4 space-y-2"
->
-  <div class="flex space-x-4 justify-between w-full">
-    <div class="flex flex-1 justify-start min-w-0">
-      <Error
-        text="Warning: Invalid email address! Some other very very very long text in the error message!"
-      />
-    </div>
-
-    <div class="flex flex-1 justify-end">
-      <select
-        on:change={handleActionChange}
-        id="action"
-        class="select select-gohst text-accent text-end text-lg"
-      >
-        <option value={actions.TakeCoins}>take coins from your account</option>
-        <!-- TODO: other actions -->
-        <option disabled>--- SEND COINS ---</option>
-        <option value={actions.SendCoinsToSelf}
-          >send coins to your account</option
-        >
+  /**
+   *  
         <option>send coins to someone else's account</option>
         <option>airdrop fungible coins</option>
         <option disabled>--- STAKE/UNSTAKE ---</option>
@@ -63,11 +36,53 @@
         <option>swap coins at RadixPlanet</option>
         <option disabled>--- WEFT ---</option>
         <option>redeem your WEFT</option>
+   */
+
+  let actions: Action[] = [
+    {
+      component: TakeCoins,
+      description: "take coins from your account",
+      disabled: false,
+    },
+    {
+      component: null,
+      description: "--- SEND COINS ---",
+      disabled: true,
+    },
+    {
+      component: SendCoinsToSelf,
+      description: "send coins to your account",
+      disabled: false,
+    },
+  ];
+
+  let selectedActionI = 0;
+</script>
+
+<div
+  class="flex flex-col rounded-box border-dashed border-4 border-accent p-4 space-y-2"
+>
+  <div class="flex space-x-4 justify-between w-full">
+    <div class="flex flex-1 justify-start min-w-0">
+      <Error />
+    </div>
+
+    <div class="flex flex-1 justify-end">
+      <select
+        bind:value={selectedActionI}
+        id="action"
+        class="select select-gohst text-accent text-end text-lg"
+      >
+        {#each actions as action, i}
+          <option value={i} disabled={action.disabled}>
+            {action.description}
+          </option>
+        {/each}
       </select>
     </div>
   </div>
 
   <div class="w-full ml-2">
-    <SelectedAction />
+    <svelte:component this={actions[selectedActionI].component} />
   </div>
 </div>

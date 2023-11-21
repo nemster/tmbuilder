@@ -741,16 +741,13 @@ export function initContent() {
         "&nbsp;";
 
       // --- SEND COINS ---
-      var nfungibles =
-        document.querySelector<HTMLSelectElement>("#fungible2")!.options
-          .length - 1;
+      // TODO: remove
+      let nfungibles = 0;
       if (
         (this.selectedIndex == 2 || this.selectedIndex == 3) &&
         nfungibles == 0 &&
         non_fungibles_in_worktop.length == 0
       ) {
-        document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
-          "put some coins in the worktop first";
       } else if (this.selectedIndex == 4 && nfungibles == 0) {
         document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
           "put some fungible coins in the worktop first";

@@ -30,22 +30,22 @@ function createWorktop() {
     });
   }
 
-  function removeFungible(fungible: WalletFungible) {
+  function removeFungible(address: string, amount: number) {
     update((worktop) => {
-      if (worktop.fungibles.has(fungible.address)) {
-        const existing = worktop.fungibles.get(fungible.address);
+      if (worktop.fungibles.has(address)) {
+        const existing = worktop.fungibles.get(address);
         if (existing) {
-          existing.amount -= fungible.amount;
+          existing.amount -= amount;
           if (existing.amount < EPSILON) {
-            worktop.fungibles.delete(fungible.address);
+            worktop.fungibles.delete(address);
           } else {
-            worktop.fungibles.set(fungible.address, existing);
+            worktop.fungibles.set(address, existing);
           }
         }
       } else {
         console.error(
           "Attempted to remove fungible that does not exist in worktop",
-          fungible
+          address
         );
       }
       return worktop;
@@ -68,12 +68,21 @@ function createWorktop() {
     });
   }
 
+  function clearWorktop() {
+    update((worktop) => {
+      worktop.fungibles = new Map();
+      worktop.nonFungibles = new Map();
+      return worktop;
+    });
+  }
+
   return {
     subscribe,
     addFungible,
     removeFungible,
     addNonFungible,
     removeNonFungible,
+    clearWorktop,
   };
 }
 

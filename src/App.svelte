@@ -15,9 +15,9 @@
 
 <main class="prose max-w-none">
   <div class="flex flex-col h-screen">
-    <div class="max-w-screen-md mx-auto flex-grow">
+    <div class="max-w-screen-md w-full mx-auto flex-grow px-4">
       <Navbar />
-      <div class="flex flex-col space-y-12 px-4 w-full">
+      <div class="flex flex-col space-y-12 w-full">
         <Action />
         <Worktop />
         <TransactionManifest />

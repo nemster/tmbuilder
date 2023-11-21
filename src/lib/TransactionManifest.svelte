@@ -24,6 +24,5 @@
   #transaction_manifest {
     width: 100%;
     min-height: 32em;
-    height: fit-content;
   }
 </style>

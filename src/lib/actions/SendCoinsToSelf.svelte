@@ -1,120 +1,77 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import {
-    add_fungible_to_account,
-    add_non_fungible_to_account,
-    fungibles_in_worktop,
-    non_fungibles_in_worktop,
-    remove_fungible_from_worktop,
-    remove_non_fungible_from_worktop,
-  } from "../../content";
+  import { addActionError } from "../stores/errors";
+  import { worktop } from "../stores/worktop";
+  import { accounts } from "../stores/accounts";
+  import { manifest, bucketNumber } from "../stores/transaction";
+  import type { WalletFungible, WalletNonFungible } from "../stores/accounts";
+  import AccountSelect from "../shared/AccountSelect.svelte";
+  import AddActionButton from "../shared/AddActionButton.svelte";
+  import CoinInput from "../shared/CoinInput.svelte";
+  import commands from "../commands";
+
+  let entireWorktop = true;
+  let allFungible = true;
+  let accountAddress: string | null = null;
+  let fungibles: Map<string, WalletFungible> = new Map();
+  let fungibleAddress: string;
+  let fungibleQuantity = "";
+
+  let nonFungibles: Map<string, WalletNonFungible> = new Map();
+  let nonFungibleKey: string;
+
+  $: if (accountAddress) {
+    fungibles = $worktop.fungibles;
+    nonFungibles = $worktop.nonFungibles;
+  }
 
   onMount(() => {
-    document
-      .querySelector<HTMLInputElement>("#worktop2")!
-      .addEventListener("change", function () {
-        document.querySelector<HTMLInputElement>("#all2")!.disabled =
-          this.checked;
-        document.querySelector<HTMLInputElement>("#quantity2")!.disabled =
-          this.checked ||
-          document.querySelector<HTMLInputElement>("#all2")!.checked;
-        document.querySelector<HTMLSelectElement>("#fungible2")!.disabled =
-          this.checked;
-        document.querySelector<HTMLSelectElement>("#non_fungible2")!.disabled =
-          this.checked;
-        if (this.checked) {
-          document.querySelector<HTMLInputElement>("#all2")!.checked = true;
-          document.querySelector<HTMLInputElement>("#quantity2")!.value = "";
-          document.querySelector<HTMLSelectElement>(
-            "#fungible2"
-          )!.selectedIndex = 0;
-          document.querySelector<HTMLSelectElement>(
-            "#non_fungible2"
-          )!.selectedIndex = 0;
-        }
-      });
+    addActionError.set("");
+
+    return;
 
     document
-      .querySelector<HTMLInputElement>("#all2")!
-      .addEventListener("change", function () {
-        const quantity2 =
-          document.querySelector<HTMLInputElement>("#quantity2");
-        if (
-          this.checked ||
-          document.querySelector<HTMLInputElement>("#worktop2")!.checked
-        ) {
-          quantity2!.disabled = true;
-          quantity2!.value = "";
+      .querySelector<HTMLButtonElement>("#add_instruction2")!
+      .addEventListener("click", function () {
+        const account =
+          document.querySelector<HTMLSelectElement>("#account2")!.value;
+
+        if (document.querySelector<HTMLInputElement>("#worktop2")!.checked) {
         } else {
-          quantity2!.disabled = false;
-          const fungible2 =
-            document.querySelector<HTMLSelectElement>("#fungible2")!.value;
-          if (fungible2 != "") {
-            quantity2!.value = String(fungibles_in_worktop[fungible2]);
-          }
-        }
-      });
-  });
-
-  document
-    .querySelector<HTMLSelectElement>("#fungible2")!
-    .addEventListener("change", function () {
-      const all2 = document.querySelector<HTMLInputElement>("#all2");
-      const quantity2 = document.querySelector<HTMLInputElement>("#quantity2");
-      if (this.selectedIndex > 0) {
-        all2!.disabled = false;
-        if (!all2!.checked) {
-          quantity2!.value = String(fungibles_in_worktop[this.value]);
-        }
-      } else {
-        all2!.disabled = true;
-        quantity2!.disabled = true;
-        quantity2!.value = "";
-      }
-    });
-
-  document
-    .querySelector<HTMLButtonElement>("#add_instruction2")!
-    .addEventListener("click", function () {
-      const account =
-        document.querySelector<HTMLSelectElement>("#account2")!.value;
-
-      document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
-        "&nbsp;";
-
-      if (document.querySelector<HTMLInputElement>("#worktop2")!.checked) {
-        document.querySelector<HTMLTextAreaElement>(
-          "#transaction_manifest"
-        )!.value +=
-          "CALL_METHOD\n" +
-          '    Address("' +
-          account +
-          '")\n' +
-          '    "deposit_batch"\n' +
-          '    Expression("ENTIRE_WORKTOP")\n;\n';
-        for (var f of Object.keys(fungibles_in_worktop)) {
-          add_fungible_to_account(account, f, fungibles_in_worktop[f]);
-        }
-        remove_fungible_from_worktop("*", "*");
-        for (var nf of non_fungibles_in_worktop) {
-          add_non_fungible_to_account(account, nf);
-        }
-        remove_non_fungible_from_worktop("*");
-      } else {
-        const resource =
-          document.querySelector<HTMLSelectElement>("#fungible2")!.value;
-        if (resource.length > 0) {
-          if (document.querySelector<HTMLInputElement>("#all2")!.checked) {
+          const non_fungible =
+            document.querySelector<HTMLSelectElement>("#non_fungible2")!.value;
+          if (non_fungible.length > 0) {
+            const res = non_fungible.split(" ");
+            if (res[1] == unknown_nft_id) {
+              document.querySelector<HTMLTextAreaElement>(
+                "#transaction_manifest"
+              )!.value +=
+                "TAKE_ALL_FROM_WORKTOP\n" +
+                '    Address("' +
+                res[0] +
+                '")\n' +
+                '    Bucket("bucket' +
+                bucket_number +
+                '")\n;\n';
+            } else {
+              document.querySelector<HTMLTextAreaElement>(
+                "#transaction_manifest"
+              )!.value +=
+                "TAKE_NON_FUNGIBLES_FROM_WORKTOP\n" +
+                '    Address("' +
+                res[0] +
+                '")\n' +
+                "    Array<NonFungibleLocalId>(\n" +
+                '        NonFungibleLocalId("' +
+                res[1] +
+                '")\n    )\n' +
+                '    Bucket("bucket' +
+                bucket_number +
+                '")\n;\n';
+            }
             document.querySelector<HTMLTextAreaElement>(
               "#transaction_manifest"
             )!.value +=
-              "TAKE_ALL_FROM_WORKTOP\n" +
-              '    Address("' +
-              resource +
-              '")\n' +
-              '    Bucket("bucket' +
-              bucket_number +
-              '")\n;\n' +
               "CALL_METHOD\n" +
               '    Address("' +
               account +
@@ -123,126 +80,121 @@
               '    Bucket("bucket' +
               bucket_number++ +
               '")\n;\n';
-            add_fungible_to_account(
-              account,
-              resource,
-              fungibles_in_worktop[resource]
-            );
-            remove_fungible_from_worktop(resource, "*");
-          } else {
-            const quantity =
-              document.querySelector<HTMLInputElement>("#quantity2")!.value;
-            if (!quantity.match(/^[0-9]+(\.[0-9]+)?$/)) {
-              document.querySelector<HTMLParagraphElement>("#warn")!.innerText =
-                "invalid quantity!";
-            } else {
-              document.querySelector<HTMLInputElement>("#quantity2")!.value =
-                "";
-              document.querySelector<HTMLTextAreaElement>(
-                "#transaction_manifest"
-              )!.value +=
-                "TAKE_FROM_WORKTOP\n" +
-                '    Address("' +
-                resource +
-                '")\n' +
-                '    Decimal("' +
-                quantity +
-                '")\n' +
-                '    Bucket("bucket' +
-                bucket_number +
-                '")\n;\n' +
-                "CALL_METHOD\n" +
-                '    Address("' +
-                account +
-                '")\n' +
-                '    "deposit"\n' +
-                '    Bucket("bucket' +
-                bucket_number++ +
-                '")\n;\n';
-              add_fungible_to_account(account, resource, parseFloat(quantity));
-              remove_fungible_from_worktop(resource, quantity);
-            }
+            remove_non_fungible_from_worktop(non_fungible);
           }
         }
+        document.querySelector<HTMLSelectElement>(
+          "#fungible2"
+        )!.selectedIndex = 0;
+        document.querySelector<HTMLSelectElement>(
+          "#non_fungible2"
+        )!.selectedIndex = 0;
+      });
+  });
 
-        const non_fungible =
-          document.querySelector<HTMLSelectElement>("#non_fungible2")!.value;
-        if (non_fungible.length > 0) {
-          const res = non_fungible.split(" ");
-          if (res[1] == unknown_nft_id) {
-            document.querySelector<HTMLTextAreaElement>(
-              "#transaction_manifest"
-            )!.value +=
-              "TAKE_ALL_FROM_WORKTOP\n" +
-              '    Address("' +
-              res[0] +
-              '")\n' +
-              '    Bucket("bucket' +
-              bucket_number +
-              '")\n;\n';
-          } else {
-            document.querySelector<HTMLTextAreaElement>(
-              "#transaction_manifest"
-            )!.value +=
-              "TAKE_NON_FUNGIBLES_FROM_WORKTOP\n" +
-              '    Address("' +
-              res[0] +
-              '")\n' +
-              "    Array<NonFungibleLocalId>(\n" +
-              '        NonFungibleLocalId("' +
-              res[1] +
-              '")\n    )\n' +
-              '    Bucket("bucket' +
-              bucket_number +
-              '")\n;\n';
+  function handleAddAction() {
+    if (fungibles.size === 0 && nonFungibles.size === 0) {
+      addActionError.set("put some coins in the worktop first");
+      return;
+    }
+
+    if (!accountAddress) {
+      addActionError.set("select an account first");
+      return;
+    }
+
+    if (entireWorktop && accountAddress) {
+      manifest.update((m) => m + commands.depositEntireWortop(accountAddress!));
+      worktop.clearWorktop();
+    } else {
+      if (fungibleAddress) {
+        const selectedFungible = fungibles.get(fungibleAddress);
+        if (!selectedFungible) {
+          addActionError.set("could not find fungible");
+          return;
+        }
+        if (allFungible) {
+          manifest.update(
+            (m) =>
+              m +
+              commands.sendEntireResourceToAccount(
+                accountAddress!,
+                fungibleAddress,
+                $bucketNumber
+              )
+          );
+          bucketNumber.increment();
+
+          accounts.updateFungible(
+            accountAddress,
+            fungibleAddress,
+            selectedFungible.amount,
+            selectedFungible.symbol
+          );
+          worktop.removeFungible(fungibleAddress, selectedFungible.amount);
+        } else {
+          if (!fungibleQuantity.match(/^[0-9]+(\.[0-9]+)?$/)) {
+            addActionError.set("invalid quantity!");
+            return;
           }
-          document.querySelector<HTMLTextAreaElement>(
-            "#transaction_manifest"
-          )!.value +=
-            "CALL_METHOD\n" +
-            '    Address("' +
-            account +
-            '")\n' +
-            '    "deposit"\n' +
-            '    Bucket("bucket' +
-            bucket_number++ +
-            '")\n;\n';
-          remove_non_fungible_from_worktop(non_fungible);
+          const q = parseFloat(fungibleQuantity);
+          manifest.update(
+            (m) =>
+              m +
+              commands.sendQuantityToAccount(
+                accountAddress!,
+                fungibleAddress,
+                fungibleQuantity,
+                $bucketNumber
+              )
+          );
+          bucketNumber.increment();
+          accounts.updateFungible(
+            accountAddress,
+            fungibleAddress,
+            q,
+            selectedFungible.symbol
+          );
+          worktop.removeFungible(fungibleAddress, q);
+          fungibleQuantity = "";
         }
       }
-      document.querySelector<HTMLSelectElement>(
-        "#fungible2"
-      )!.selectedIndex = 0;
-      document.querySelector<HTMLSelectElement>(
-        "#non_fungible2"
-      )!.selectedIndex = 0;
-    });
+
+      if (nonFungibleKey) {
+        // TODO:
+      }
+    }
+  }
 </script>
 
-<div id="div2">
-  <div>
-    account:
-    <select id="account2" />
+<div class="flex space-x-12 w-full place-items-end">
+  <div class="form-control flex-grow space-y-2">
+    <AccountSelect bind:accountAddress />
+    <div class="flex w-full justify-between space-x-1">
+      <label class="label cursor-pointer space-x-4">
+        <span class="label-text">Entire worktop</span>
+        <input bind:checked={entireWorktop} type="checkbox" class="checkbox" />
+      </label>
+      <label
+        class={`label cursor-pointer space-x-4 ${
+          entireWorktop ? "hidden" : ""
+        }`}
+      >
+        <span class="label-text">All fungible</span>
+        <input bind:checked={allFungible} type="checkbox" class="checkbox" />
+      </label>
+    </div>
+
+    {#if !entireWorktop}
+      <CoinInput
+        {fungibles}
+        bind:fungibleAddress
+        bind:fungibleQuantity
+        bind:allFungible
+        {nonFungibles}
+        bind:nonFungibleKey
+      />
+    {/if}
   </div>
-  <div>
-    entire worktop
-    <input type="checkbox" id="worktop2" checked={true} />
-  </div>
-  <div>
-    fungibles:
-    <select id="fungible2" disabled={true}>
-      <option />
-    </select>
-    quantity: <input type="text" id="quantity2" disabled={true} /> all
-    <input type="checkbox" id="all2" checked={true} disabled={true} />
-  </div>
-  <div>
-    non fungibles:
-    <select id="non_fungible2" disabled={true}>
-      <option />
-    </select>
-  </div>
-  <div>
-    <input type="button" value="add instructions" id="add_instruction2" />
-  </div>
+  <AddActionButton {handleAddAction} />
 </div>
