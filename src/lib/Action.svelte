@@ -2,6 +2,7 @@
   import TakeCoinsFromSelf from "./actions/TakeCoinsFromSelf.svelte";
   import SendCoinsToSelf from "./actions/SendCoinsToSelf.svelte";
   import SendCoinsToAccount from "./actions/SendCoinsToAccount.svelte";
+  import AirdropFungibleCoins from "./actions/AirdropFungibleCoins.svelte";
   import Error from "./Error.svelte";
 
   let actions = {
@@ -25,11 +26,15 @@
       description: "send coins to someone else's account",
       disabled: false,
     },
+    AirdropFungibleCoins: {
+      component: AirdropFungibleCoins,
+      description: "airdrop fungible coins",
+      disabled: false,
+    },
   };
 
   /**
    *  
-        <option>airdrop fungible coins</option>
         <option disabled>--- STAKE/UNSTAKE ---</option>
         <option>stake your XRDs</option>
         <option>unstake your LSUs</option>

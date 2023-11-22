@@ -1,0 +1,236 @@
+<script lang="ts">
+  import { onMount } from "svelte";
+  import {
+    INVALID_ACCOUNT,
+    INVALID_QUANTITY,
+    NOT_ENOUGH_COINS_IN_WORKTOP,
+    NO_ACCOUNT,
+    NO_COINS_SELECTED,
+    NO_FUNGIBLES,
+    NO_QUANTITY,
+    actionError,
+    isValidAccount,
+    isValidQuantity,
+  } from "../stores/errors";
+  import { worktop } from "../stores/worktop";
+  import AddActionButton from "../shared/AddActionButton.svelte";
+  import AccountInput from "../shared/AccountInput.svelte";
+  import AccountSelect from "../shared/AccountSelect.svelte";
+  import { bucketNumber, manifest } from "../stores/transaction";
+  import commands from "../commands";
+  import { accounts } from "../stores/accounts";
+
+  let fungibleAddress: string;
+  let fungibleQuantity = "";
+
+  let accountAddresses = [""];
+  let remainingsAccountAddress = "";
+
+  function addAccountInput() {
+    accountAddresses = [...accountAddresses, ""];
+  }
+
+  function removeAccountInput(index: number) {
+    accountAddresses = accountAddresses.filter((_, i) => i !== index);
+  }
+
+  onMount(() => {
+    actionError.set("");
+    if ($worktop.fungibles.size === 0) {
+      actionError.set(NO_FUNGIBLES);
+    }
+  });
+
+  // validate input fields
+  $: {
+    // quantity
+    if (fungibleQuantity !== "" && !isValidQuantity(fungibleQuantity)) {
+      actionError.set(INVALID_QUANTITY);
+    } else if ($actionError === INVALID_QUANTITY) {
+      actionError.set("");
+    }
+  }
+
+  $: if (accountAddresses) {
+    // if any account addresses is not valid set the error
+    const invalidAddress = accountAddresses.find(
+      (a) => a !== "" && !isValidAccount(a)
+    );
+    if (invalidAddress) {
+      actionError.set(INVALID_ACCOUNT);
+    } else if ($actionError === INVALID_ACCOUNT) {
+      actionError.set("");
+    }
+
+    // if at least one valid address is there, remove an old error
+    const validAccount = accountAddresses.find((a) => isValidAccount(a));
+    if (validAccount && $actionError === NO_ACCOUNT) {
+      actionError.set("");
+    }
+  }
+
+  function handleAddAction() {
+    // error messages set only when add instruction is clicked
+    // not when the input fields are changed or first rendered
+    const onActionErrors = [
+      NO_ACCOUNT,
+      NO_COINS_SELECTED,
+      NO_QUANTITY,
+      NOT_ENOUGH_COINS_IN_WORKTOP,
+    ];
+
+    if (onActionErrors.includes($actionError)) {
+      actionError.set("");
+    }
+
+    if ($actionError !== "") {
+      return;
+    }
+
+    // filter out empty addresses
+    let recipients = accountAddresses.filter((a) => a !== "");
+
+    if (recipients.length === 0) {
+      actionError.set(NO_ACCOUNT);
+      return;
+    }
+
+    if ($worktop.fungibles.size === 0) {
+      actionError.set(NO_FUNGIBLES);
+      return;
+    }
+
+    if (fungibleAddress === "") {
+      actionError.set(NO_COINS_SELECTED);
+      return;
+    }
+
+    if (fungibleQuantity === "") {
+      actionError.set(NO_QUANTITY);
+      return;
+    }
+
+    let q = parseFloat(fungibleQuantity);
+    if (
+      recipients.length * q >
+      ($worktop.fungibles.get(fungibleAddress)?.amount || 0)
+    ) {
+      actionError.set(NOT_ENOUGH_COINS_IN_WORKTOP);
+      return;
+    }
+
+    for (let recipient of recipients) {
+      const command = commands.trySendAmountFungibleToAccount(
+        recipient,
+        fungibleAddress,
+        q,
+        $bucketNumber,
+        "refund"
+      );
+      manifest.update((m) => m + command);
+      bucketNumber.increment();
+      worktop.removeFungible(fungibleAddress, q);
+    }
+
+    // put remainings in remainingsAccountAddress
+    const remainingFungible = $worktop.fungibles.get(fungibleAddress);
+    if (remainingFungible && remainingsAccountAddress !== "") {
+      const putToBucket = commands.putAllResourceToBucket(
+        fungibleAddress,
+        $bucketNumber
+      );
+      const sendToAccount = commands.sendBucketToAccount(
+        remainingsAccountAddress,
+        $bucketNumber
+      );
+      manifest.update((m) => m + putToBucket + sendToAccount);
+      bucketNumber.increment();
+      accounts.updateFungible(
+        remainingsAccountAddress,
+        fungibleAddress,
+        remainingFungible.amount || 0,
+        remainingFungible.symbol
+      );
+      worktop.removeFungible(fungibleAddress, remainingFungible.amount);
+    }
+
+    accountAddresses = [""];
+    fungibleQuantity = "";
+
+    return;
+  }
+</script>
+
+<div class="flex space-x-12 w-full place-items-end">
+  <div class="form-control flex-grow space-y-2">
+    <label class="label">
+      <span class="label-text">Coin</span>
+      <select
+        bind:value={fungibleAddress}
+        class="select select-secondary select-sm w-3/5 text-end"
+      >
+        <option value={""} />
+        {#each Array.from($worktop.fungibles.values()) as fungible}
+          <option value={fungible.address}>{fungible.symbol}</option>
+        {/each}
+      </select>
+    </label>
+    <label class="label pt-0">
+      <span class="label-text">Quantity per recipient</span>
+      <input
+        class="input input-secondary bg-secondary input-sm w-3/5 text-end"
+        type="text"
+        bind:value={fungibleQuantity}
+      /></label
+    >
+
+    <div class="p-2 rounded-box border-2 border-secondary border-dotted">
+      <label class="label cursor-pointer pr-0">
+        <span class="label-text text-sm">Recipients</span>
+        <button on:click={addAccountInput} class="btn btn-ghost btn-sm my-auto">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-4 h-auto"
+            viewBox="0 0 448 512"
+            {...$$props}
+            ><path
+              fill="currentColor"
+              d="M64 80c-8.8 0-16 7.2-16 16v320c0 8.8 7.2 16 16 16h320c8.8 0 16-7.2 16-16V96c0-8.8-7.2-16-16-16H64zM0 96c0-35.3 28.7-64 64-64h320c35.3 0 64 28.7 64 64v320c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V96zm200 248v-64h-64c-13.3 0-24-10.7-24-24s10.7-24 24-24h64v-64c0-13.3 10.7-24 24-24s24 10.7 24 24v64h64c13.3 0 24 10.7 24 24s-10.7 24-24 24h-64v64c0 13.3-10.7 24-24 24s-24-10.7-24-24z"
+            /></svg
+          >
+        </button>
+      </label>
+
+      {#each accountAddresses as accountAddress, index (index)}
+        <div class="flex">
+          <span class="flex-grow"
+            ><AccountInput bind:accountAddress showLabel={false} /></span
+          >
+          <button
+            class="btn btn-ghost btn-sm my-auto"
+            on:click={() => removeAccountInput(index)}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="w-4 h-auto"
+              viewBox="0 0 448 512"
+              ><path
+                fill="currentColor"
+                d="m170.5 51.6l-19 28.4h145l-19-28.4c-1.5-2.2-4-3.6-6.7-3.6h-93.7c-2.7 0-5.2 1.3-6.7 3.6zm147-26.6l36.7 55H424c13.3 0 24 10.7 24 24s-10.7 24-24 24h-8v304c0 44.2-35.8 80-80 80H112c-44.2 0-80-35.8-80-80V128h-8c-13.3 0-24-10.7-24-24s10.7-24 24-24h69.8l36.7-55.1C140.9 9.4 158.4 0 177.1 0h93.7c18.7 0 36.2 9.4 46.6 24.9zM80 128v304c0 17.7 14.3 32 32 32h224c17.7 0 32-14.3 32-32V128H80zm80 64v208c0 8.8-7.2 16-16 16s-16-7.2-16-16V192c0-8.8 7.2-16 16-16s16 7.2 16 16zm80 0v208c0 8.8-7.2 16-16 16s-16-7.2-16-16V192c0-8.8 7.2-16 16-16s16 7.2 16 16zm80 0v208c0 8.8-7.2 16-16 16s-16-7.2-16-16V192c0-8.8 7.2-16 16-16s16 7.2 16 16z"
+              /></svg
+            >
+          </button>
+        </div>
+      {/each}
+    </div>
+
+    <AccountSelect
+      label="Send remainings to"
+      bind:accountAddress={remainingsAccountAddress}
+    />
+  </div>
+
+  <div>
+    <AddActionButton {handleAddAction} />
+  </div>
+</div>

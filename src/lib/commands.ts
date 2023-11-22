@@ -122,7 +122,7 @@ CALL_METHOD
 function trySendAmountFungibleToAccount(
   accountAddress: string,
   fungibleAddress: string,
-  amount: string,
+  amount: number,
   bucketNumber: number,
   fail: "refund" | "abort"
 ) {

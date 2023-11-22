@@ -105,29 +105,6 @@
         </div>
       </div>
 
-      <div id="div10" hidden="true">
-        <div>
-          coin:
-          <select id="fungible10"></select>
-          quantity per recipient: <input type="text" id="quantity10" />
-        </div>
-        <div>recipients (one per line):</div>
-        <div>
-          <textarea id="recipients10" rows="10" cols="85"></textarea>
-        </div>
-        <div>
-          send remainings to:
-          <select id="account10"></select>
-        </div>
-        <div>
-          <input
-            type="button"
-            value="add instructions"
-            id="add_instruction10"
-          />
-        </div>
-      </div>
-
       <div id="div11" hidden="true">
         <div>
           coin to send:
@@ -295,7 +272,7 @@
       </div>
     </div>
     <!-- TODO: remove after refactoring -->
-    <p id="warn"></p>
+    <p id="warn" hidden></p>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

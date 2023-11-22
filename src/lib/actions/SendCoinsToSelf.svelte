@@ -1,10 +1,15 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { NO_ACCOUNT, NO_COINS_INPUT, actionError } from "../stores/errors";
+  import {
+    NO_ACCOUNT,
+    NO_COINS_INPUT,
+    NO_COINS_SELECTED,
+    NO_QUANTITY,
+    actionError,
+  } from "../stores/errors";
   import { worktop } from "../stores/worktop";
   import { accounts } from "../stores/accounts";
   import { manifest, bucketNumber } from "../stores/transaction";
-  import type { WalletFungible, WalletNonFungible } from "../stores/accounts";
   import AddActionButton from "../shared/AddActionButton.svelte";
   import CoinInput from "../shared/CoinInput.svelte";
   import commands from "../commands";
@@ -13,18 +18,11 @@
 
   let entireWorktop = true;
   let allFungible = true;
-  let accountAddress: string | null = null;
-  let fungibles: Map<string, WalletFungible> = new Map();
-  let fungibleAddress: string;
+  let accountAddress = "";
+  let fungibleAddress = "";
   let fungibleQuantity = "";
 
-  let nonFungibles: Map<string, WalletNonFungible> = new Map();
-  let nonFungibleKey: string;
-
-  $: if (accountAddress) {
-    fungibles = $worktop.fungibles;
-    nonFungibles = $worktop.nonFungibles;
-  }
+  let nonFungibleKey = "";
 
   onMount(() => {
     actionError.set("");
@@ -34,20 +32,41 @@
   });
 
   function handleAddAction() {
-    actionError.set("");
+    const onActionErrors = [NO_ACCOUNT, NO_COINS_SELECTED, NO_QUANTITY];
+    if (onActionErrors.includes($actionError)) {
+      actionError.set("");
+    }
+    if ($actionError !== "") {
+      return;
+    }
     if (!accountAddress) {
       actionError.set(NO_ACCOUNT);
       return;
     }
 
-    if (fungibles.size === 0 && nonFungibles.size === 0) {
+    if ($worktop.fungibles.size === 0 && $worktop.nonFungibles.size === 0) {
       actionError.set(NO_COINS_INPUT);
+      return;
+    }
+
+    if (fungibleAddress === "" && nonFungibleKey === "") {
+      actionError.set(NO_COINS_SELECTED);
+      return;
+    }
+
+    if (
+      !entireWorktop &&
+      !allFungible &&
+      fungibleAddress &&
+      fungibleQuantity === ""
+    ) {
+      actionError.set(NO_QUANTITY);
       return;
     }
 
     if (entireWorktop && accountAddress) {
       manifest.update((m) => m + commands.depositEntireWortop(accountAddress!));
-      for (const [address, fungible] of fungibles) {
+      for (const [address, fungible] of $worktop.fungibles) {
         accounts.updateFungible(
           accountAddress,
           address,
@@ -55,7 +74,7 @@
           fungible.symbol
         );
       }
-      for (const [address, nonFungible] of nonFungibles) {
+      for (const [address, nonFungible] of $worktop.nonFungibles) {
         accounts.updateNonFungible(
           accountAddress,
           address,
@@ -66,7 +85,7 @@
       worktop.clearWorktop();
     } else {
       if (fungibleAddress) {
-        const selectedFungible = fungibles.get(fungibleAddress);
+        const selectedFungible = $worktop.fungibles.get(fungibleAddress);
         if (!selectedFungible) {
           actionError.set("could not find fungible");
           return;
@@ -80,10 +99,6 @@
             $bucketNumber
           );
         } else {
-          if (!fungibleQuantity.match(/^[0-9]+(\.[0-9]+)?$/)) {
-            actionError.set("invalid quantity!");
-            return;
-          }
           q = parseFloat(fungibleQuantity);
           command = commands.sendQuantityToAccount(
             accountAddress!,
@@ -105,7 +120,7 @@
       }
 
       if (nonFungibleKey) {
-        const nonFungible = nonFungibles.get(nonFungibleKey);
+        const nonFungible = $worktop.nonFungibles.get(nonFungibleKey);
         if (!nonFungible) {
           actionError.set("could not find non-fungible");
           return;
@@ -160,11 +175,11 @@
 
     {#if !entireWorktop}
       <CoinInput
-        {fungibles}
+        fungibles={$worktop.fungibles}
         bind:fungibleAddress
         bind:fungibleQuantity
         bind:allFungible
-        {nonFungibles}
+        nonFungibles={$worktop.nonFungibles}
         bind:nonFungibleKey
       />
     {/if}

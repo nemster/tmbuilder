@@ -1,6 +1,11 @@
 <script lang="ts">
   import { number_to_string } from "../../content";
-  import { NO_COINS_SELECTED, actionError } from "../stores/errors";
+  import {
+    INVALID_QUANTITY,
+    NO_COINS_SELECTED,
+    actionError,
+    isValidQuantity,
+  } from "../stores/errors";
   import type { WalletFungible, WalletNonFungible } from "../stores/accounts";
 
   export let fungibleAddress: string;
@@ -32,6 +37,16 @@
 
   $: if (fungibleAddress === "") {
     fungibleQuantity = "";
+  }
+
+  $: if (fungibleQuantity !== "" && isValidQuantity(fungibleQuantity)) {
+    actionError.set(INVALID_QUANTITY);
+  }
+  $: if (
+    $actionError === INVALID_QUANTITY &&
+    (fungibleQuantity === "" || isValidQuantity(fungibleQuantity))
+  ) {
+    actionError.set("");
   }
 
   function handleFungibleChange(event: Event) {
