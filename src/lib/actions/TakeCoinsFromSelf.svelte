@@ -5,13 +5,13 @@
   import { manifest } from "../stores/transaction";
   import type { WalletFungible, WalletNonFungible } from "../stores/accounts";
   import AddActionButton from "../shared/AddActionButton.svelte";
-  import { NO_COINS_SELECTED, addActionError } from "../stores/errors";
+  import { NO_COINS_SELECTED, actionError } from "../stores/errors";
   import commands from "../commands";
   import CoinInput from "../shared/CoinInput.svelte";
   import AccountSelect from "../shared/AccountSelect.svelte";
 
   onMount(() => {
-    addActionError.set("");
+    actionError.set("");
   });
 
   let accountAddress: string | null = null;
@@ -28,25 +28,23 @@
   }
 
   function handleAddAction() {
-    if ($addActionError !== "") {
-      return;
-    }
+    actionError.set("");
     if (!accountAddress) {
-      addActionError.set("no account selected!");
+      actionError.set("no account selected!");
       return;
     }
     if (!fungibleAddress && !nonFungibleKey) {
-      addActionError.set(NO_COINS_SELECTED);
+      actionError.set(NO_COINS_SELECTED);
       return;
     } else {
-      addActionError.set("");
+      actionError.set("");
     }
 
     let command = "";
 
     if (fungibleAddress !== "") {
       if (!fungibleQuantity.match(/^[0-9]+(\.[0-9]+)?$/)) {
-        addActionError.set("invalid quantity!");
+        actionError.set("invalid quantity!");
         return;
       } else {
         var q = parseFloat(fungibleQuantity);
@@ -81,7 +79,7 @@
       worktop.addNonFungible(nonFungibles.get(nonFungibleKey)!);
       accounts.removeNonFungible(accountAddress, nonFungibleKey);
     } else {
-      addActionError.set(NO_COINS_SELECTED);
+      actionError.set(NO_COINS_SELECTED);
       return;
     }
 

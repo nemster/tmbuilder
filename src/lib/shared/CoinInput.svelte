@@ -1,6 +1,6 @@
 <script lang="ts">
   import { number_to_string } from "../../content";
-  import { NO_COINS_SELECTED, addActionError } from "../stores/errors";
+  import { NO_COINS_SELECTED, actionError } from "../stores/errors";
   import type { WalletFungible, WalletNonFungible } from "../stores/accounts";
 
   export let fungibleAddress: string;
@@ -41,8 +41,8 @@
       fungibleQuantity = number_to_string(
         fungibles.get(fungibleAddress)?.amount || 0
       );
-      if ($addActionError === NO_COINS_SELECTED) {
-        addActionError.set("");
+      if ($actionError === NO_COINS_SELECTED) {
+        actionError.set("");
       }
     } else {
       fungibleQuantity = "";
@@ -53,8 +53,8 @@
     const target = event.target as HTMLSelectElement;
     nonFungibleKey = target?.value;
     if (nonFungibleKey) {
-      if ($addActionError === NO_COINS_SELECTED) {
-        addActionError.set("");
+      if ($actionError === NO_COINS_SELECTED) {
+        actionError.set("");
       }
     }
   }
@@ -79,7 +79,7 @@
   <label class={`label pt-0 ${allFungible ? "hidden" : ""}`}>
     <span class="label-text">Quantity</span>
     <input
-      class="input bg-secondary input-sm w-3/5 text-end"
+      class="input input-secondary bg-secondary input-sm w-3/5 text-end"
       type="text"
       disabled={allFungible}
       bind:value={fungibleQuantity}

@@ -1,16 +1,34 @@
 <script lang="ts">
-  import TakeCoins from "./actions/TakeCoins.svelte";
+  import TakeCoinsFromSelf from "./actions/TakeCoinsFromSelf.svelte";
   import SendCoinsToSelf from "./actions/SendCoinsToSelf.svelte";
+  import SendCoinsToAccount from "./actions/SendCoinsToAccount.svelte";
   import Error from "./Error.svelte";
 
-  interface Action {
-    component: any;
-    description: string;
-    disabled: boolean;
-  }
+  let actions = {
+    TakeCoinsFromSelf: {
+      component: TakeCoinsFromSelf,
+      description: "take coins from your account",
+      disabled: false,
+    },
+    sendCoinsLabel: {
+      component: null,
+      description: "--- SEND COINS ---",
+      disabled: true,
+    },
+    SendCoinsToSelf: {
+      component: SendCoinsToSelf,
+      description: "send coins to your account",
+      disabled: false,
+    },
+    SendCoinsToAccount: {
+      component: SendCoinsToAccount,
+      description: "send coins to someone else's account",
+      disabled: false,
+    },
+  };
+
   /**
    *  
-        <option>send coins to someone else's account</option>
         <option>airdrop fungible coins</option>
         <option disabled>--- STAKE/UNSTAKE ---</option>
         <option>stake your XRDs</option>
@@ -38,25 +56,7 @@
         <option>redeem your WEFT</option>
    */
 
-  let actions: Action[] = [
-    {
-      component: TakeCoins,
-      description: "take coins from your account",
-      disabled: false,
-    },
-    {
-      component: null,
-      description: "--- SEND COINS ---",
-      disabled: true,
-    },
-    {
-      component: SendCoinsToSelf,
-      description: "send coins to your account",
-      disabled: false,
-    },
-  ];
-
-  let selectedActionI = 0;
+  let selectedAction = actions.TakeCoinsFromSelf;
 </script>
 
 <div
@@ -69,12 +69,12 @@
 
     <div class="flex flex-1 justify-end">
       <select
-        bind:value={selectedActionI}
+        bind:value={selectedAction}
         id="action"
         class="select select-gohst text-accent text-end text-lg"
       >
-        {#each actions as action, i}
-          <option value={i} disabled={action.disabled}>
+        {#each Object.values(actions) as action}
+          <option value={action} disabled={action.disabled}>
             {action.description}
           </option>
         {/each}
@@ -83,6 +83,6 @@
   </div>
 
   <div class="w-full ml-2">
-    <svelte:component this={actions[selectedActionI].component} />
+    <svelte:component this={selectedAction.component} />
   </div>
 </div>

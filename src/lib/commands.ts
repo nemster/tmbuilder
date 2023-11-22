@@ -90,6 +90,68 @@ function sendBucketToAccount(account: string, bucketNumber: number) {
 ;
 `;
 }
+function tryDepositEntireWortop(account: string, fail: string) {
+  return `CALL_METHOD
+    Address("${account}")
+    "try_deposit_batch_or_${fail}"
+    Expression("ENTIRE_WORKTOP")
+    Enum<0u8>()
+;
+`;
+}
+
+function trySendAllFungibleToAccount(
+  accountAddress: string,
+  fungibleAddress: string,
+  bucketNumber: number,
+  fail: "refund" | "abort"
+) {
+  return `TAKE_ALL_FROM_WORKTOP
+    Address("${fungibleAddress}")
+    Bucket("bucket${bucketNumber}")
+;
+CALL_METHOD
+    Address("${accountAddress}")
+    "try_deposit_or_${fail}"
+    Bucket("bucket${bucketNumber}")
+    Enum<0u8>()
+;
+`;
+}
+
+function trySendAmountFungibleToAccount(
+  accountAddress: string,
+  fungibleAddress: string,
+  amount: string,
+  bucketNumber: number,
+  fail: "refund" | "abort"
+) {
+  return `TAKE_FROM_WORKTOP
+    Address("${fungibleAddress}")
+    Decimal("${amount}")
+    Bucket("bucket${bucketNumber}")
+;
+CALL_METHOD
+    Address("${accountAddress}")
+    "try_deposit_or_${fail}"
+    Bucket("bucket${bucketNumber}")
+    Enum<0u8>()
+;
+`;
+}
+
+function tryDepositBucketToAccount(
+  account: string,
+  fail: string,
+  bucketNumber: number
+) {
+  return `CALL_METHOD
+    Address("${account}")
+    "try_deposit_or_${fail}"
+    Bucket("bucket${bucketNumber}")
+;
+`;
+}
 
 export default {
   withdraw,
@@ -100,4 +162,8 @@ export default {
   putAllResourceToBucket,
   putNonFungibleToBucket,
   sendBucketToAccount,
+  tryDepositEntireWortop,
+  trySendAllFungibleToAccount,
+  trySendAmountFungibleToAccount,
+  tryDepositBucketToAccount,
 };

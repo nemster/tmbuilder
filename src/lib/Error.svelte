@@ -1,13 +1,17 @@
 <script lang="ts">
-  import { addActionError } from "./stores/errors";
+  import { actionError } from "./stores/errors";
   let hidden = "";
 
-  $: hidden = $addActionError === "" ? "hidden" : "";
+  $: if ($actionError === "") {
+    hidden = "hidden";
+  } else {
+    hidden = "";
+  }
 </script>
 
 <div
   role="alert"
-  class={`flex items-center p-2 bg-error text-error-content rounded-box ${hidden}`}
+  class={`flex items-center p-2 space-x-2 bg-error text-error-content rounded-box ${hidden}`}
 >
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -22,5 +26,5 @@
     /></svg
   >
 
-  <span class="text-center">{$addActionError}</span>
+  <span class="text-center">{$actionError}</span>
 </div>

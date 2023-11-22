@@ -9,7 +9,8 @@
   import CoinInput from "../shared/CoinInput.svelte";
   import commands from "../commands";
   import { UNKNOWN_NFT_ID } from "../../content";
-  import AccountSelect from "../shared/AccountSelect.svelte";
+  import AccountInput from "../shared/AccountInput.svelte";
+  import FailToggle from "../shared/FailToggle.svelte";
 
   let entireWorktop = true;
   let allFungible = true;
@@ -21,7 +22,9 @@
   let nonFungibles: Map<string, WalletNonFungible> = new Map();
   let nonFungibleKey: string;
 
-  $: if (accountAddress) {
+  let fail: "refund" | "abort" = "refund";
+
+  $: {
     fungibles = $worktop.fungibles;
     nonFungibles = $worktop.nonFungibles;
   }
@@ -46,22 +49,27 @@
     }
 
     if (entireWorktop && accountAddress) {
-      manifest.update((m) => m + commands.depositEntireWortop(accountAddress!));
-      for (const [address, fungible] of fungibles) {
-        accounts.updateFungible(
-          accountAddress,
-          address,
-          fungible.amount,
-          fungible.symbol
-        );
-      }
-      for (const [address, nonFungible] of nonFungibles) {
-        accounts.updateNonFungible(
-          accountAddress,
-          address,
-          nonFungible.symbol,
-          nonFungible.id
-        );
+      manifest.update(
+        (m) => m + commands.tryDepositEntireWortop(accountAddress!, fail)
+      );
+      if ($accounts.has(accountAddress)) {
+        // if the user specified their own account
+        for (const [address, fungible] of fungibles) {
+          accounts.updateFungible(
+            accountAddress,
+            address,
+            fungible.amount,
+            fungible.symbol
+          );
+        }
+        for (const [address, nonFungible] of nonFungibles) {
+          accounts.updateNonFungible(
+            accountAddress,
+            address,
+            nonFungible.symbol,
+            nonFungible.id
+          );
+        }
       }
       worktop.clearWorktop();
     } else {
@@ -71,13 +79,15 @@
           actionError.set("could not find fungible");
           return;
         }
-        let command = "";
+
         let q = selectedFungible.amount;
+        let command = "";
         if (allFungible) {
-          command = commands.sendAllResourceToAccount(
+          command = commands.trySendAllFungibleToAccount(
             accountAddress!,
             fungibleAddress,
-            $bucketNumber
+            $bucketNumber,
+            fail
           );
         } else {
           if (!fungibleQuantity.match(/^[0-9]+(\.[0-9]+)?$/)) {
@@ -85,21 +95,27 @@
             return;
           }
           q = parseFloat(fungibleQuantity);
-          command = commands.sendQuantityToAccount(
-            accountAddress!,
+          command = commands.trySendAmountFungibleToAccount(
+            accountAddress,
             fungibleAddress,
-            fungibleQuantity,
-            $bucketNumber
+            q.toString(),
+            $bucketNumber,
+            fail
           );
         }
         manifest.update((m) => m + command);
         bucketNumber.increment();
-        accounts.updateFungible(
-          accountAddress,
-          fungibleAddress,
-          q,
-          selectedFungible.symbol
-        );
+
+        if ($accounts.has(accountAddress)) {
+          // if the user specified their own account
+          accounts.updateFungible(
+            accountAddress,
+            fungibleAddress,
+            q,
+            selectedFungible.symbol
+          );
+        }
+
         worktop.removeFungible(fungibleAddress, q);
         fungibleQuantity = "";
       }
@@ -124,15 +140,22 @@
             $bucketNumber
           );
         }
-        command += commands.sendBucketToAccount(accountAddress, $bucketNumber);
+        command += commands.tryDepositBucketToAccount(
+          accountAddress,
+          fail,
+          $bucketNumber
+        );
         bucketNumber.increment();
         worktop.removeNonFungible(nonFungibleKey);
-        accounts.updateNonFungible(
-          accountAddress,
-          nonFungible.address,
-          nonFungible.symbol,
-          nonFungible.id
-        );
+        if ($accounts.has(accountAddress)) {
+          // if the user specified their own account
+          accounts.updateNonFungible(
+            accountAddress,
+            nonFungible.address,
+            nonFungible.symbol,
+            nonFungible.id
+          );
+        }
         manifest.update((m) => m + command);
         nonFungibleKey = "";
       }
@@ -142,7 +165,7 @@
 
 <div class="flex space-x-12 w-full place-items-end">
   <div class="form-control flex-grow space-y-2">
-    <AccountSelect bind:accountAddress />
+    <AccountInput bind:accountAddress />
     <div class="flex w-full justify-between space-x-1">
       <label class="label cursor-pointer space-x-4">
         <span class="label-text">Entire worktop</span>
@@ -168,6 +191,8 @@
         bind:nonFungibleKey
       />
     {/if}
+
+    <FailToggle bind:fail />
   </div>
   <AddActionButton {handleAddAction} />
 </div>
