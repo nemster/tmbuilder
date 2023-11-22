@@ -54,16 +54,16 @@ function createWorktop() {
 
   function addNonFungible(nonFungible: WalletNonFungible) {
     update((worktop) => {
-      worktop.nonFungibles.set(nonFungible.address, {
+      worktop.nonFungibles.set(nonFungible.key, {
         ...nonFungible,
       });
       return worktop;
     });
   }
 
-  function removeNonFungible(nonFungible: WalletNonFungible) {
+  function removeNonFungible(nonFungibleKey: string) {
     update((worktop) => {
-      worktop.nonFungibles.delete(nonFungible.address);
+      worktop.nonFungibles.delete(nonFungibleKey);
       return worktop;
     });
   }

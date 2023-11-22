@@ -9,6 +9,7 @@
   import AddActionButton from "../shared/AddActionButton.svelte";
   import CoinInput from "../shared/CoinInput.svelte";
   import commands from "../commands";
+  import { UNKNOWN_NFT_ID } from "../../content";
 
   let entireWorktop = true;
   let allFungible = true;
@@ -27,69 +28,6 @@
 
   onMount(() => {
     addActionError.set("");
-
-    return;
-
-    document
-      .querySelector<HTMLButtonElement>("#add_instruction2")!
-      .addEventListener("click", function () {
-        const account =
-          document.querySelector<HTMLSelectElement>("#account2")!.value;
-
-        if (document.querySelector<HTMLInputElement>("#worktop2")!.checked) {
-        } else {
-          const non_fungible =
-            document.querySelector<HTMLSelectElement>("#non_fungible2")!.value;
-          if (non_fungible.length > 0) {
-            const res = non_fungible.split(" ");
-            if (res[1] == unknown_nft_id) {
-              document.querySelector<HTMLTextAreaElement>(
-                "#transaction_manifest"
-              )!.value +=
-                "TAKE_ALL_FROM_WORKTOP\n" +
-                '    Address("' +
-                res[0] +
-                '")\n' +
-                '    Bucket("bucket' +
-                bucket_number +
-                '")\n;\n';
-            } else {
-              document.querySelector<HTMLTextAreaElement>(
-                "#transaction_manifest"
-              )!.value +=
-                "TAKE_NON_FUNGIBLES_FROM_WORKTOP\n" +
-                '    Address("' +
-                res[0] +
-                '")\n' +
-                "    Array<NonFungibleLocalId>(\n" +
-                '        NonFungibleLocalId("' +
-                res[1] +
-                '")\n    )\n' +
-                '    Bucket("bucket' +
-                bucket_number +
-                '")\n;\n';
-            }
-            document.querySelector<HTMLTextAreaElement>(
-              "#transaction_manifest"
-            )!.value +=
-              "CALL_METHOD\n" +
-              '    Address("' +
-              account +
-              '")\n' +
-              '    "deposit"\n' +
-              '    Bucket("bucket' +
-              bucket_number++ +
-              '")\n;\n';
-            remove_non_fungible_from_worktop(non_fungible);
-          }
-        }
-        document.querySelector<HTMLSelectElement>(
-          "#fungible2"
-        )!.selectedIndex = 0;
-        document.querySelector<HTMLSelectElement>(
-          "#non_fungible2"
-        )!.selectedIndex = 0;
-      });
   });
 
   function handleAddAction() {
@@ -117,7 +55,7 @@
           manifest.update(
             (m) =>
               m +
-              commands.sendEntireResourceToAccount(
+              commands.sendAllResourceToAccount(
                 accountAddress!,
                 fungibleAddress,
                 $bucketNumber
@@ -161,7 +99,36 @@
       }
 
       if (nonFungibleKey) {
-        // TODO:
+        const nonFungible = nonFungibles.get(nonFungibleKey);
+        if (!nonFungible) {
+          addActionError.set("could not find non-fungible");
+          return;
+        }
+
+        let command = "";
+        if (nonFungible.id === UNKNOWN_NFT_ID) {
+          command = commands.putAllResourceToBucket(
+            nonFungible.address,
+            $bucketNumber
+          );
+        } else {
+          command = commands.putNonFungibleToBucket(
+            nonFungible.address,
+            nonFungible.id,
+            $bucketNumber
+          );
+        }
+        command += commands.sendBucketToAccount(accountAddress, $bucketNumber);
+        bucketNumber.increment();
+        worktop.removeNonFungible(nonFungibleKey);
+        accounts.updateNonFungible(
+          accountAddress,
+          nonFungible.address,
+          nonFungible.symbol,
+          nonFungible.id
+        );
+        manifest.update((m) => m + command);
+        nonFungibleKey = "";
       }
     }
   }

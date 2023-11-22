@@ -90,7 +90,7 @@ const lsu_pool =
   "component_rdx1cppy08xgra5tv5melsjtj79c0ngvrlmzl8hhs7vwtzknp9xxs63mfp";
 const lsulp =
   "resource_rdx1thksg5ng70g9mmy9ne7wz0sc7auzrrwy7fmgcxzel2gvp8pj0xxfmf";
-const unknown_nft_id = "???";
+export const UNKNOWN_NFT_ID = "???";
 var claim_amount: { [key: string]: number } = {};
 var claim_epoch: { [key: string]: number } = {};
 const backeum_trophies =
@@ -454,7 +454,7 @@ export function remove_non_fungible_from_worktop(non_fungible: string) {
     resource6!.innerHTML = "";
   } else {
     const parts = non_fungible.split(" ");
-    if (parts[1] == unknown_nft_id) {
+    if (parts[1] == UNKNOWN_NFT_ID) {
       for (var i = non_fungibles_in_worktop.length - 1; i >= 0; i--) {
         if (non_fungibles_in_worktop[i].includes(parts[0])) {
           non_fungibles_in_worktop.splice(i, 1);
@@ -1027,7 +1027,7 @@ export function initContent() {
           document.querySelector<HTMLSelectElement>("#non_fungible3")!.value;
         if (non_fungible.length > 0) {
           const res = non_fungible.split(" ");
-          if (res[1] == unknown_nft_id) {
+          if (res[1] == UNKNOWN_NFT_ID) {
             document.querySelector<HTMLTextAreaElement>(
               "#transaction_manifest"
             )!.value +=
@@ -1235,7 +1235,7 @@ export function initContent() {
       }
       for (var nft of Object.keys(claim_nft)) {
         if (claim_nft[nft] == validator) {
-          add_non_fungible_to_worktop(nft + " " + unknown_nft_id);
+          add_non_fungible_to_worktop(nft + " " + UNKNOWN_NFT_ID);
         }
       }
     });
@@ -1253,7 +1253,7 @@ export function initContent() {
 
       if (nft.length > 0) {
         const validator = claim_nft[res[0]];
-        if (res[1] == unknown_nft_id) {
+        if (res[1] == UNKNOWN_NFT_ID) {
           document.querySelector<HTMLTextAreaElement>(
             "#transaction_manifest"
           )!.value +=
@@ -1399,7 +1399,7 @@ export function initContent() {
             '")\n    )\n;\n';
         } else {
           transaction_manifest += "    Enum<0u8>()\n;\n";
-          add_non_fungible_to_worktop(lsu_pool_receipt + " " + unknown_nft_id);
+          add_non_fungible_to_worktop(lsu_pool_receipt + " " + UNKNOWN_NFT_ID);
         }
         add_fungible_to_worktop(lsulp, q);
         document.querySelector<HTMLTextAreaElement>(
@@ -1513,7 +1513,7 @@ export function initContent() {
           '")\n    )\n;\n';
       } else {
         transaction_manifest += "    Enum<0u8>()\n;\n";
-        add_non_fungible_to_worktop(lsu_pool_receipt + " " + unknown_nft_id);
+        add_non_fungible_to_worktop(lsu_pool_receipt + " " + UNKNOWN_NFT_ID);
       }
       add_fungible_to_worktop(lsu, q);
       document.querySelector<HTMLTextAreaElement>(
@@ -2277,7 +2277,7 @@ export function initContent() {
         '")\n;\n';
       gable_loan_quantity = parseFloat(quantity);
       add_fungible_to_worktop(xrd, gable_loan_quantity);
-      add_non_fungible_to_worktop(gable_transient_nft + " " + unknown_nft_id);
+      add_non_fungible_to_worktop(gable_transient_nft + " " + UNKNOWN_NFT_ID);
     });
 
   document
@@ -2333,7 +2333,7 @@ export function initContent() {
       gable_loan_quantity = 0;
       remove_fungible_from_worktop(xrd, String(xrd_to_refund));
       remove_non_fungible_from_worktop(
-        gable_transient_nft + " " + unknown_nft_id
+        gable_transient_nft + " " + UNKNOWN_NFT_ID
       );
     });
 
@@ -2748,7 +2748,7 @@ export function initContent() {
         '    Bucket("bucket' +
         bucket_number++ +
         '")\n;\n';
-      add_non_fungible_to_worktop(gable_liquidity_nft + " " + unknown_nft_id);
+      add_non_fungible_to_worktop(gable_liquidity_nft + " " + UNKNOWN_NFT_ID);
     });
 
   document

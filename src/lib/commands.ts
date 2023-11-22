@@ -7,7 +7,6 @@ function withdraw(account: string, resource: string, q: number) {
 ;
 `;
 }
-
 function withdrawNonFungibles(account: string, resource: string, id: string) {
   return `CALL_METHOD
     Address("${account}")
@@ -19,7 +18,6 @@ function withdrawNonFungibles(account: string, resource: string, id: string) {
 ;
 `;
 }
-
 function depositEntireWortop(account: string) {
   return `CALL_METHOD
     Address("${account}")
@@ -28,8 +26,7 @@ function depositEntireWortop(account: string) {
 ;
 `;
 }
-
-function sendEntireResourceToAccount(
+function sendAllResourceToAccount(
   account: string,
   resource: string,
   bucketNumber: number
@@ -45,7 +42,6 @@ CALL_METHOD
 ;
 `;
 }
-
 function sendQuantityToAccount(
   account: string,
   resource: string,
@@ -57,20 +53,51 @@ function sendQuantityToAccount(
     Address("${resource}")
     Decimal("${quantity}")
     Bucket("bucket${bucketNumber}")
-  ;
-
-  CALL_METHOD
+;
+CALL_METHOD
     Address("${account}")
     "deposit"
     Bucket("bucket${bucketNumber}")
-  ;
-  `;
+;
+`;
+}
+function putAllResourceToBucket(resource: string, bucketNumber: number) {
+  return `TAKE_ALL_FROM_WORKTOP
+    Address("${resource}")
+    Bucket("bucket${bucketNumber}")
+;
+`;
+}
+function putNonFungibleToBucket(
+  resource: string,
+  id: string,
+  bucketNumber: number
+) {
+  return `TAKE_NON_FUNGIBLES_FROM_WORKTOP
+    Address("${resource}")
+    Array<NonFungibleLocalId>(
+      NonFungibleLocalId("${id}")
+    )
+    Bucket("bucket${bucketNumber}")
+;
+`;
+}
+function sendBucketToAccount(account: string, bucketNumber: number) {
+  return `CALL_METHOD
+    Address("${account}")
+    "deposit"
+    Bucket("bucket${bucketNumber}")
+;
+`;
 }
 
 export default {
   withdraw,
   withdrawNonFungibles,
   depositEntireWortop,
-  sendEntireResourceToAccount,
+  sendAllResourceToAccount,
   sendQuantityToAccount,
+  putAllResourceToBucket,
+  putNonFungibleToBucket,
+  sendBucketToAccount,
 };
