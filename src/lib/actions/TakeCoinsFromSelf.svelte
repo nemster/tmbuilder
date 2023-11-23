@@ -1,24 +1,20 @@
 <script lang="ts">
   import { afterUpdate, onDestroy, onMount } from "svelte";
-  import { accounts } from "../stores/accounts";
-  import { worktop } from "../stores/worktop";
-  import { manifest } from "../stores/transaction";
-  import type { WalletFungible, WalletNonFungible } from "../stores/accounts";
+  import commands from "../commands";
+  import AccountSelect from "../shared/AccountSelect.svelte";
   import AddActionButton from "../shared/AddActionButton.svelte";
+  import CoinInput from "../shared/CoinInput.svelte";
+  import type { WalletFungible, WalletNonFungible } from "../stores/accounts";
+  import { accounts } from "../stores/accounts";
   import {
-    NOT_ENOUGH_COINS_ON_WORKTOP,
     NO_ACCOUNT,
-    NO_COINS_ON_WORKTOP,
     NO_COINS_SELECTED,
-    NO_FUNGIBLES_ON_WORKTOP,
-    NO_XRD_ON_WORKTOP,
     actionError,
     validateQuantity,
     validationErrors,
   } from "../stores/errors";
-  import commands from "../commands";
-  import CoinInput from "../shared/CoinInput.svelte";
-  import AccountSelect from "../shared/AccountSelect.svelte";
+  import { manifest } from "../stores/transaction";
+  import { worktop } from "../stores/worktop";
 
   let accountAddress: string | null = null;
   let fungibles: Map<string, WalletFungible> = new Map();

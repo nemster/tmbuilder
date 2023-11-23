@@ -1,8 +1,14 @@
 <script lang="ts">
   import { afterUpdate, onDestroy, onMount } from "svelte";
+  import { UNKNOWN_NFT_ID } from "../../content";
+  import commands from "../commands";
+  import AccountInput from "../shared/AccountInput.svelte";
+  import AddActionButton from "../shared/AddActionButton.svelte";
+  import CoinInput from "../shared/CoinInput.svelte";
+  import FailToggle from "../shared/FailToggle.svelte";
+  import { accounts } from "../stores/accounts";
   import {
     NO_ACCOUNT,
-    NO_COINS_ON_WORKTOP,
     NO_COINS_SELECTED,
     NO_QUANTITY,
     actionError,
@@ -11,21 +17,15 @@
     validateQuantity,
     validationErrors,
   } from "../stores/errors";
+  import { bucketNumber, manifest } from "../stores/transaction";
   import { worktop } from "../stores/worktop";
-  import { accounts } from "../stores/accounts";
-  import { manifest, bucketNumber } from "../stores/transaction";
-  import AddActionButton from "../shared/AddActionButton.svelte";
-  import CoinInput from "../shared/CoinInput.svelte";
-  import commands from "../commands";
-  import { UNKNOWN_NFT_ID } from "../../content";
-  import AccountInput from "../shared/AccountInput.svelte";
-  import FailToggle from "../shared/FailToggle.svelte";
 
   let entireWorktop = true;
   let allFungible = true;
   let accountAddress = "";
   let fungibleAddress: string;
   let fungibleQuantity = "";
+  let maxFungibleQuantity: number | undefined = undefined;
   let nonFungibleKey: string;
 
   let fail: "refund" | "abort" = "refund";
@@ -37,12 +37,16 @@
   afterUpdate(() => {
     validateAccount(accountAddress);
     validateAvailableCoins();
-    validateQuantity(fungibleQuantity);
+    validateQuantity(fungibleQuantity, maxFungibleQuantity);
   });
 
   onDestroy(() => {
     validationErrors.clear();
   });
+
+  $: if (fungibleAddress !== "") {
+    maxFungibleQuantity = $worktop.fungibles.get(fungibleAddress)?.amount;
+  }
 
   function handleAddAction() {
     actionError.set("");

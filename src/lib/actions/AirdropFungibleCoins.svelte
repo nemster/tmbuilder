@@ -20,6 +20,7 @@
 
   let fungibleAddress: string;
   let fungibleQuantity = "";
+  let maxFungibleQuantity: number | undefined = undefined;
 
   let accountAddresses = [""];
   let remainingsAccountAddress = "";
@@ -37,7 +38,7 @@
   });
 
   afterUpdate(() => {
-    validateQuantity(fungibleQuantity);
+    validateQuantity(fungibleQuantity, maxFungibleQuantity);
     validateAvailableFungibles();
     validateMultipleAccounts(accountAddresses);
   });
@@ -45,6 +46,12 @@
   onDestroy(() => {
     validationErrors.clear();
   });
+
+  $: if (fungibleAddress !== "") {
+    const nAddresses = accountAddresses.filter((a) => a !== "").length;
+    maxFungibleQuantity =
+      $worktop.fungibles.get(fungibleAddress)?.amount || 0 / nAddresses;
+  }
 
   function handleAddAction() {
     actionError.set("");

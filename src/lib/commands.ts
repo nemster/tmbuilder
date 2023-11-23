@@ -185,6 +185,15 @@ function unstakeBucket(validatorAdress: string, bucketNumber: number) {
 `;
 }
 
+function claimXrd(validator: string, bucketNumber: number) {
+  return `CALL_METHOD
+    Address("${validator}")
+    "claim_xrd"
+    Bucket("bucket${bucketNumber}")
+  ;
+  `;
+}
+
 export default {
   withdraw,
   withdrawNonFungibles,
@@ -201,4 +210,5 @@ export default {
   stakeBucket,
   putResourceToBucket,
   unstakeBucket,
+  claimXrd,
 };

@@ -32,6 +32,10 @@
     validationErrors.clear();
   });
 
+  $: if ($worktopLSU.size > 0 && lsuAddress === "") {
+    lsuAddress = $worktopLSU.values().next().value.address;
+  }
+
   $: if (lsuAddress !== "") {
     maxQuantity = $worktopLSU.get(lsuAddress)?.amount;
   }

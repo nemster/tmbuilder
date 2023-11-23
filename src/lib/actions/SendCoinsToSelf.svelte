@@ -23,6 +23,7 @@
   let accountAddress = "";
   let fungibleAddress = "";
   let fungibleQuantity = "";
+  let maxFungibleQuantity: number | undefined = undefined;
 
   let nonFungibleKey = "";
 
@@ -32,12 +33,16 @@
 
   afterUpdate(() => {
     validateAvailableCoins();
-    validateQuantity(fungibleQuantity);
+    validateQuantity(fungibleQuantity, maxFungibleQuantity);
   });
 
   onDestroy(() => {
     validationErrors.clear();
   });
+
+  $: if (fungibleAddress !== "") {
+    maxFungibleQuantity = $worktop.fungibles.get(fungibleAddress)?.amount;
+  }
 
   function handleAddAction() {
     actionError.set("");

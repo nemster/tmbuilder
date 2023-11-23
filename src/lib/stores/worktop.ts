@@ -5,7 +5,7 @@ import {
   find_fungible_symbol,
   find_non_fungible_symbol,
 } from "../../content";
-import { pool_units } from "../../validators";
+import { claim_nft, pool_units } from "../../validators";
 
 export interface Worktop {
   fungibles: Map<string, WalletFungible>;
@@ -113,3 +113,17 @@ export const worktopLSU = derived<typeof worktop, Map<string, WalletFungible>>(
     return filtered;
   }
 );
+export const worktopUnstakedXrdNft = derived<
+  typeof worktop,
+  Map<string, WalletNonFungible>
+>(worktop, ($worktop) => {
+  const filtered = new Map();
+
+  for (const [key, nonFungible] of $worktop.nonFungibles) {
+    if (nonFungible.address in claim_nft) {
+      filtered.set(key, nonFungible);
+    }
+  }
+
+  return filtered;
+});

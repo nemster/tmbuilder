@@ -5,39 +5,34 @@
  */
 
 import {
-  RadixDappToolkit,
-  DataRequestBuilder,
-} from "@radixdlt/radix-dapp-toolkit";
-import {
-  GatewayApiClient,
   FungibleResourcesCollectionItemGloballyAggregated,
-  NonFungibleResourcesCollectionItemVaultAggregated,
+  GatewayApiClient,
   MetadataStringValue,
-  ProgrammaticScryptoSborValueTuple,
+  NonFungibleResourcesCollectionItemVaultAggregated,
   ProgrammaticScryptoSborValueDecimal,
-  ProgrammaticScryptoSborValueU64,
-  ProgrammaticScryptoSborValueString,
   ProgrammaticScryptoSborValueMap,
+  ProgrammaticScryptoSborValueString,
+  ProgrammaticScryptoSborValueTuple,
+  ProgrammaticScryptoSborValueU64,
 } from "@radixdlt/babylon-gateway-api-sdk";
 import {
-  validators_names,
-  pool_units,
-  claim_nft,
-  validators_you_can_stake_to,
-} from "./validators.ts";
+  DataRequestBuilder,
+  RadixDappToolkit,
+} from "@radixdlt/radix-dapp-toolkit";
+import { alphadex_listed_coins } from "./alphadex.ts";
+import { defiplaza_listed_coins } from "./defiplaza.ts";
+import { accounts } from "./lib/stores/accounts.ts";
 import {
   ociswap_listed_coins,
-  ociswap_lp_pools,
   ociswap_lp_names,
+  ociswap_lp_pools,
 } from "./ociswap.ts";
-import { defiplaza_listed_coins } from "./defiplaza.ts";
-import { alphadex_listed_coins } from "./alphadex.ts";
 import {
-  radixplanet_pools,
   radixplanet_listed_coins,
   radixplanet_lp,
+  radixplanet_pools,
 } from "./radixplanet.ts";
-import { accounts } from "./lib/stores/accounts.ts";
+import { claim_nft, pool_units, validators_names } from "./validators.ts";
 
 interface fungibles_array {
   [index: string]: number;
@@ -91,7 +86,7 @@ const lsu_pool =
 const lsulp =
   "resource_rdx1thksg5ng70g9mmy9ne7wz0sc7auzrrwy7fmgcxzel2gvp8pj0xxfmf";
 export const UNKNOWN_NFT_ID = "???";
-var claim_amount: { [key: string]: number } = {};
+export let claim_amount: { [key: string]: number } = {};
 var claim_epoch: { [key: string]: number } = {};
 const backeum_trophies =
   "resource_rdx1ng8ugxt6tj0e22fvf6js4e3x5k8uwaqvz9tl8u924u54h7zxeh6jnp";
@@ -328,13 +323,6 @@ export function add_non_fungible_to_worktop(resource: string) {
       symbol + " " + res[1],
       resource
     );
-    if (claim_nft[res[0]] != undefined) {
-      const nft6 = document.querySelector<HTMLSelectElement>("#nft6");
-      nft6!.options[nft6!.options.length] = new Option(
-        symbol + " " + res[1],
-        resource
-      );
-    }
   }
 }
 
@@ -723,26 +711,6 @@ export function initContent() {
       document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
         "&nbsp;";
 
-      // --- STAKE/UNSTAKE ---
-      if (
-        this.selectedIndex == 6 &&
-        (fungibles_in_worktop[XRD] == undefined ||
-          fungibles_in_worktop[XRD] == 0)
-      ) {
-      } else if (
-        this.selectedIndex == 7 &&
-        document.querySelector<HTMLSelectElement>("#lsu5")!.options.length == 0
-      ) {
-        document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
-          "put some LSUs in the worktop first";
-      } else if (
-        this.selectedIndex == 8 &&
-        document.querySelector<HTMLSelectElement>("#nft6")!.options.length == 0
-      ) {
-        document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
-          "put a Stake Claim NFT in the worktop first";
-      }
-
       // --- OCISWAP ---
       if (this.selectedIndex == 10) {
         if (
@@ -838,66 +806,6 @@ export function initContent() {
       ) {
         document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
           "you don't have a Weft Claimer NFT";
-      }
-    });
-
-  document
-    .querySelector<HTMLButtonElement>("#add_instruction6")!
-    .addEventListener("click", function () {
-      const nft = document.querySelector<HTMLSelectElement>("#nft6")!.value;
-      const res = nft.split(" ");
-
-      document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
-        "&nbsp;";
-
-      // TODO: check claim_epoch
-
-      if (nft.length > 0) {
-        const validator = claim_nft[res[0]];
-        if (res[1] == UNKNOWN_NFT_ID) {
-          document.querySelector<HTMLTextAreaElement>(
-            "#transaction_manifest"
-          )!.value +=
-            "TAKE_ALL_FROM_WORKTOP\n" +
-            '    Address("' +
-            res[0] +
-            '")\n' +
-            '    Bucket("bucket' +
-            bucket_number +
-            '")\n;\n';
-        } else {
-          document.querySelector<HTMLTextAreaElement>(
-            "#transaction_manifest"
-          )!.value +=
-            "TAKE_NON_FUNGIBLES_FROM_WORKTOP\n" +
-            '    Address("' +
-            res[0] +
-            '")\n' +
-            "    Array<NonFungibleLocalId>(\n" +
-            '        NonFungibleLocalId("' +
-            res[1] +
-            '")\n    )\n' +
-            '    Bucket("bucket' +
-            bucket_number +
-            '")\n;\n';
-        }
-        document.querySelector<HTMLTextAreaElement>(
-          "#transaction_manifest"
-        )!.value +=
-          "CALL_METHOD\n" +
-          '    Address("' +
-          validator +
-          '")\n' +
-          '    "claim_xrd"\n' +
-          '    Bucket("bucket' +
-          bucket_number++ +
-          '")\n;\n';
-        remove_non_fungible_from_worktop(nft);
-        if (claim_amount[res[1]] == undefined) {
-          add_fungible_to_worktop(XRD, 0);
-        } else {
-          add_fungible_to_worktop(XRD, claim_amount[res[1]]);
-        }
       }
     });
 

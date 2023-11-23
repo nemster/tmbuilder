@@ -6,6 +6,7 @@
   import Error from "./Error.svelte";
   import StakeYourXrDs from "./actions/StakeYourXRDs.svelte";
   import UnstakeYourLSUs from "./actions/UnstakeYourLSUs.svelte";
+  import ClaimYourUnstakedXRDs from "./actions/ClaimYourUnstakedXRDs.svelte";
 
   let actions = {
     takeCoinsFromSelf: {
@@ -48,11 +49,15 @@
       description: "unstake your LSUs",
       disabled: false,
     },
+    claimYourUnstakedXRDs: {
+      component: ClaimYourUnstakedXRDs,
+      description: "claim your unstaked XRDs",
+      disabled: false,
+    },
   };
 
   /**
    *  
-        <option>claim your unstaked XRDs</option>
         <option disabled>--- OCISWAP ---</option>
         <option>swap coins at Ociswap</option>
         <option>add liquidity to Ociswap</option>
