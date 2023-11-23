@@ -71,8 +71,6 @@
         break;
       }
     }
-
-    return;
   }
 </script>
 

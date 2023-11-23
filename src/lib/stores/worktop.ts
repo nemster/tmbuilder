@@ -1,10 +1,11 @@
-import { writable } from "svelte/store";
+import { derived, writable } from "svelte/store";
 import type { WalletFungible, WalletNonFungible } from "./accounts";
 import {
   EPSILON,
   find_fungible_symbol,
   find_non_fungible_symbol,
 } from "../../content";
+import { pool_units } from "../../validators";
 
 export interface Worktop {
   fungibles: Map<string, WalletFungible>;
@@ -97,5 +98,18 @@ function createWorktop() {
     clearWorktop,
   };
 }
-
 export const worktop = createWorktop();
+export const worktopLSU = derived<typeof worktop, Map<string, WalletFungible>>(
+  worktop,
+  ($worktop) => {
+    const filtered = new Map();
+
+    for (const [address, fungible] of $worktop.fungibles) {
+      if (address in pool_units) {
+        filtered.set(address, fungible);
+      }
+    }
+
+    return filtered;
+  }
+);

@@ -176,6 +176,15 @@ function stakeBucket(validatorAdress: string, bucketNumber: number) {
 `;
 }
 
+function unstakeBucket(validatorAdress: string, bucketNumber: number) {
+  return `CALL_METHOD
+    Address("${validatorAdress}")
+    "unstake"
+    Bucket("bucket${bucketNumber}")
+;
+`;
+}
+
 export default {
   withdraw,
   withdrawNonFungibles,
@@ -191,4 +200,5 @@ export default {
   tryDepositBucketToAccount,
   stakeBucket,
   putResourceToBucket,
+  unstakeBucket,
 };

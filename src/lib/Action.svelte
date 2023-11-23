@@ -5,9 +5,10 @@
   import AirdropFungibleCoins from "./actions/AirdropFungibleCoins.svelte";
   import Error from "./Error.svelte";
   import StakeYourXrDs from "./actions/StakeYourXRDs.svelte";
+  import UnstakeYourLSUs from "./actions/UnstakeYourLSUs.svelte";
 
   let actions = {
-    TakeCoinsFromSelf: {
+    takeCoinsFromSelf: {
       component: TakeCoinsFromSelf,
       description: "take coins from your account",
       disabled: false,
@@ -17,17 +18,17 @@
       description: "--- SEND COINS ---",
       disabled: true,
     },
-    SendCoinsToSelf: {
+    sendCoinsToSelf: {
       component: SendCoinsToSelf,
       description: "send coins to your account",
       disabled: false,
     },
-    SendCoinsToAccount: {
+    sendCoinsToAccount: {
       component: SendCoinsToAccount,
       description: "send coins to someone else's account",
       disabled: false,
     },
-    AirdropFungibleCoins: {
+    airdropFungibleCoins: {
       component: AirdropFungibleCoins,
       description: "airdrop fungible coins",
       disabled: false,
@@ -42,11 +43,15 @@
       description: "stake your XRDs",
       disabled: false,
     },
+    unstakeYourLSUs: {
+      component: UnstakeYourLSUs,
+      description: "unstake your LSUs",
+      disabled: false,
+    },
   };
 
   /**
    *  
-        <option>unstake your LSUs</option>
         <option>claim your unstaked XRDs</option>
         <option disabled>--- OCISWAP ---</option>
         <option>swap coins at Ociswap</option>
@@ -70,7 +75,7 @@
         <option>redeem your WEFT</option>
    */
 
-  let selectedAction = actions.TakeCoinsFromSelf;
+  let selectedAction = actions.takeCoinsFromSelf;
 </script>
 
 <div
