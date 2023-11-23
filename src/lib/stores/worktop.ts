@@ -1,6 +1,10 @@
 import { writable } from "svelte/store";
 import type { WalletFungible, WalletNonFungible } from "./accounts";
-import { EPSILON } from "../../content";
+import {
+  EPSILON,
+  find_fungible_symbol,
+  find_non_fungible_symbol,
+} from "../../content";
 
 export interface Worktop {
   fungibles: Map<string, WalletFungible>;
@@ -13,17 +17,20 @@ function createWorktop() {
     nonFungibles: new Map(),
   });
 
-  function addFungible(fungible: WalletFungible) {
+  function addFungible(address: string, amount: number) {
     update((worktop) => {
-      if (worktop.fungibles.has(fungible.address)) {
-        const existing = worktop.fungibles.get(fungible.address);
-        if (existing) {
-          existing.amount += fungible.amount;
-          worktop.fungibles.set(fungible.address, existing);
+      if (worktop.fungibles.has(address)) {
+        const existingFungible = worktop.fungibles.get(address);
+        if (existingFungible) {
+          existingFungible.amount += amount;
+          worktop.fungibles.set(address, existingFungible);
         }
       } else {
-        worktop.fungibles.set(fungible.address, {
-          ...fungible,
+        const symbol = find_fungible_symbol(address);
+        worktop.fungibles.set(address, {
+          address,
+          amount,
+          symbol,
         });
       }
       return worktop;
@@ -52,10 +59,15 @@ function createWorktop() {
     });
   }
 
-  function addNonFungible(nonFungible: WalletNonFungible) {
+  function addNonFungible(nonFungibleKey: string) {
+    const [address, id] = nonFungibleKey.split(" ");
+    const symbol = find_non_fungible_symbol(address);
     update((worktop) => {
-      worktop.nonFungibles.set(nonFungible.key, {
-        ...nonFungible,
+      worktop.nonFungibles.set(nonFungibleKey, {
+        key: nonFungibleKey,
+        id,
+        address,
+        symbol,
       });
       return worktop;
     });

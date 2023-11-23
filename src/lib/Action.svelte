@@ -4,6 +4,7 @@
   import SendCoinsToAccount from "./actions/SendCoinsToAccount.svelte";
   import AirdropFungibleCoins from "./actions/AirdropFungibleCoins.svelte";
   import Error from "./Error.svelte";
+  import StakeYourXrDs from "./actions/StakeYourXRDs.svelte";
 
   let actions = {
     TakeCoinsFromSelf: {
@@ -31,12 +32,20 @@
       description: "airdrop fungible coins",
       disabled: false,
     },
+    stakeUnstakeLabel: {
+      component: null,
+      description: "--- STAKE/UNSTAKE ---",
+      disabled: true,
+    },
+    stakeYourXRDs: {
+      component: StakeYourXrDs,
+      description: "stake your XRDs",
+      disabled: false,
+    },
   };
 
   /**
    *  
-        <option disabled>--- STAKE/UNSTAKE ---</option>
-        <option>stake your XRDs</option>
         <option>unstake your LSUs</option>
         <option>claim your unstaked XRDs</option>
         <option disabled>--- OCISWAP ---</option>

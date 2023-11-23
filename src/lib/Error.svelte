@@ -1,8 +1,18 @@
 <script lang="ts">
-  import { actionError } from "./stores/errors";
+  import { actionError, validationErrors } from "./stores/errors";
   let hidden = "";
 
-  $: if ($actionError === "") {
+  let errorToShow = "";
+
+  $: if ($validationErrors.size > 0) {
+    errorToShow = $validationErrors.values().next().value;
+  } else if ($actionError !== "") {
+    errorToShow = $actionError;
+  } else {
+    errorToShow = "";
+  }
+
+  $: if (errorToShow === "") {
     hidden = "hidden";
   } else {
     hidden = "";
@@ -26,5 +36,5 @@
     /></svg
   >
 
-  <span class="text-center">{$actionError}</span>
+  <span class="text-center">{errorToShow}</span>
 </div>

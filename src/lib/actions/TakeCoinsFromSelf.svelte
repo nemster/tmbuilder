@@ -1,18 +1,24 @@
 <script lang="ts">
-  import { onMount } from "svelte";
+  import { afterUpdate, onDestroy, onMount } from "svelte";
   import { accounts } from "../stores/accounts";
   import { worktop } from "../stores/worktop";
   import { manifest } from "../stores/transaction";
   import type { WalletFungible, WalletNonFungible } from "../stores/accounts";
   import AddActionButton from "../shared/AddActionButton.svelte";
-  import { NO_COINS_SELECTED, actionError } from "../stores/errors";
+  import {
+    NOT_ENOUGH_COINS_ON_WORKTOP,
+    NO_ACCOUNT,
+    NO_COINS_ON_WORKTOP,
+    NO_COINS_SELECTED,
+    NO_FUNGIBLES_ON_WORKTOP,
+    NO_XRD_ON_WORKTOP,
+    actionError,
+    validateQuantity,
+    validationErrors,
+  } from "../stores/errors";
   import commands from "../commands";
   import CoinInput from "../shared/CoinInput.svelte";
   import AccountSelect from "../shared/AccountSelect.svelte";
-
-  onMount(() => {
-    actionError.set("");
-  });
 
   let accountAddress: string | null = null;
   let fungibles: Map<string, WalletFungible> = new Map();
@@ -27,47 +33,48 @@
     nonFungibles = $accounts.get(accountAddress)!.nonFungibles;
   }
 
+  onMount(() => {
+    actionError.set("");
+  });
+
+  afterUpdate(() => {
+    validateQuantity(fungibleQuantity);
+  });
+  onDestroy(() => {
+    validationErrors.clear();
+  });
+
   function handleAddAction() {
     actionError.set("");
+    if ($validationErrors.size > 0) {
+      return;
+    }
     if (!accountAddress) {
-      actionError.set("no account selected!");
+      actionError.set(NO_ACCOUNT);
       return;
     }
     if (!fungibleAddress && !nonFungibleKey) {
       actionError.set(NO_COINS_SELECTED);
       return;
-    } else {
-      actionError.set("");
     }
 
     let command = "";
 
     if (fungibleAddress !== "") {
-      if (!fungibleQuantity.match(/^[0-9]+(\.[0-9]+)?$/)) {
-        actionError.set("invalid quantity!");
-        return;
-      } else {
-        var q = parseFloat(fungibleQuantity);
-        if (q > 0) {
-          if (q > fungibles.get(fungibleAddress)!.amount) {
-            q = fungibles.get(fungibleAddress)!.amount;
-          }
-          command = commands.withdraw(accountAddress, fungibleAddress, q);
-          const f = fungibles.get(fungibleAddress);
-          if (!f) {
-            console.error(
-              `Could not find fungible resource ${fungibleAddress}`
-            );
-            return;
-          }
-          const fungibleForWorktop: WalletFungible = {
-            ...f,
-            amount: parseFloat(fungibleQuantity),
-          };
-          worktop.addFungible(fungibleForWorktop);
-          accounts.removeFungible(accountAddress, fungibleAddress, q);
-          fungibleAddress = "";
+      var q = parseFloat(fungibleQuantity);
+      if (q > 0) {
+        if (q > fungibles.get(fungibleAddress)!.amount) {
+          q = fungibles.get(fungibleAddress)!.amount;
         }
+        command = commands.withdraw(accountAddress, fungibleAddress, q);
+        const f = fungibles.get(fungibleAddress);
+        if (!f) {
+          console.error(`Could not find fungible resource ${fungibleAddress}`);
+          return;
+        }
+        worktop.addFungible(f.address, parseFloat(fungibleQuantity));
+        accounts.removeFungible(accountAddress, fungibleAddress, q);
+        fungibleAddress = "";
       }
     } else if (nonFungibleKey !== "") {
       const nonFungible = nonFungibles.get(nonFungibleKey)!;
@@ -76,7 +83,7 @@
         nonFungible.address,
         nonFungible.id
       );
-      worktop.addNonFungible(nonFungibles.get(nonFungibleKey)!);
+      worktop.addNonFungible(nonFungibleKey);
       accounts.removeNonFungible(accountAddress, nonFungibleKey);
     } else {
       actionError.set(NO_COINS_SELECTED);

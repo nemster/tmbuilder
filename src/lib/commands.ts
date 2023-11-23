@@ -68,6 +68,20 @@ function putAllResourceToBucket(resource: string, bucketNumber: number) {
 ;
 `;
 }
+
+function putResourceToBucket(
+  resourceAddress: string,
+  quantity: number,
+  bucketNumber: number
+) {
+  return `TAKE_FROM_WORKTOP
+    Address("${resourceAddress}")
+    Decimal("${quantity}")
+    Bucket("bucket${bucketNumber}")
+;
+`;
+}
+
 function putNonFungibleToBucket(
   resource: string,
   id: string,
@@ -153,6 +167,15 @@ function tryDepositBucketToAccount(
 `;
 }
 
+function stakeBucket(validatorAdress: string, bucketNumber: number) {
+  return `CALL_METHOD
+    Address("${validatorAdress}")
+    "stake"
+    Bucket("bucket${bucketNumber}")
+;
+`;
+}
+
 export default {
   withdraw,
   withdrawNonFungibles,
@@ -166,4 +189,6 @@ export default {
   trySendAllFungibleToAccount,
   trySendAmountFungibleToAccount,
   tryDepositBucketToAccount,
+  stakeBucket,
+  putResourceToBucket,
 };

@@ -1,20 +1,22 @@
 <script lang="ts">
-  import { onMount } from "svelte";
+  import { afterUpdate, onDestroy, onMount } from "svelte";
+  import { UNKNOWN_NFT_ID } from "../../content";
+  import commands from "../commands";
+  import AccountSelect from "../shared/AccountSelect.svelte";
+  import AddActionButton from "../shared/AddActionButton.svelte";
+  import CoinInput from "../shared/CoinInput.svelte";
+  import { accounts } from "../stores/accounts";
   import {
     NO_ACCOUNT,
-    NO_COINS_INPUT,
     NO_COINS_SELECTED,
     NO_QUANTITY,
     actionError,
+    validateAvailableCoins,
+    validateQuantity,
+    validationErrors,
   } from "../stores/errors";
+  import { bucketNumber, manifest } from "../stores/transaction";
   import { worktop } from "../stores/worktop";
-  import { accounts } from "../stores/accounts";
-  import { manifest, bucketNumber } from "../stores/transaction";
-  import AddActionButton from "../shared/AddActionButton.svelte";
-  import CoinInput from "../shared/CoinInput.svelte";
-  import commands from "../commands";
-  import { UNKNOWN_NFT_ID } from "../../content";
-  import AccountSelect from "../shared/AccountSelect.svelte";
 
   let entireWorktop = true;
   let allFungible = true;
@@ -26,17 +28,20 @@
 
   onMount(() => {
     actionError.set("");
-    if ($worktop.fungibles.size === 0 && $worktop.nonFungibles.size === 0) {
-      actionError.set(NO_COINS_INPUT);
-    }
+  });
+
+  afterUpdate(() => {
+    validateAvailableCoins();
+    validateQuantity(fungibleQuantity);
+  });
+
+  onDestroy(() => {
+    validationErrors.clear();
   });
 
   function handleAddAction() {
-    const onActionErrors = [NO_ACCOUNT, NO_COINS_SELECTED, NO_QUANTITY];
-    if (onActionErrors.includes($actionError)) {
-      actionError.set("");
-    }
-    if ($actionError !== "") {
+    actionError.set("");
+    if ($validationErrors.size > 0) {
       return;
     }
     if (!accountAddress) {
@@ -44,12 +49,7 @@
       return;
     }
 
-    if ($worktop.fungibles.size === 0 && $worktop.nonFungibles.size === 0) {
-      actionError.set(NO_COINS_INPUT);
-      return;
-    }
-
-    if (fungibleAddress === "" && nonFungibleKey === "") {
+    if (!entireWorktop && fungibleAddress === "" && nonFungibleKey === "") {
       actionError.set(NO_COINS_SELECTED);
       return;
     }
@@ -67,20 +67,10 @@
     if (entireWorktop && accountAddress) {
       manifest.update((m) => m + commands.depositEntireWortop(accountAddress!));
       for (const [address, fungible] of $worktop.fungibles) {
-        accounts.updateFungible(
-          accountAddress,
-          address,
-          fungible.amount,
-          fungible.symbol
-        );
+        accounts.addFungible(accountAddress, address, fungible.amount);
       }
       for (const [address, nonFungible] of $worktop.nonFungibles) {
-        accounts.updateNonFungible(
-          accountAddress,
-          address,
-          nonFungible.symbol,
-          nonFungible.id
-        );
+        accounts.addNonFungible(accountAddress, address, nonFungible.id);
       }
       worktop.clearWorktop();
     } else {
@@ -109,12 +99,7 @@
         }
         manifest.update((m) => m + command);
         bucketNumber.increment();
-        accounts.updateFungible(
-          accountAddress,
-          fungibleAddress,
-          q,
-          selectedFungible.symbol
-        );
+        accounts.addFungible(accountAddress, fungibleAddress, q);
         worktop.removeFungible(fungibleAddress, q);
         fungibleQuantity = "";
       }
@@ -142,10 +127,9 @@
         command += commands.sendBucketToAccount(accountAddress, $bucketNumber);
         bucketNumber.increment();
         worktop.removeNonFungible(nonFungibleKey);
-        accounts.updateNonFungible(
+        accounts.addNonFungible(
           accountAddress,
           nonFungible.address,
-          nonFungible.symbol,
           nonFungible.id
         );
         manifest.update((m) => m + command);

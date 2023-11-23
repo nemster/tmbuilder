@@ -1,5 +1,9 @@
 import { writable } from "svelte/store";
-import { EPSILON } from "../../content";
+import {
+  EPSILON,
+  find_fungible_symbol,
+  find_non_fungible_symbol,
+} from "../../content";
 
 export interface WalletFungible {
   address: string;
@@ -44,12 +48,12 @@ function createAccounts() {
     });
   }
 
-  function updateFungible(
+  function addFungible(
     accountAddress: string,
     address: string,
-    amount: number,
-    symbol: string
+    amount: number
   ) {
+    const symbol = find_fungible_symbol(address);
     update((accounts) => {
       const account = accounts.get(accountAddress);
       if (account) {
@@ -95,14 +99,10 @@ function createAccounts() {
     });
   }
 
-  function updateNonFungible(
-    accountAddress: string,
-    address: string,
-    symbol: string,
-    id: string
-  ) {
+  function addNonFungible(accountAddress: string, address: string, id: string) {
     update((accounts) => {
       const account = accounts.get(accountAddress);
+      const symbol = find_non_fungible_symbol(address);
       if (account) {
         const key = `${address} ${id}`;
         account.nonFungibles.set(key, {
@@ -139,8 +139,8 @@ function createAccounts() {
   return {
     subscribe,
     updateAccount,
-    updateFungible,
-    updateNonFungible,
+    addFungible,
+    addNonFungible,
     removeFungible,
     removeNonFungible,
   };

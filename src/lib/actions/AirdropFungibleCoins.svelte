@@ -1,24 +1,22 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import {
-    INVALID_ACCOUNT,
-    INVALID_QUANTITY,
-    NOT_ENOUGH_COINS_IN_WORKTOP,
-    NO_ACCOUNT,
-    NO_COINS_SELECTED,
-    NO_FUNGIBLES,
-    NO_QUANTITY,
-    actionError,
-    isValidAccount,
-    isValidQuantity,
-  } from "../stores/errors";
-  import { worktop } from "../stores/worktop";
-  import AddActionButton from "../shared/AddActionButton.svelte";
+  import { afterUpdate, onDestroy, onMount } from "svelte";
+  import commands from "../commands";
   import AccountInput from "../shared/AccountInput.svelte";
   import AccountSelect from "../shared/AccountSelect.svelte";
-  import { bucketNumber, manifest } from "../stores/transaction";
-  import commands from "../commands";
+  import AddActionButton from "../shared/AddActionButton.svelte";
   import { accounts } from "../stores/accounts";
+  import {
+    NO_ACCOUNT,
+    NO_COINS_SELECTED,
+    NO_QUANTITY,
+    actionError,
+    validationErrors,
+    validateAvailableFungibles,
+    validateMultipleAccounts,
+    validateQuantity,
+  } from "../stores/errors";
+  import { bucketNumber, manifest } from "../stores/transaction";
+  import { worktop } from "../stores/worktop";
 
   let fungibleAddress: string;
   let fungibleQuantity = "";
@@ -36,54 +34,21 @@
 
   onMount(() => {
     actionError.set("");
-    if ($worktop.fungibles.size === 0) {
-      actionError.set(NO_FUNGIBLES);
-    }
   });
 
-  // validate input fields
-  $: {
-    // quantity
-    if (fungibleQuantity !== "" && !isValidQuantity(fungibleQuantity)) {
-      actionError.set(INVALID_QUANTITY);
-    } else if ($actionError === INVALID_QUANTITY) {
-      actionError.set("");
-    }
-  }
+  afterUpdate(() => {
+    validateQuantity(fungibleQuantity);
+    validateAvailableFungibles();
+    validateMultipleAccounts(accountAddresses);
+  });
 
-  $: if (accountAddresses) {
-    // if any account addresses is not valid set the error
-    const invalidAddress = accountAddresses.find(
-      (a) => a !== "" && !isValidAccount(a)
-    );
-    if (invalidAddress) {
-      actionError.set(INVALID_ACCOUNT);
-    } else if ($actionError === INVALID_ACCOUNT) {
-      actionError.set("");
-    }
-
-    // if at least one valid address is there, remove an old error
-    const validAccount = accountAddresses.find((a) => isValidAccount(a));
-    if (validAccount && $actionError === NO_ACCOUNT) {
-      actionError.set("");
-    }
-  }
+  onDestroy(() => {
+    validationErrors.clear();
+  });
 
   function handleAddAction() {
-    // error messages set only when add instruction is clicked
-    // not when the input fields are changed or first rendered
-    const onActionErrors = [
-      NO_ACCOUNT,
-      NO_COINS_SELECTED,
-      NO_QUANTITY,
-      NOT_ENOUGH_COINS_IN_WORKTOP,
-    ];
-
-    if (onActionErrors.includes($actionError)) {
-      actionError.set("");
-    }
-
-    if ($actionError !== "") {
+    actionError.set("");
+    if ($validationErrors.size > 0) {
       return;
     }
 
@@ -92,11 +57,6 @@
 
     if (recipients.length === 0) {
       actionError.set(NO_ACCOUNT);
-      return;
-    }
-
-    if ($worktop.fungibles.size === 0) {
-      actionError.set(NO_FUNGIBLES);
       return;
     }
 
@@ -111,14 +71,6 @@
     }
 
     let q = parseFloat(fungibleQuantity);
-    if (
-      recipients.length * q >
-      ($worktop.fungibles.get(fungibleAddress)?.amount || 0)
-    ) {
-      actionError.set(NOT_ENOUGH_COINS_IN_WORKTOP);
-      return;
-    }
-
     for (let recipient of recipients) {
       const command = commands.trySendAmountFungibleToAccount(
         recipient,
@@ -145,11 +97,10 @@
       );
       manifest.update((m) => m + putToBucket + sendToAccount);
       bucketNumber.increment();
-      accounts.updateFungible(
+      accounts.addFungible(
         remainingsAccountAddress,
         fungibleAddress,
-        remainingFungible.amount || 0,
-        remainingFungible.symbol
+        remainingFungible.amount || 0
       );
       worktop.removeFungible(fungibleAddress, remainingFungible.amount);
     }

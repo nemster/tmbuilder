@@ -1,13 +1,15 @@
 <script lang="ts">
-  import { onMount } from "svelte";
+  import { afterUpdate, onDestroy, onMount } from "svelte";
   import {
-    INVALID_ACCOUNT,
     NO_ACCOUNT,
-    NO_COINS_INPUT,
+    NO_COINS_ON_WORKTOP,
     NO_COINS_SELECTED,
     NO_QUANTITY,
     actionError,
-    isValidAccount,
+    validateAccount,
+    validateAvailableCoins,
+    validateQuantity,
+    validationErrors,
   } from "../stores/errors";
   import { worktop } from "../stores/worktop";
   import { accounts } from "../stores/accounts";
@@ -21,36 +23,30 @@
 
   let entireWorktop = true;
   let allFungible = true;
-  let accountAddress: string | null = null;
+  let accountAddress = "";
   let fungibleAddress: string;
   let fungibleQuantity = "";
   let nonFungibleKey: string;
 
   let fail: "refund" | "abort" = "refund";
 
-  $: if (accountAddress && accountAddress.length > 0) {
-    accountAddress = accountAddress.toLowerCase();
-
-    if (!isValidAccount(accountAddress) && accountAddress !== "") {
-      actionError.set(INVALID_ACCOUNT);
-    } else if ($actionError === INVALID_ACCOUNT) {
-      actionError.set("");
-    }
-  }
-
   onMount(() => {
     actionError.set("");
-    if ($worktop.fungibles.size === 0 && $worktop.nonFungibles.size === 0) {
-      actionError.set(NO_COINS_INPUT);
-    }
+  });
+
+  afterUpdate(() => {
+    validateAccount(accountAddress);
+    validateAvailableCoins();
+    validateQuantity(fungibleQuantity);
+  });
+
+  onDestroy(() => {
+    validationErrors.clear();
   });
 
   function handleAddAction() {
-    const onActionErrors = [NO_ACCOUNT, NO_COINS_SELECTED, NO_QUANTITY];
-    if (onActionErrors.includes($actionError)) {
-      actionError.set("");
-    }
-    if ($actionError !== "") {
+    actionError.set("");
+    if ($validationErrors.size > 0) {
       return;
     }
 
@@ -59,12 +55,7 @@
       return;
     }
 
-    if ($worktop.fungibles.size === 0 && $worktop.nonFungibles.size === 0) {
-      actionError.set(NO_COINS_INPUT);
-      return;
-    }
-
-    if (fungibleAddress === "" && nonFungibleKey === "") {
+    if (!entireWorktop && fungibleAddress === "" && nonFungibleKey === "") {
       actionError.set(NO_COINS_SELECTED);
       return;
     }
@@ -86,20 +77,10 @@
       if ($accounts.has(accountAddress)) {
         // if the user specified their own account
         for (const [address, fungible] of $worktop.fungibles) {
-          accounts.updateFungible(
-            accountAddress,
-            address,
-            fungible.amount,
-            fungible.symbol
-          );
+          accounts.addFungible(accountAddress, address, fungible.amount);
         }
         for (const [address, nonFungible] of $worktop.nonFungibles) {
-          accounts.updateNonFungible(
-            accountAddress,
-            address,
-            nonFungible.symbol,
-            nonFungible.id
-          );
+          accounts.addNonFungible(accountAddress, address, nonFungible.id);
         }
       }
       worktop.clearWorktop();
@@ -135,12 +116,7 @@
 
         if ($accounts.has(accountAddress)) {
           // if the user specified their own account
-          accounts.updateFungible(
-            accountAddress,
-            fungibleAddress,
-            q,
-            selectedFungible.symbol
-          );
+          accounts.addFungible(accountAddress, fungibleAddress, q);
         }
 
         worktop.removeFungible(fungibleAddress, q);
@@ -176,10 +152,9 @@
         worktop.removeNonFungible(nonFungibleKey);
         if ($accounts.has(accountAddress)) {
           // if the user specified their own account
-          accounts.updateNonFungible(
+          accounts.addNonFungible(
             accountAddress,
             nonFungible.address,
-            nonFungible.symbol,
             nonFungible.id
           );
         }

@@ -55,7 +55,7 @@ interface ociswap_swap {
   pool_address: string;
 }
 
-const xrd =
+export const XRD =
   "resource_rdx1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxradxrd";
 const weft =
   "resource_rdx1tk3fxrz75ghllrqhyq8e574rkf4lsq2x5a0vegxwlh3defv225cth3";
@@ -98,7 +98,7 @@ const backeum_trophies =
 const my_backeum_collection_id =
   "component_rdx1cqzr66e6vc5mp7hsqjjnyzmhdzmamafnn7dfyc2yn7mz7r3g7k3mwp";
 var donor = false;
-const my_validator_address =
+export const my_validator_address =
   "validator_rdx1sva6pmkgm5yacumw4p6k0xsfnqg598xkj9p4e2a58dl6gcrqpx7z86";
 const my_lsu_address =
   "resource_rdx1t4pl597e7lp6flduhd3a6tp9jsqw2vzgyj9jxtk8y3dawum5aahap0";
@@ -568,16 +568,14 @@ export function initContent() {
           let amount = parseFloat(
             (<FungibleResourcesCollectionItemGloballyAggregated>fungible).amount
           );
-          if (fungible.resource_address == xrd) {
+          if (fungible.resource_address == XRD) {
             amount -= 10;
           }
           if (amount > EPSILON) {
-            const symbol = find_fungible_symbol(fungible.resource_address);
-            accounts.updateFungible(
+            accounts.addFungible(
               value.address,
               fungible.resource_address,
-              amount,
-              symbol
+              amount
             );
           }
           if (fungible.resource_address == my_lsu_address && amount > 50) {
@@ -600,13 +598,9 @@ export function initContent() {
             non_fungible
           )).vaults.items) {
             for (let id of item!.items!) {
-              const symbol = find_non_fungible_symbol(
-                non_fungible.resource_address
-              );
-              accounts.updateNonFungible(
+              accounts.addNonFungible(
                 value.address,
                 non_fungible.resource_address,
-                symbol,
                 id
               );
               if (non_fungible.resource_address == weft_claimer_nft) {
@@ -707,17 +701,6 @@ export function initContent() {
     }
   });
 
-  const validatorSelect4 =
-    document.querySelector<HTMLSelectElement>("#validator4");
-  for (var validator of Object.keys(validators_you_can_stake_to)) {
-    if (validatorSelect4 && validator != my_validator_address) {
-      validatorSelect4!.options[validatorSelect4!.options.length] = new Option(
-        validators_names[validator].trim(),
-        validator
-      );
-    }
-  }
-
   const lsuSelect8 = document.querySelector<HTMLSelectElement>("#lsu8");
   const receiveSelect9 = document.querySelector<HTMLSelectElement>("#receive9");
   for (var lsu of Object.keys(pool_units)) {
@@ -740,27 +723,12 @@ export function initContent() {
       document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
         "&nbsp;";
 
-      // --- SEND COINS ---
-      // TODO: remove
-      let nfungibles = 0;
-      if (
-        (this.selectedIndex == 2 || this.selectedIndex == 3) &&
-        nfungibles == 0 &&
-        non_fungibles_in_worktop.length == 0
-      ) {
-      } else if (this.selectedIndex == 4 && nfungibles == 0) {
-        document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
-          "put some fungible coins in the worktop first";
-      }
-
       // --- STAKE/UNSTAKE ---
       if (
         this.selectedIndex == 6 &&
-        (fungibles_in_worktop[xrd] == undefined ||
-          fungibles_in_worktop[xrd] == 0)
+        (fungibles_in_worktop[XRD] == undefined ||
+          fungibles_in_worktop[XRD] == 0)
       ) {
-        document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
-          "put some XRDs in the worktop first";
       } else if (
         this.selectedIndex == 7 &&
         document.querySelector<HTMLSelectElement>("#lsu5")!.options.length == 0
@@ -870,90 +838,6 @@ export function initContent() {
       ) {
         document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
           "you don't have a Weft Claimer NFT";
-      }
-    });
-
-  document
-    .querySelector<HTMLInputElement>("#all4")!
-    .addEventListener("change", function () {
-      document.querySelector<HTMLInputElement>("#quantity4")!.disabled =
-        this.checked;
-      if (this.checked) {
-        document.querySelector<HTMLInputElement>("#quantity4")!.value = "";
-      }
-    });
-
-  document
-    .querySelector<HTMLButtonElement>("#add_instruction4")!
-    .addEventListener("click", function () {
-      const validator =
-        document.querySelector<HTMLSelectElement>("#validator4")!.value;
-      var q = fungibles_in_worktop[xrd];
-      if (q < 90 || q == undefined) {
-        document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
-          "not enough XRDs in worktop";
-        return false;
-      }
-      document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
-        "&nbsp;";
-
-      if (document.querySelector<HTMLInputElement>("#all4")!.checked) {
-        document.querySelector<HTMLTextAreaElement>(
-          "#transaction_manifest"
-        )!.value +=
-          "TAKE_ALL_FROM_WORKTOP\n" +
-          '    Address("' +
-          xrd +
-          '")\n' +
-          '    Bucket("bucket' +
-          bucket_number +
-          '")\n;\n' +
-          "CALL_METHOD\n" +
-          '    Address("' +
-          validator +
-          '")\n' +
-          '    "stake"\n' +
-          '    Bucket("bucket' +
-          bucket_number++ +
-          '")\n;\n';
-        remove_fungible_from_worktop(xrd, "*");
-      } else {
-        const quantity =
-          document.querySelector<HTMLInputElement>("#quantity4")!.value;
-        if (!quantity.match(/^[0-9]+(\.[0-9]+)?$/)) {
-          document.querySelector<HTMLInputElement>("#warn")!.innerText =
-            "invalid quantity!";
-          return false;
-        }
-        q = parseFloat(quantity);
-        document.querySelector<HTMLTextAreaElement>(
-          "#transaction_manifest"
-        )!.value +=
-          "TAKE_FROM_WORKTOP\n" +
-          '   Address("' +
-          xrd +
-          '")\n' +
-          '   Decimal("' +
-          quantity +
-          '")\n' +
-          '   Bucket("bucket' +
-          bucket_number +
-          '")\n;\n' +
-          "CALL_METHOD\n" +
-          '    Address("' +
-          validator +
-          '")\n' +
-          '    "stake"\n' +
-          '    Bucket("bucket' +
-          bucket_number++ +
-          '")\n;\n';
-        remove_fungible_from_worktop(xrd, quantity);
-      }
-      for (var lsu of Object.keys(pool_units)) {
-        if (pool_units[lsu] == validator) {
-          add_fungible_to_worktop(lsu, q);
-          break;
-        }
       }
     });
 
@@ -1092,9 +976,9 @@ export function initContent() {
           '")\n;\n';
         remove_non_fungible_from_worktop(nft);
         if (claim_amount[res[1]] == undefined) {
-          add_fungible_to_worktop(xrd, 0);
+          add_fungible_to_worktop(XRD, 0);
         } else {
-          add_fungible_to_worktop(xrd, claim_amount[res[1]]);
+          add_fungible_to_worktop(XRD, claim_amount[res[1]]);
         }
       }
     });
@@ -1532,16 +1416,16 @@ export function initContent() {
               "&input_amount=" +
               q +
               "&output_address=" +
-              xrd,
+              XRD,
             options
           ).then((r2) => {
             if (r2.ok) {
               r2.json().then(async (j2) => {
                 for (var i of j2.swaps) {
-                  if (i.output_address == xrd) {
+                  if (i.output_address == XRD) {
                     fetch(
                       "https://api.ociswap.com/preview/swap?input_address=" +
-                        xrd +
+                        XRD +
                         "&input_amount=" +
                         i.output_amount.token +
                         "&output_address=" +
@@ -1978,7 +1862,7 @@ export function initContent() {
         quantity +
         '")\n;\n';
       gable_loan_quantity = parseFloat(quantity);
-      add_fungible_to_worktop(xrd, gable_loan_quantity);
+      add_fungible_to_worktop(XRD, gable_loan_quantity);
       add_non_fungible_to_worktop(gable_transient_nft + " " + UNKNOWN_NFT_ID);
     });
 
@@ -1995,7 +1879,7 @@ export function initContent() {
       }
 
       var xrd_to_refund = gable_loan_quantity * (1 + gable_loan_fees);
-      if (fungibles_in_worktop[xrd] < xrd_to_refund) {
+      if (fungibles_in_worktop[XRD] < xrd_to_refund) {
         document.querySelector<HTMLInputElement>("#warn")!.innerText =
           "not enogh XRDs in the worktop";
         return false;
@@ -2006,7 +1890,7 @@ export function initContent() {
       )!.value +=
         "TAKE_FROM_WORKTOP\n" +
         '    Address("' +
-        xrd +
+        XRD +
         '")\n' +
         '    Decimal("' +
         xrd_to_refund +
@@ -2033,7 +1917,7 @@ export function initContent() {
         bucket_number++ +
         '")\n;\n';
       gable_loan_quantity = 0;
-      remove_fungible_from_worktop(xrd, String(xrd_to_refund));
+      remove_fungible_from_worktop(XRD, String(xrd_to_refund));
       remove_non_fungible_from_worktop(
         gable_transient_nft + " " + UNKNOWN_NFT_ID
       );
@@ -2332,10 +2216,10 @@ export function initContent() {
           var next = "";
           for (var swaps of j1.quotes) {
             var to_coin: string;
-            if (send17 == xrd || next != "") {
+            if (send17 == XRD || next != "") {
               to_coin = receive17;
             } else {
-              to_coin = xrd;
+              to_coin = XRD;
             }
             document.querySelector<HTMLTextAreaElement>(
               "#transaction_manifest"
