@@ -4,7 +4,7 @@
   import commands from "../commands";
   import AccountInput from "../shared/AccountInput.svelte";
   import AddActionButton from "../shared/AddActionButton.svelte";
-  import CoinInput from "../shared/CoinInput.svelte";
+  import FungibleOrNonFungibleInput from "../shared/FungibleOrNonFungibleInput.svelte";
   import FailToggle from "../shared/FailToggle.svelte";
   import { accounts } from "../stores/accounts";
   import {
@@ -188,7 +188,7 @@
     </div>
 
     {#if !entireWorktop}
-      <CoinInput
+      <FungibleOrNonFungibleInput
         fungibles={$worktop.fungibles}
         bind:fungibleAddress
         bind:fungibleQuantity

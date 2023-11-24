@@ -18,6 +18,7 @@
   import { my_validator_address } from "../../content";
   import commands from "../commands";
   import { bucketNumber, manifest } from "../stores/transaction";
+  import QuantityInput from "../shared/QuantityInput.svelte";
 
   let allXRDs = true;
   let quantityXRD = "";
@@ -98,14 +99,12 @@
         <span class="label-text">all</span>
         <input class="checkbox" type="checkbox" bind:checked={allXRDs} />
       </label>
-      <label class={`label p-0 ${allXRDs ? "hidden" : ""}`}>
-        <span class="label-text">quantity</span>
-        <input
-          class="input input-secondary bg-secondary input-sm w-3/5 text-end"
-          bind:value={quantityXRD}
-          type="text"
-        />
-      </label>
+      <QuantityInput
+        label="quantity"
+        bind:value={quantityXRD}
+        hidden={allXRDs}
+        classes="p-0"
+      />
     </div>
   </div>
 

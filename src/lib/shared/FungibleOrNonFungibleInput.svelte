@@ -7,6 +7,7 @@
     isValidQuantity,
   } from "../stores/errors";
   import type { WalletFungible, WalletNonFungible } from "../stores/accounts";
+  import QuantityInput from "./QuantityInput.svelte";
 
   export let fungibleAddress: string;
   export let fungibles: Map<string, WalletFungible>;
@@ -91,15 +92,7 @@
       {/each}
     </select>
   </label>
-  <label class={`label pt-0 ${allFungible ? "hidden" : ""}`}>
-    <span class="label-text">Quantity</span>
-    <input
-      class="input input-secondary bg-secondary input-sm w-3/5 text-end"
-      type="text"
-      disabled={allFungible}
-      bind:value={fungibleQuantity}
-    /></label
-  >
+  <QuantityInput bind:value={fungibleQuantity} hidden={allFungible} />
 </div>
 
 <label class="label">

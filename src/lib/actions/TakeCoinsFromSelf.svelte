@@ -3,7 +3,7 @@
   import commands from "../commands";
   import AccountSelect from "../shared/AccountSelect.svelte";
   import AddActionButton from "../shared/AddActionButton.svelte";
-  import CoinInput from "../shared/CoinInput.svelte";
+  import FungibleOrNonFungibleInput from "../shared/FungibleOrNonFungibleInput.svelte";
   import type { WalletFungible, WalletNonFungible } from "../stores/accounts";
   import { accounts } from "../stores/accounts";
   import {
@@ -93,7 +93,7 @@
 <div class="flex space-x-12 w-full place-items-end">
   <div class="form-control flex-grow space-y-2">
     <AccountSelect bind:accountAddress />
-    <CoinInput
+    <FungibleOrNonFungibleInput
       {fungibles}
       bind:fungibleAddress
       bind:fungibleQuantity

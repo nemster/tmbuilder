@@ -17,6 +17,7 @@
   } from "../stores/errors";
   import { bucketNumber, manifest } from "../stores/transaction";
   import { worktop } from "../stores/worktop";
+  import QuantityInput from "../shared/QuantityInput.svelte";
 
   let fungibleAddress: string;
   let fungibleQuantity = "";
@@ -133,14 +134,10 @@
         {/each}
       </select>
     </label>
-    <label class="label pt-0">
-      <span class="label-text">Quantity per recipient</span>
-      <input
-        class="input input-secondary bg-secondary input-sm w-3/5 text-end"
-        type="text"
-        bind:value={fungibleQuantity}
-      /></label
-    >
+    <QuantityInput
+      bind:value={fungibleQuantity}
+      label="Quantity per recipient"
+    />
 
     <div class="p-2 rounded-box border-2 border-secondary border-dotted">
       <label class="label cursor-pointer pr-0">

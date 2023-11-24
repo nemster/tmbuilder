@@ -13,6 +13,7 @@
   } from "../stores/errors";
   import { bucketNumber, manifest } from "../stores/transaction";
   import { worktop, worktopLSU } from "../stores/worktop";
+  import QuantityInput from "../shared/QuantityInput.svelte";
 
   let allLSU = true;
   let quantity = "";
@@ -97,14 +98,12 @@
         <span class="label-text">all</span>
         <input class="checkbox" type="checkbox" bind:checked={allLSU} />
       </label>
-      <label class={`label p-0 ${allLSU ? "hidden" : ""}`}>
-        <span class="label-text">quantity</span>
-        <input
-          class="input input-secondary bg-secondary input-sm w-3/5 text-end"
-          bind:value={quantity}
-          type="text"
-        />
-      </label>
+      <QuantityInput
+        label="quantity"
+        bind:value={quantity}
+        hidden={allLSU}
+        classes="p-0"
+      />
     </div>
   </div>
   <div>
