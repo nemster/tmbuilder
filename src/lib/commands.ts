@@ -194,6 +194,25 @@ function claimXrd(validator: string, bucketNumber: number) {
   `;
 }
 
+function swap(poolAddress: string, bucketNumber: number) {
+  return `CALL_METHOD
+    Address("${poolAddress}")
+    "swap"
+    Bucket("bucket${bucketNumber}")
+;
+`;
+}
+
+function addLiquidity(component: string, bucketA: number, bucketB: number) {
+  return `CALL_METHOD
+    Address("${component}")
+    "add_liquidity"
+    Bucket("bucket${bucketA}")
+    Bucket("bucket${bucketB}")
+;
+`;
+}
+
 export default {
   withdraw,
   withdrawNonFungibles,
@@ -211,4 +230,6 @@ export default {
   putResourceToBucket,
   unstakeBucket,
   claimXrd,
+  swap,
+  addLiquidity,
 };

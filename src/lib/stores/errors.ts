@@ -1,5 +1,10 @@
 import { writable, get } from "svelte/store";
-import { worktop, worktopLSU, worktopUnstakedXrdNft } from "./worktop";
+import {
+  worktop,
+  worktopLSU,
+  worktopOciswap,
+  worktopUnstakedXrdNft,
+} from "./worktop";
 import { XRD } from "../../content";
 export const NO_COINS_SELECTED = "no coins selected!";
 export const NO_COINS_ON_WORKTOP = "put some coins on the worktop first";
@@ -15,6 +20,12 @@ export const NOT_ENOUGH_XRD_ON_WORKTOP = "not enough XRDs on the worktop";
 export const NO_LSU_ON_WORKTOP = "put some LSUs on the worktop first";
 export const NO_STAKE_CLAIM_NFT_ON_WORKTOP =
   "put a Stake Claim NFT on the worktop first";
+export const NO_OCISWAP_COIN_ON_WORKTOP =
+  "put some coin listed on Ociswap in the worktop first";
+export const NO_OCISWAP_PAIR_ON_WORKTOP =
+  "put two different coins listed on Ociswap in the worktop first";
+export const NO_COINS_TO_SEND = "no coins to send!";
+export const SOMETHING_WENT_WRONG = "something went wrong";
 
 export const actionError = writable("");
 
@@ -133,5 +144,21 @@ export function validateAvailableStakeClaimNFT() {
     validationErrors.add(NO_STAKE_CLAIM_NFT_ON_WORKTOP);
   } else if (get(validationErrors).has(NO_STAKE_CLAIM_NFT_ON_WORKTOP)) {
     validationErrors.del(NO_STAKE_CLAIM_NFT_ON_WORKTOP);
+  }
+}
+
+export function validateOciswapCoinOnWorktop() {
+  if (get(worktopOciswap).coins.size === 0) {
+    validationErrors.add(NO_OCISWAP_COIN_ON_WORKTOP);
+  } else if (get(validationErrors).has(NO_OCISWAP_COIN_ON_WORKTOP)) {
+    validationErrors.del(NO_OCISWAP_COIN_ON_WORKTOP);
+  }
+}
+
+export function validateOciswapPairOnWorktop() {
+  if (get(worktopOciswap).coins.size < 2) {
+    validationErrors.add(NO_OCISWAP_PAIR_ON_WORKTOP);
+  } else if (get(validationErrors).has(NO_OCISWAP_PAIR_ON_WORKTOP)) {
+    validationErrors.del(NO_OCISWAP_PAIR_ON_WORKTOP);
   }
 }

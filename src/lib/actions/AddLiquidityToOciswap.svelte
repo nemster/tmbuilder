@@ -1,0 +1,271 @@
+<script lang="ts">
+  import { afterUpdate, onDestroy, onMount } from "svelte";
+  import { find_fungible_symbol } from "../../content";
+  import { ociswap_lp_pools } from "../../ociswap";
+  import commands from "../commands";
+  import AddActionButton from "../shared/AddActionButton.svelte";
+  import QuantityInput from "../shared/QuantityInput.svelte";
+  import {
+    NO_COINS_TO_SEND,
+    SOMETHING_WENT_WRONG,
+    actionError,
+    validateOciswapPairOnWorktop,
+    validateQuantity,
+    validationErrors,
+  } from "../stores/errors";
+  import { bucketNumber, manifest } from "../stores/transaction";
+  import { worktop, worktopOciswap } from "../stores/worktop";
+
+  let addressCoin1 = "";
+  let quantity = "";
+  let allQuantity = true;
+  let maxQuantity: number | undefined = undefined;
+  let possibleCoin2: Map<string, string> = new Map();
+  let addressCoin2 = "";
+
+  onMount(() => {
+    actionError.set("");
+  });
+
+  function updateSelectors() {
+    if (!$worktopOciswap.coins.has(addressCoin1)) {
+      addressCoin1 = "";
+    }
+    if (addressCoin1 === "" && $worktopOciswap.coins.size > 0) {
+      addressCoin1 = $worktopOciswap.coins.keys().next().value;
+    }
+
+    possibleCoin2.clear();
+    for (let resourceAddress of $worktopOciswap.coins.keys()) {
+      if (resourceAddress !== addressCoin1) {
+        possibleCoin2.set(
+          resourceAddress,
+          find_fungible_symbol(resourceAddress)
+        );
+      }
+    }
+
+    // update svelte state
+    possibleCoin2 = possibleCoin2;
+    if (addressCoin2 === "" || !possibleCoin2.has(addressCoin2)) {
+      addressCoin2 = possibleCoin2.keys().next().value;
+    }
+    const prevMaxQuantity = maxQuantity;
+    maxQuantity = $worktopOciswap.coins.get(addressCoin1)?.amount;
+    if (
+      maxQuantity !== undefined &&
+      (quantity === "" || prevMaxQuantity !== maxQuantity)
+    ) {
+      quantity = maxQuantity.toString();
+    }
+  }
+
+  afterUpdate(() => {
+    updateSelectors();
+    validateQuantity(quantity, maxQuantity);
+    validateOciswapPairOnWorktop();
+  });
+
+  onDestroy(() => {
+    validationErrors.clear();
+  });
+
+  function handleAddAction() {
+    actionError.set("");
+    if ($validationErrors.size > 0) {
+      return;
+    }
+
+    if (quantity === "" || addressCoin1 === "") {
+      actionError.set(NO_COINS_TO_SEND);
+      return;
+    }
+
+    const send_1_12 = $worktopOciswap.coins.get(addressCoin1);
+    const send_2_12 = $worktopOciswap.coins.get(addressCoin2);
+
+    if (send_1_12 === undefined || send_2_12 === undefined) {
+      actionError.set(NO_COINS_TO_SEND);
+      return;
+    }
+
+    let send1 = send_1_12.address;
+    let quantity1 = 0;
+    let send2 = send_2_12.address;
+    let quantity2 = send_2_12.amount;
+    let component = "";
+    let lp_token = "";
+    let lp_quantity = 0;
+
+    let all = "";
+    if (allQuantity) {
+      quantity1 = send_1_12.amount;
+      all = send_1_12.address;
+    } else {
+      quantity1 = parseFloat(quantity);
+    }
+    let limit_condition = "x_amount=" + quantity1;
+
+    const options = {
+      method: "GET",
+      headers: { accept: "application/json" },
+    };
+    fetch(
+      "https://api.ociswap.com/pools?cursor=0&limit=1&token_address=" +
+        send1 +
+        "," +
+        send2 +
+        "&order=rank&direction=asc",
+      options
+    ).then((r1) => {
+      if (!r1.ok) {
+        actionError.set(SOMETHING_WENT_WRONG);
+        return;
+      }
+      r1.json().then((j1) => {
+        if (j1.data[0] == undefined) {
+          document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
+            "no such pool";
+          return false;
+        }
+        component = j1.data[0].address;
+        if (j1.data[0].x.token.address == send2) {
+          const tmp_string = send1;
+          const tmp_number = quantity1;
+          send1 = send2;
+          quantity1 = quantity2;
+          send2 = tmp_string;
+          quantity2 = tmp_number;
+          limit_condition = "y_amount=" + quantity2;
+        }
+
+        fetch(
+          "https://api.ociswap.com/preview/add-liquidity?pool_address=" +
+            component +
+            "&" +
+            limit_condition,
+          options
+        ).then((r2) => {
+          if (!r2.ok) {
+            actionError.set(SOMETHING_WENT_WRONG);
+            return;
+          }
+          r2.json().then(async (j2) => {
+            const amount_x = parseFloat(j2.x_amount.token);
+            const amount_y = parseFloat(j2.y_amount.token);
+            if (amount_y > quantity2 || amount_x > quantity1) {
+              if (amount_y > quantity2) {
+                limit_condition = "y_amount=" + quantity2;
+                all = send2;
+              } else {
+                limit_condition = "x_amount=" + quantity1;
+                all = send1;
+              }
+              fetch(
+                "https://api.ociswap.com/preview/add-liquidity?pool_address=" +
+                  component +
+                  "&" +
+                  limit_condition,
+                options
+              ).then((r3) => {
+                if (!r3.ok) {
+                  actionError.set(SOMETHING_WENT_WRONG);
+                  return;
+                }
+                r3.json().then((j3) => {
+                  lp_quantity = parseFloat(j3.liquidity_amount);
+                  quantity1 = parseFloat(j3.x_amount.token);
+                  quantity2 = parseFloat(j3.y_amount.token);
+                });
+              });
+            } else {
+              lp_quantity = parseFloat(j2.liquidity_amount);
+              quantity1 = parseFloat(j2.x_amount.token);
+              quantity2 = parseFloat(j2.y_amount.token);
+            }
+
+            for (let lp of Object.keys(ociswap_lp_pools)) {
+              if (component == ociswap_lp_pools[lp]) {
+                lp_token = lp;
+                break;
+              }
+            }
+
+            let command = "";
+            if (send1 == all) {
+              worktop.removeAllFungible(send1);
+              command += commands.putAllResourceToBucket(send1, $bucketNumber);
+            } else {
+              worktop.removeFungible(send1, quantity1);
+              command += commands.putResourceToBucket(
+                send1,
+                quantity1,
+                $bucketNumber
+              );
+            }
+            const bucketA = $bucketNumber;
+            bucketNumber.increment();
+            if (send2 == all) {
+              worktop.removeAllFungible(send2);
+              command += commands.putAllResourceToBucket(send2, $bucketNumber);
+            } else {
+              worktop.removeFungible(send2, quantity2);
+              command += commands.putResourceToBucket(
+                send2,
+                quantity2,
+                $bucketNumber
+              );
+            }
+            const bucketB = $bucketNumber;
+            command += commands.addLiquidity(component, bucketA, bucketB);
+            manifest.update((m) => m + command);
+            bucketNumber.increment();
+            worktop.addFungible(lp_token, lp_quantity);
+          });
+        });
+      });
+    });
+  }
+</script>
+
+<div class="flex space-x-12 w-full place-items-end">
+  <div class="form-control flex-grow space-y-2">
+    <label class="label">
+      <span class="label-text">Coin 1 to send</span>
+      <select
+        class="select select-secondary select-sm w-3/5 text-end"
+        bind:value={addressCoin1}
+      >
+        {#each Array.from($worktopOciswap.coins.values()) as sendFungible}
+          <option value={sendFungible.address}>
+            {sendFungible.symbol}
+          </option>
+        {/each}
+      </select>
+    </label>
+    <div class="label space-x-2 !mt-0 pt-0">
+      <label class="label cursor-pointer space-x-4 px-0">
+        <span class="label-text">all</span>
+        <input class="checkbox" type="checkbox" bind:checked={allQuantity} />
+      </label>
+      <QuantityInput bind:value={quantity} hidden={allQuantity} />
+    </div>
+
+    <label class="label">
+      <span class="label-text">Coin 2 to send</span>
+      <select
+        class="select select-secondary select-sm w-3/5 text-end"
+        bind:value={addressCoin2}
+      >
+        {#each Array.from(possibleCoin2) as [address, symbol]}
+          <option value={address}>
+            {symbol}
+          </option>
+        {/each}
+      </select>
+    </label>
+  </div>
+  <div>
+    <AddActionButton {handleAddAction} />
+  </div>
+</div>

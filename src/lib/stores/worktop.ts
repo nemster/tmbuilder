@@ -6,6 +6,7 @@ import {
   find_non_fungible_symbol,
 } from "../../content";
 import { claim_nft, pool_units } from "../../validators";
+import { ociswap_listed_coins } from "../../ociswap";
 
 export interface Worktop {
   fungibles: Map<string, WalletFungible>;
@@ -60,6 +61,13 @@ function createWorktop() {
     });
   }
 
+  function removeAllFungible(address: string) {
+    update((worktop) => {
+      worktop.fungibles.delete(address);
+      return worktop;
+    });
+  }
+
   function addNonFungible(nonFungibleKey: string) {
     const [address, id] = nonFungibleKey.split(" ");
     const symbol = find_non_fungible_symbol(address);
@@ -93,6 +101,7 @@ function createWorktop() {
     subscribe,
     addFungible,
     removeFungible,
+    removeAllFungible,
     addNonFungible,
     removeNonFungible,
     clearWorktop,
@@ -127,3 +136,30 @@ export const worktopUnstakedXrdNft = derived<
 
   return filtered;
 });
+
+export interface WorktopOciswap {
+  // resource address -> component address
+  pools: Map<string, string>;
+  coins: Map<string, WalletFungible>;
+}
+
+export const worktopOciswap = derived<typeof worktop, WorktopOciswap>(
+  worktop,
+  ($worktop) => {
+    const pools = new Map();
+    const coins = new Map();
+
+    for (const [address, fungible] of $worktop.fungibles) {
+      if (address in ociswap_listed_coins) {
+        coins.set(address, fungible);
+      }
+
+      // TODO: pools
+    }
+
+    return {
+      pools,
+      coins,
+    };
+  }
+);
