@@ -93,7 +93,6 @@
       </select>
     </label>
     <div class="label space-x-2">
-      <span class="label-text my-auto">XRD</span>
       <label class="label cursor-pointer space-x-4 px-0">
         <span class="label-text">all</span>
         <input class="checkbox" type="checkbox" bind:checked={allLSU} />
