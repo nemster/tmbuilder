@@ -4,11 +4,15 @@ import {
   find_fungible_symbol,
   find_non_fungible_symbol,
 } from "../../content";
+import { CANNOT_PROCEED_WITH_UNKNOWN_QUANTITY } from "./errors";
+
+export const UNKNOWN_QUANTITY = "[unknown quantity]";
+export const UNKNOWN_ID = "unknown-id-";
 
 export interface WalletFungible {
   address: string;
   symbol: string;
-  amount: number;
+  amount: number | typeof UNKNOWN_QUANTITY;
 }
 
 export interface WalletNonFungible {
@@ -51,12 +55,30 @@ function createAccounts() {
   function addFungible(
     accountAddress: string,
     address: string,
-    amount: number
+    amount: number | typeof UNKNOWN_QUANTITY
   ) {
     const symbol = find_fungible_symbol(address);
     update((accounts) => {
       const account = accounts.get(accountAddress);
       if (account) {
+        let existingFungible = account.fungibles.get(address);
+        if (existingFungible) {
+          if (existingFungible.amount === UNKNOWN_QUANTITY) {
+            return accounts;
+          } else if (amount === UNKNOWN_QUANTITY) {
+            existingFungible.amount = UNKNOWN_QUANTITY;
+          } else {
+            existingFungible.amount += amount;
+          }
+          account.fungibles.set(address, existingFungible);
+        } else {
+          existingFungible = {
+            address,
+            symbol,
+            amount,
+          };
+          account.fungibles.set(address, existingFungible);
+        }
         account.fungibles.set(address, {
           address,
           symbol,
@@ -78,6 +100,9 @@ function createAccounts() {
       if (account) {
         const fungible = account.fungibles.get(address);
         if (fungible) {
+          if (fungible.amount === UNKNOWN_QUANTITY) {
+            throw new Error(CANNOT_PROCEED_WITH_UNKNOWN_QUANTITY);
+          }
           fungible.amount -= q;
           if (fungible.amount < EPSILON) {
             account.fungibles.delete(address);
@@ -86,12 +111,12 @@ function createAccounts() {
           }
           accounts.set(accountAddress, account);
         } else {
-          console.error(
+          throw new Error(
             `Could not remove fungible, account [${accountAddress}] not found`
           );
         }
       } else {
-        console.error(
+        throw new Error(
           `Could not remove fungible, account [${accountAddress}] not found`
         );
       }

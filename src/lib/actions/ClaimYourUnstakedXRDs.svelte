@@ -1,9 +1,10 @@
 <script lang="ts">
   import { afterUpdate, onDestroy, onMount } from "svelte";
-  import { UNKNOWN_NFT_ID, XRD, claim_amount } from "../../content";
+  import { XRD, claim_amount } from "../../content";
   import { claim_nft } from "../../validators";
   import commands from "../commands";
   import AddActionButton from "../shared/AddActionButton.svelte";
+  import { UNKNOWN_ID, UNKNOWN_QUANTITY } from "../stores/accounts";
   import {
     NO_STAKE_CLAIM_NFT_ON_WORKTOP,
     actionError,
@@ -45,7 +46,7 @@
       return;
     }
     let validatorAddress = claim_nft[nft?.address];
-    if (nft.id == UNKNOWN_NFT_ID) {
+    if (nft.id.startsWith(UNKNOWN_ID)) {
       command = commands.putAllResourceToBucket(nft.address, $bucketNumber);
     } else {
       command = commands.putNonFungibleToBucket(
@@ -59,11 +60,13 @@
     bucketNumber.increment();
     worktop.removeNonFungible(claimNftKey);
 
-    let amount = 0;
+    let amount: number | typeof UNKNOWN_QUANTITY = 0;
 
-    // TODO: not showing up in the same transaction
+    // claim_amount gets updated only in the wallet subscription
     if (claim_amount[nft.id] !== undefined) {
       amount = claim_amount[nft.id];
+    } else {
+      amount = UNKNOWN_QUANTITY;
     }
     worktop.addFungible(XRD, amount);
   }

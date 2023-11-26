@@ -1,11 +1,10 @@
 <script lang="ts">
   import { afterUpdate, onDestroy, onMount } from "svelte";
-  import { UNKNOWN_NFT_ID } from "../../content";
   import commands from "../commands";
   import AccountSelect from "../shared/AccountSelect.svelte";
   import AddActionButton from "../shared/AddActionButton.svelte";
   import FungibleOrNonFungibleInput from "../shared/FungibleOrNonFungibleInput.svelte";
-  import { accounts } from "../stores/accounts";
+  import { UNKNOWN_ID, UNKNOWN_QUANTITY, accounts } from "../stores/accounts";
   import {
     NO_ACCOUNT,
     NO_COINS_SELECTED,
@@ -41,7 +40,10 @@
   });
 
   $: if (fungibleAddress !== "") {
-    maxFungibleQuantity = $worktop.fungibles.get(fungibleAddress)?.amount;
+    const amount = $worktop.fungibles.get(fungibleAddress)?.amount;
+    if (amount !== UNKNOWN_QUANTITY) {
+      maxFungibleQuantity = amount;
+    }
   }
 
   function handleAddAction() {
@@ -93,6 +95,7 @@
             fungibleAddress,
             $bucketNumber
           );
+          worktop.removeAllFungible(fungibleAddress);
         } else {
           q = parseFloat(fungibleQuantity);
           command = commands.sendQuantityToAccount(
@@ -101,11 +104,12 @@
             fungibleQuantity,
             $bucketNumber
           );
+          worktop.removeFungible(fungibleAddress, q);
         }
         manifest.update((m) => m + command);
         bucketNumber.increment();
         accounts.addFungible(accountAddress, fungibleAddress, q);
-        worktop.removeFungible(fungibleAddress, q);
+
         fungibleQuantity = "";
       }
 
@@ -117,7 +121,7 @@
         }
 
         let command = "";
-        if (nonFungible.id === UNKNOWN_NFT_ID) {
+        if (nonFungible.id.startsWith(UNKNOWN_ID)) {
           command = commands.putAllResourceToBucket(
             nonFungible.address,
             $bucketNumber

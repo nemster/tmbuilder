@@ -5,8 +5,9 @@
   import AddActionButton from "../shared/AddActionButton.svelte";
   import FungibleOrNonFungibleInput from "../shared/FungibleOrNonFungibleInput.svelte";
   import type { WalletFungible, WalletNonFungible } from "../stores/accounts";
-  import { accounts } from "../stores/accounts";
+  import { UNKNOWN_QUANTITY, accounts } from "../stores/accounts";
   import {
+    CANNOT_PROCEED_WITH_UNKNOWN_QUANTITY,
     NO_ACCOUNT,
     NO_COINS_SELECTED,
     actionError,
@@ -46,21 +47,26 @@
       return;
     }
     if (!accountAddress) {
-      actionError.set(NO_ACCOUNT);
-      return;
+      throw new Error(NO_ACCOUNT);
     }
     if (!fungibleAddress && !nonFungibleKey) {
-      actionError.set(NO_COINS_SELECTED);
-      return;
+      throw new Error(NO_COINS_SELECTED);
     }
 
     let command = "";
 
     if (fungibleAddress !== "") {
+      const accountQuantity = fungibles.get(fungibleAddress)?.amount;
+      if (
+        accountQuantity === undefined ||
+        accountQuantity === UNKNOWN_QUANTITY
+      ) {
+        throw new Error(CANNOT_PROCEED_WITH_UNKNOWN_QUANTITY);
+      }
       var q = parseFloat(fungibleQuantity);
       if (q > 0) {
-        if (q > fungibles.get(fungibleAddress)!.amount) {
-          q = fungibles.get(fungibleAddress)!.amount;
+        if (q > accountQuantity) {
+          q = accountQuantity;
         }
         command = commands.withdraw(accountAddress, fungibleAddress, q);
         const f = fungibles.get(fungibleAddress);

@@ -4,7 +4,7 @@
   import AccountInput from "../shared/AccountInput.svelte";
   import AccountSelect from "../shared/AccountSelect.svelte";
   import AddActionButton from "../shared/AddActionButton.svelte";
-  import { accounts } from "../stores/accounts";
+  import { UNKNOWN_QUANTITY, accounts } from "../stores/accounts";
   import {
     NO_ACCOUNT,
     NO_COINS_SELECTED,
@@ -20,8 +20,8 @@
   import QuantityInput from "../shared/QuantityInput.svelte";
 
   let fungibleAddress: string;
-  let fungibleQuantity = "";
-  let maxFungibleQuantity: number | undefined = undefined;
+  let quantity = "";
+  let maxQuantity: number | undefined = undefined;
 
   let accountAddresses = [""];
   let remainingsAccountAddress = "";
@@ -39,7 +39,7 @@
   });
 
   afterUpdate(() => {
-    validateQuantity(fungibleQuantity, maxFungibleQuantity);
+    validateQuantity(quantity, maxQuantity);
     validateAvailableFungibles();
     validateMultipleAccounts(accountAddresses);
   });
@@ -50,8 +50,11 @@
 
   $: if (fungibleAddress !== "") {
     const nAddresses = accountAddresses.filter((a) => a !== "").length;
-    maxFungibleQuantity =
-      $worktop.fungibles.get(fungibleAddress)?.amount || 0 / nAddresses;
+
+    const amount = $worktop.fungibles.get(fungibleAddress)?.amount;
+    if (amount !== undefined && amount !== UNKNOWN_QUANTITY) {
+      maxQuantity = amount / nAddresses;
+    }
   }
 
   function handleAddAction() {
@@ -73,12 +76,12 @@
       return;
     }
 
-    if (fungibleQuantity === "") {
+    if (quantity === "") {
       actionError.set(NO_QUANTITY);
       return;
     }
 
-    let q = parseFloat(fungibleQuantity);
+    let q = parseFloat(quantity);
     for (let recipient of recipients) {
       const command = commands.trySendAmountFungibleToAccount(
         recipient,
@@ -108,13 +111,13 @@
       accounts.addFungible(
         remainingsAccountAddress,
         fungibleAddress,
-        remainingFungible.amount || 0
+        remainingFungible.amount
       );
-      worktop.removeFungible(fungibleAddress, remainingFungible.amount);
+      worktop.removeAllFungible(fungibleAddress);
     }
 
     accountAddresses = [""];
-    fungibleQuantity = "";
+    quantity = "";
 
     return;
   }
@@ -134,10 +137,7 @@
         {/each}
       </select>
     </label>
-    <QuantityInput
-      bind:value={fungibleQuantity}
-      label="Quantity per recipient"
-    />
+    <QuantityInput bind:value={quantity} label="Quantity per recipient" />
 
     <div class="p-2 rounded-box border-2 border-secondary border-dotted">
       <label class="label cursor-pointer pr-0">

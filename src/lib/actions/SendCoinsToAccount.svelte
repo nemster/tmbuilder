@@ -1,12 +1,11 @@
 <script lang="ts">
   import { afterUpdate, onDestroy, onMount } from "svelte";
-  import { UNKNOWN_NFT_ID } from "../../content";
   import commands from "../commands";
   import AccountInput from "../shared/AccountInput.svelte";
   import AddActionButton from "../shared/AddActionButton.svelte";
-  import FungibleOrNonFungibleInput from "../shared/FungibleOrNonFungibleInput.svelte";
   import FailToggle from "../shared/FailToggle.svelte";
-  import { accounts } from "../stores/accounts";
+  import FungibleOrNonFungibleInput from "../shared/FungibleOrNonFungibleInput.svelte";
+  import { UNKNOWN_ID, UNKNOWN_QUANTITY, accounts } from "../stores/accounts";
   import {
     NO_ACCOUNT,
     NO_COINS_SELECTED,
@@ -45,7 +44,10 @@
   });
 
   $: if (fungibleAddress !== "") {
-    maxFungibleQuantity = $worktop.fungibles.get(fungibleAddress)?.amount;
+    const amount = $worktop.fungibles.get(fungibleAddress)?.amount;
+    if (amount !== UNKNOWN_QUANTITY) {
+      maxFungibleQuantity = amount;
+    }
   }
 
   function handleAddAction() {
@@ -135,7 +137,7 @@
         }
 
         let command = "";
-        if (nonFungible.id === UNKNOWN_NFT_ID) {
+        if (nonFungible.id.startsWith(UNKNOWN_ID)) {
           command = commands.putAllResourceToBucket(
             nonFungible.address,
             $bucketNumber

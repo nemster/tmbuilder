@@ -1,9 +1,12 @@
 <script lang="ts">
+  import { nanoid } from "nanoid";
   import { afterUpdate, onDestroy, onMount } from "svelte";
-  import { UNKNOWN_NFT_ID, number_to_string } from "../../content";
+  import { number_to_string } from "../../content";
   import { claim_nft, pool_units } from "../../validators";
   import commands from "../commands";
   import AddActionButton from "../shared/AddActionButton.svelte";
+  import QuantityInput from "../shared/QuantityInput.svelte";
+  import { UNKNOWN_ID, UNKNOWN_QUANTITY } from "../stores/accounts";
   import {
     NO_QUANTITY,
     actionError,
@@ -13,7 +16,6 @@
   } from "../stores/errors";
   import { bucketNumber, manifest } from "../stores/transaction";
   import { worktop, worktopLSU } from "../stores/worktop";
-  import QuantityInput from "../shared/QuantityInput.svelte";
 
   let allLSU = true;
   let quantity = "";
@@ -38,7 +40,10 @@
   }
 
   $: if (lsuAddress !== "") {
-    maxQuantity = $worktopLSU.get(lsuAddress)?.amount;
+    const worktopLSUquantity = $worktopLSU.get(lsuAddress)?.amount;
+    if (worktopLSUquantity !== UNKNOWN_QUANTITY) {
+      maxQuantity = worktopLSUquantity;
+    }
   }
 
   $: if (allLSU && lsuAddress !== "" && maxQuantity !== undefined) {
@@ -51,8 +56,7 @@
       return;
     }
     if (!allLSU && quantity === "") {
-      actionError.set(NO_QUANTITY);
-      return;
+      throw new Error(NO_QUANTITY);
     }
 
     let command = "";
@@ -69,10 +73,8 @@
     worktop.removeFungible(lsuAddress, q);
 
     for (let nft of Object.keys(claim_nft)) {
-      if (claim_nft[nft] == validatorAddress) {
-        // TODO: this probably will not be unique if the user unstakes 2 times
-        // from the same validator per transaction
-        worktop.addNonFungible(nft + " " + UNKNOWN_NFT_ID);
+      if (claim_nft[nft] === validatorAddress) {
+        worktop.addNonFungible(`${nft} ${UNKNOWN_ID}${nanoid()}`);
       }
     }
   }

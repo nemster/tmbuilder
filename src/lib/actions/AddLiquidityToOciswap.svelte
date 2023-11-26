@@ -6,6 +6,7 @@
   import AddActionButton from "../shared/AddActionButton.svelte";
   import QuantityInput from "../shared/QuantityInput.svelte";
   import {
+    CANNOT_PROCEED_WITH_UNKNOWN_QUANTITY,
     NO_COINS_TO_SEND,
     SOMETHING_WENT_WRONG,
     actionError,
@@ -15,6 +16,7 @@
   } from "../stores/errors";
   import { bucketNumber, manifest } from "../stores/transaction";
   import { worktop, worktopOciswap } from "../stores/worktop";
+  import { UNKNOWN_QUANTITY } from "../stores/accounts";
 
   let addressCoin1 = "";
   let quantity = "";
@@ -51,7 +53,10 @@
       addressCoin2 = possibleCoin2.keys().next().value;
     }
     const prevMaxQuantity = maxQuantity;
-    maxQuantity = $worktopOciswap.coins.get(addressCoin1)?.amount;
+    const amount = $worktopOciswap.coins.get(addressCoin1)?.amount;
+    if (amount !== UNKNOWN_QUANTITY) {
+      maxQuantity = amount;
+    }
     if (
       maxQuantity !== undefined &&
       (quantity === "" || prevMaxQuantity !== maxQuantity)
@@ -97,6 +102,14 @@
     let lp_token = "";
     let lp_quantity = 0;
 
+    if (
+      send_1_12.amount === UNKNOWN_QUANTITY ||
+      quantity2 === UNKNOWN_QUANTITY
+    ) {
+      actionError.set(CANNOT_PROCEED_WITH_UNKNOWN_QUANTITY);
+      return;
+    }
+
     let all = "";
     if (allQuantity) {
       quantity1 = send_1_12.amount;
@@ -110,6 +123,8 @@
       method: "GET",
       headers: { accept: "application/json" },
     };
+
+    // TODO: throw errors if fetch fails (handled in AddActionButton.svelte)
     fetch(
       "https://api.ociswap.com/pools?cursor=0&limit=1&token_address=" +
         send1 +
@@ -123,6 +138,7 @@
         return;
       }
       r1.json().then((j1) => {
+        quantity2 = quantity2 as number;
         if (j1.data[0] == undefined) {
           document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
             "no such pool";
@@ -151,6 +167,7 @@
             return;
           }
           r2.json().then(async (j2) => {
+            quantity2 = quantity2 as number;
             const amount_x = parseFloat(j2.x_amount.token);
             const amount_y = parseFloat(j2.y_amount.token);
             if (amount_y > quantity2 || amount_x > quantity1) {
@@ -220,7 +237,10 @@
             command += commands.addLiquidity(component, bucketA, bucketB);
             manifest.update((m) => m + command);
             bucketNumber.increment();
-            worktop.addFungible(lp_token, lp_quantity);
+
+            let wortopQuantity: number | typeof UNKNOWN_QUANTITY =
+              lp_quantity === 0 ? UNKNOWN_QUANTITY : lp_quantity;
+            worktop.addFungible(lp_token, wortopQuantity);
           });
         });
       });

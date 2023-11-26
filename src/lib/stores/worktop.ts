@@ -1,5 +1,9 @@
 import { derived, writable } from "svelte/store";
-import type { WalletFungible, WalletNonFungible } from "./accounts";
+import {
+  UNKNOWN_QUANTITY,
+  WalletFungible,
+  WalletNonFungible,
+} from "./accounts";
 import {
   EPSILON,
   find_fungible_symbol,
@@ -19,11 +23,25 @@ function createWorktop() {
     nonFungibles: new Map(),
   });
 
-  function addFungible(address: string, amount: number) {
+  function addFungible(
+    address: string,
+    amount: number | typeof UNKNOWN_QUANTITY
+  ) {
     update((worktop) => {
+      if (amount === UNKNOWN_QUANTITY) {
+        worktop.fungibles.set(address, {
+          address,
+          amount,
+          symbol: find_fungible_symbol(address),
+        });
+        return worktop;
+      }
       if (worktop.fungibles.has(address)) {
         const existingFungible = worktop.fungibles.get(address);
         if (existingFungible) {
+          if (existingFungible.amount === UNKNOWN_QUANTITY) {
+            return worktop;
+          }
           existingFungible.amount += amount;
           worktop.fungibles.set(address, existingFungible);
         }
@@ -44,6 +62,9 @@ function createWorktop() {
       if (worktop.fungibles.has(address)) {
         const existing = worktop.fungibles.get(address);
         if (existing) {
+          if (existing.amount === UNKNOWN_QUANTITY) {
+            throw new Error("Cannot substract from unknown quantity");
+          }
           existing.amount -= amount;
           if (existing.amount < EPSILON) {
             worktop.fungibles.delete(address);

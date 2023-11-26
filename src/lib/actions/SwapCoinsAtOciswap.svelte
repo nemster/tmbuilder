@@ -1,8 +1,11 @@
 <script lang="ts">
   import { afterUpdate, onDestroy, onMount } from "svelte";
+  import { XRD, find_fungible_symbol } from "../../content";
   import { ociswap_listed_coins } from "../../ociswap";
+  import commands from "../commands";
   import AddActionButton from "../shared/AddActionButton.svelte";
   import QuantityInput from "../shared/QuantityInput.svelte";
+  import { UNKNOWN_QUANTITY } from "../stores/accounts";
   import {
     NO_COINS_TO_SEND,
     actionError,
@@ -10,10 +13,8 @@
     validateQuantity,
     validationErrors,
   } from "../stores/errors";
-  import { XRD, find_fungible_symbol } from "../../content";
-  import { worktop, worktopOciswap } from "../stores/worktop";
-  import commands from "../commands";
   import { bucketNumber, manifest } from "../stores/transaction";
+  import { worktop, worktopOciswap } from "../stores/worktop";
 
   interface ociswap_swap {
     input_address: string;
@@ -61,7 +62,10 @@
       receiveFungibleAddress = receiveFungibles.keys().next().value;
     }
     const prevMaxQuantity = maxQuantity;
-    maxQuantity = $worktopOciswap.coins.get(sendFungibleAddress)?.amount;
+    const amount = $worktopOciswap.coins.get(sendFungibleAddress)?.amount;
+    if (amount !== UNKNOWN_QUANTITY) {
+      maxQuantity = amount;
+    }
     if (
       maxQuantity !== undefined &&
       (quantity === "" || prevMaxQuantity !== maxQuantity)
@@ -81,10 +85,6 @@
   });
 
   function build_ociswap_swaps(swaps: ociswap_swap[], quantity: string) {
-    let q =
-      quantity === "*"
-        ? $worktopOciswap.coins.get(sendFungibleAddress)!.amount
-        : parseFloat(quantity);
     let command = "";
     for (var swap of swaps) {
       if (quantity == "*") {
@@ -93,15 +93,23 @@
           $bucketNumber
         );
         sendFungibleAddress = "";
+        worktop.removeAllFungible(swap.input_address);
       } else {
+        const worktopQuantity =
+          $worktopOciswap.coins.get(sendFungibleAddress)?.amount;
+
+        if (worktopQuantity === undefined) {
+          throw new Error("did not find fungible on worktop");
+        }
+        const q = parseFloat(quantity);
         command = commands.putResourceToBucket(
           swap.input_address,
           q,
           $bucketNumber
         );
+        worktop.removeFungible(swap.input_address, q);
       }
       command += commands.swap(swap.pool_address, $bucketNumber);
-      worktop.removeFungible(swap.input_address, q);
       worktop.addFungible(
         swap.output_address,
         parseFloat(swap.output_amount.token)
@@ -129,6 +137,8 @@
       method: "GET",
       headers: { accept: "application/json" },
     };
+
+    // TODO: throw errors if fetch fails
     fetch(
       "https://api.ociswap.com/preview/swap?input_address=" +
         sendFungibleAddress +

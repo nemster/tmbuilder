@@ -19,6 +19,7 @@
   import commands from "../commands";
   import { bucketNumber, manifest } from "../stores/transaction";
   import QuantityInput from "../shared/QuantityInput.svelte";
+  import { UNKNOWN_QUANTITY } from "../stores/accounts";
 
   let allXRDs = true;
   let quantityXRD = "";
@@ -40,7 +41,7 @@
     validationErrors.clear();
   });
 
-  $: if (allXRDs && avaiableXRDs) {
+  $: if (allXRDs && avaiableXRDs && avaiableXRDs.amount !== UNKNOWN_QUANTITY) {
     quantityXRD = number_to_string(avaiableXRDs.amount);
   }
 

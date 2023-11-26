@@ -1,11 +1,12 @@
-import { writable, get } from "svelte/store";
+import { get, writable } from "svelte/store";
+import { XRD } from "../../content";
+import { UNKNOWN_QUANTITY } from "./accounts";
 import {
   worktop,
   worktopLSU,
   worktopOciswap,
   worktopUnstakedXrdNft,
 } from "./worktop";
-import { XRD } from "../../content";
 export const NO_COINS_SELECTED = "no coins selected!";
 export const NO_COINS_ON_WORKTOP = "put some coins on the worktop first";
 export const NO_ACCOUNT = "specify an account first";
@@ -26,6 +27,9 @@ export const NO_OCISWAP_PAIR_ON_WORKTOP =
   "put two different coins listed on Ociswap in the worktop first";
 export const NO_COINS_TO_SEND = "no coins to send!";
 export const SOMETHING_WENT_WRONG = "something went wrong";
+export const UNKNOWN_XRD_AMOUNT = "unknown XRD amount";
+export const CANNOT_PROCEED_WITH_UNKNOWN_QUANTITY =
+  "unknown quantity on the worktop, choose another action";
 
 export const actionError = writable("");
 
@@ -104,6 +108,14 @@ export function validateQuantity(quantity: string, max?: number) {
 
 export function validateAvailableXRD(atLeast = 90) {
   const availableXRDs = get(worktop).fungibles.get(XRD);
+
+  if (availableXRDs?.amount === UNKNOWN_QUANTITY) {
+    validationErrors.add(UNKNOWN_XRD_AMOUNT);
+    return;
+  } else {
+    validationErrors.del(UNKNOWN_XRD_AMOUNT);
+  }
+
   if (!availableXRDs || availableXRDs.amount < atLeast) {
     validationErrors.add(NOT_ENOUGH_XRD_ON_WORKTOP);
   } else if (get(validationErrors).has(NOT_ENOUGH_XRD_ON_WORKTOP)) {

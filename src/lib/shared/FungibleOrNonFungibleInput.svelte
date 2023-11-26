@@ -1,12 +1,16 @@
 <script lang="ts">
   import { number_to_string } from "../../content";
   import {
+    UNKNOWN_QUANTITY,
+    type WalletFungible,
+    type WalletNonFungible,
+  } from "../stores/accounts";
+  import {
     INVALID_QUANTITY,
     NO_COINS_SELECTED,
     actionError,
     isValidQuantity,
   } from "../stores/errors";
-  import type { WalletFungible, WalletNonFungible } from "../stores/accounts";
   import QuantityInput from "./QuantityInput.svelte";
 
   export let fungibleAddress: string;
@@ -54,9 +58,12 @@
     const target = event.target as HTMLSelectElement;
     fungibleAddress = target?.value;
     if (fungibleAddress !== "") {
-      fungibleQuantity = number_to_string(
-        fungibles.get(fungibleAddress)?.amount || 0
-      );
+      const fungibleAmount = fungibles.get(fungibleAddress)?.amount;
+      if (fungibleAmount === UNKNOWN_QUANTITY) {
+        fungibleQuantity = UNKNOWN_QUANTITY;
+      } else if (fungibleAmount !== undefined) {
+        fungibleQuantity = number_to_string(fungibleAmount);
+      }
       if ($actionError === NO_COINS_SELECTED) {
         actionError.set("");
       }
