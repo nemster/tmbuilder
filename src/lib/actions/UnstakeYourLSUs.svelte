@@ -1,7 +1,6 @@
 <script lang="ts">
   import { nanoid } from "nanoid";
   import { afterUpdate, onDestroy, onMount } from "svelte";
-  import { number_to_string } from "../../content";
   import { claim_nft, pool_units } from "../../validators";
   import commands from "../commands";
   import AddActionButton from "../shared/AddActionButton.svelte";
@@ -16,11 +15,12 @@
   } from "../stores/errors";
   import { bucketNumber, manifest } from "../stores/transaction";
   import { worktop, worktopLSU } from "../stores/worktop";
+  import PrecisionNumber from "../PrecisionNumber";
 
   let allLSU = true;
   let quantity = "";
   let lsuAddress = "";
-  let maxQuantity: number | undefined = undefined;
+  let maxQuantity: PrecisionNumber | undefined = undefined;
 
   onMount(() => {
     actionError.set("");
@@ -47,7 +47,7 @@
   }
 
   $: if (allLSU && lsuAddress !== "" && maxQuantity !== undefined) {
-    quantity = number_to_string(maxQuantity);
+    quantity = maxQuantity.toString();
   }
 
   function handleAddAction() {
@@ -60,7 +60,7 @@
     }
 
     let command = "";
-    let q = parseFloat(quantity);
+    let q = new PrecisionNumber(quantity);
     let validatorAddress = pool_units[lsuAddress];
     if (allLSU) {
       command = commands.putAllResourceToBucket(lsuAddress, $bucketNumber);

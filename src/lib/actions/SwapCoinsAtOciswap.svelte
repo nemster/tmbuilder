@@ -15,6 +15,7 @@
   } from "../stores/errors";
   import { bucketNumber, manifest } from "../stores/transaction";
   import { worktop, worktopOciswap } from "../stores/worktop";
+  import PrecisionNumber from "../PrecisionNumber";
 
   interface ociswap_swap {
     input_address: string;
@@ -26,7 +27,7 @@
   let sendFungibleAddress = "";
   let quantity = "";
   let allQuantity = true;
-  let maxQuantity: number | undefined = undefined;
+  let maxQuantity: PrecisionNumber | undefined = undefined;
   // fungible address -> fungible symbol
   let receiveFungibles: Map<string, string> = new Map();
   let receiveFungibleAddress = "";
@@ -101,7 +102,7 @@
         if (worktopQuantity === undefined) {
           throw new Error("did not find fungible on worktop");
         }
-        const q = parseFloat(quantity);
+        const q = new PrecisionNumber(quantity);
         command = commands.putResourceToBucket(
           swap.input_address,
           q,
@@ -112,7 +113,7 @@
       command += commands.swap(swap.pool_address, $bucketNumber);
       worktop.addFungible(
         swap.output_address,
-        parseFloat(swap.output_amount.token)
+        new PrecisionNumber(swap.output_amount.token)
       );
       manifest.update((m) => m + command);
       bucketNumber.increment();
@@ -131,7 +132,7 @@
       return;
     }
 
-    let q = parseFloat(quantity);
+    let q = new PrecisionNumber(quantity);
 
     const options = {
       method: "GET",

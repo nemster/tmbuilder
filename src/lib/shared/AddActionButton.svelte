@@ -5,8 +5,10 @@
   function tryHandleAddAction() {
     try {
       handleAddAction();
-    } catch (e: any) {
-      actionError.set(e.message);
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        actionError.set(e.message);
+      }
     }
   }
 </script>

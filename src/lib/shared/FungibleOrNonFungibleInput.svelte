@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { number_to_string } from "../../content";
   import {
     UNKNOWN_QUANTITY,
     type WalletFungible,
@@ -62,7 +61,7 @@
       if (fungibleAmount === UNKNOWN_QUANTITY) {
         fungibleQuantity = UNKNOWN_QUANTITY;
       } else if (fungibleAmount !== undefined) {
-        fungibleQuantity = number_to_string(fungibleAmount);
+        fungibleQuantity = fungibleAmount.toString();
       }
       if ($actionError === NO_COINS_SELECTED) {
         actionError.set("");

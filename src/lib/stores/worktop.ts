@@ -1,16 +1,13 @@
 import { derived, writable } from "svelte/store";
+import { find_fungible_symbol, find_non_fungible_symbol } from "../../content";
+import { ociswap_listed_coins } from "../../ociswap";
+import { claim_nft, pool_units } from "../../validators";
 import {
   UNKNOWN_QUANTITY,
   WalletFungible,
   WalletNonFungible,
 } from "./accounts";
-import {
-  EPSILON,
-  find_fungible_symbol,
-  find_non_fungible_symbol,
-} from "../../content";
-import { claim_nft, pool_units } from "../../validators";
-import { ociswap_listed_coins } from "../../ociswap";
+import PrecisionNumber from "../PrecisionNumber";
 
 export interface Worktop {
   fungibles: Map<string, WalletFungible>;
@@ -25,7 +22,7 @@ function createWorktop() {
 
   function addFungible(
     address: string,
-    amount: number | typeof UNKNOWN_QUANTITY
+    amount: PrecisionNumber | typeof UNKNOWN_QUANTITY
   ) {
     update((worktop) => {
       if (amount === UNKNOWN_QUANTITY) {
@@ -42,7 +39,7 @@ function createWorktop() {
           if (existingFungible.amount === UNKNOWN_QUANTITY) {
             return worktop;
           }
-          existingFungible.amount += amount;
+          existingFungible.amount = existingFungible.amount.plus(amount);
           worktop.fungibles.set(address, existingFungible);
         }
       } else {
@@ -57,7 +54,7 @@ function createWorktop() {
     });
   }
 
-  function removeFungible(address: string, amount: number) {
+  function removeFungible(address: string, amount: PrecisionNumber) {
     update((worktop) => {
       if (worktop.fungibles.has(address)) {
         const existing = worktop.fungibles.get(address);
@@ -65,8 +62,8 @@ function createWorktop() {
           if (existing.amount === UNKNOWN_QUANTITY) {
             throw new Error("Cannot substract from unknown quantity");
           }
-          existing.amount -= amount;
-          if (existing.amount < EPSILON) {
+          existing.amount = existing.amount.minus(amount);
+          if (existing.amount.isLessThanOrEqualTo(PrecisionNumber.ZERO())) {
             worktop.fungibles.delete(address);
           } else {
             worktop.fungibles.set(address, existing);

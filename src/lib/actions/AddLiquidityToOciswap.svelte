@@ -17,11 +17,12 @@
   import { bucketNumber, manifest } from "../stores/transaction";
   import { worktop, worktopOciswap } from "../stores/worktop";
   import { UNKNOWN_QUANTITY } from "../stores/accounts";
+  import PrecisionNumber from "../PrecisionNumber";
 
   let addressCoin1 = "";
   let quantity = "";
   let allQuantity = true;
-  let maxQuantity: number | undefined = undefined;
+  let maxQuantity: PrecisionNumber | undefined = undefined;
   let possibleCoin2: Map<string, string> = new Map();
   let addressCoin2 = "";
 
@@ -95,12 +96,12 @@
     }
 
     let send1 = send_1_12.address;
-    let quantity1 = 0;
+    let quantity1 = PrecisionNumber.ZERO();
     let send2 = send_2_12.address;
     let quantity2 = send_2_12.amount;
     let component = "";
     let lp_token = "";
-    let lp_quantity = 0;
+    let lp_quantity = PrecisionNumber.ZERO();
 
     if (
       send_1_12.amount === UNKNOWN_QUANTITY ||
@@ -115,7 +116,7 @@
       quantity1 = send_1_12.amount;
       all = send_1_12.address;
     } else {
-      quantity1 = parseFloat(quantity);
+      quantity1 = new PrecisionNumber(quantity);
     }
     let limit_condition = "x_amount=" + quantity1;
 
@@ -138,7 +139,7 @@
         return;
       }
       r1.json().then((j1) => {
-        quantity2 = quantity2 as number;
+        quantity2 = quantity2 as PrecisionNumber;
         if (j1.data[0] == undefined) {
           document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
             "no such pool";
@@ -167,10 +168,13 @@
             return;
           }
           r2.json().then(async (j2) => {
-            quantity2 = quantity2 as number;
-            const amount_x = parseFloat(j2.x_amount.token);
-            const amount_y = parseFloat(j2.y_amount.token);
-            if (amount_y > quantity2 || amount_x > quantity1) {
+            quantity2 = quantity2 as PrecisionNumber;
+            const amount_x = new PrecisionNumber(j2.x_amount.token);
+            const amount_y = new PrecisionNumber(j2.y_amount.token);
+            if (
+              amount_y.isGreaterThan(quantity2) ||
+              amount_x.isGreaterThan(quantity1)
+            ) {
               if (amount_y > quantity2) {
                 limit_condition = "y_amount=" + quantity2;
                 all = send2;
@@ -190,15 +194,15 @@
                   return;
                 }
                 r3.json().then((j3) => {
-                  lp_quantity = parseFloat(j3.liquidity_amount);
-                  quantity1 = parseFloat(j3.x_amount.token);
-                  quantity2 = parseFloat(j3.y_amount.token);
+                  lp_quantity = new PrecisionNumber(j3.liquidity_amount);
+                  quantity1 = new PrecisionNumber(j3.x_amount.token);
+                  quantity2 = new PrecisionNumber(j3.y_amount.token);
                 });
               });
             } else {
-              lp_quantity = parseFloat(j2.liquidity_amount);
-              quantity1 = parseFloat(j2.x_amount.token);
-              quantity2 = parseFloat(j2.y_amount.token);
+              lp_quantity = new PrecisionNumber(j2.liquidity_amount);
+              quantity1 = new PrecisionNumber(j2.x_amount.token);
+              quantity2 = new PrecisionNumber(j2.y_amount.token);
             }
 
             for (let lp of Object.keys(ociswap_lp_pools)) {
@@ -238,8 +242,8 @@
             manifest.update((m) => m + command);
             bucketNumber.increment();
 
-            let wortopQuantity: number | typeof UNKNOWN_QUANTITY =
-              lp_quantity === 0 ? UNKNOWN_QUANTITY : lp_quantity;
+            let wortopQuantity: PrecisionNumber | typeof UNKNOWN_QUANTITY =
+              lp_quantity.isZero() ? UNKNOWN_QUANTITY : lp_quantity;
             worktop.addFungible(lp_token, wortopQuantity);
           });
         });

@@ -1,5 +1,6 @@
 import { get, writable } from "svelte/store";
 import { XRD } from "../../content";
+import PrecisionNumber from "../PrecisionNumber";
 import { UNKNOWN_QUANTITY } from "./accounts";
 import {
   worktop,
@@ -92,21 +93,25 @@ export function validateMultipleAccounts(accountAddresses: string[]) {
   }
 }
 
-export function validateQuantity(quantity: string, max?: number) {
+export function validateQuantity(quantity: string, max?: PrecisionNumber) {
   if (quantity !== "" && !isValidQuantity(quantity)) {
     validationErrors.add(INVALID_QUANTITY);
   } else if (get(validationErrors).has(INVALID_QUANTITY)) {
     validationErrors.del(INVALID_QUANTITY);
   }
 
-  if (max && isValidQuantity(quantity) && parseFloat(quantity) > max) {
+  if (
+    max &&
+    isValidQuantity(quantity) &&
+    new PrecisionNumber(quantity).isGreaterThan(max)
+  ) {
     validationErrors.add(NOT_ENOUGH_COINS_ON_WORKTOP);
   } else if (get(validationErrors).has(NOT_ENOUGH_COINS_ON_WORKTOP)) {
     validationErrors.del(NOT_ENOUGH_COINS_ON_WORKTOP);
   }
 }
 
-export function validateAvailableXRD(atLeast = 90) {
+export function validateAvailableXRD(atLeast = new PrecisionNumber("90")) {
   const availableXRDs = get(worktop).fungibles.get(XRD);
 
   if (availableXRDs?.amount === UNKNOWN_QUANTITY) {
@@ -116,7 +121,7 @@ export function validateAvailableXRD(atLeast = 90) {
     validationErrors.del(UNKNOWN_XRD_AMOUNT);
   }
 
-  if (!availableXRDs || availableXRDs.amount < atLeast) {
+  if (!availableXRDs || availableXRDs.amount.isLessThan(atLeast)) {
     validationErrors.add(NOT_ENOUGH_XRD_ON_WORKTOP);
   } else if (get(validationErrors).has(NOT_ENOUGH_XRD_ON_WORKTOP)) {
     validationErrors.del(NOT_ENOUGH_XRD_ON_WORKTOP);

@@ -18,13 +18,14 @@
   } from "../stores/errors";
   import { bucketNumber, manifest } from "../stores/transaction";
   import { worktop } from "../stores/worktop";
+  import PrecisionNumber from "../PrecisionNumber";
 
   let entireWorktop = true;
   let allFungible = true;
   let accountAddress = "";
   let fungibleAddress: string;
   let fungibleQuantity = "";
-  let maxFungibleQuantity: number | undefined = undefined;
+  let maxFungibleQuantity: PrecisionNumber | undefined = undefined;
   let nonFungibleKey: string;
 
   let fail: "refund" | "abort" = "refund";
@@ -107,8 +108,9 @@
             $bucketNumber,
             fail
           );
+          worktop.removeAllFungible(fungibleAddress);
         } else {
-          q = parseFloat(fungibleQuantity);
+          q = new PrecisionNumber(fungibleQuantity);
           command = commands.trySendAmountFungibleToAccount(
             accountAddress,
             fungibleAddress,
@@ -116,6 +118,7 @@
             $bucketNumber,
             fail
           );
+          worktop.removeFungible(fungibleAddress, q);
         }
         manifest.update((m) => m + command);
         bucketNumber.increment();
@@ -124,8 +127,6 @@
           // if the user specified their own account
           accounts.addFungible(accountAddress, fungibleAddress, q);
         }
-
-        worktop.removeFungible(fungibleAddress, q);
         fungibleQuantity = "";
       }
 

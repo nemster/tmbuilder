@@ -16,13 +16,14 @@
   } from "../stores/errors";
   import { bucketNumber, manifest } from "../stores/transaction";
   import { worktop } from "../stores/worktop";
+  import PrecisionNumber from "../PrecisionNumber";
 
   let entireWorktop = true;
   let allFungible = true;
   let accountAddress = "";
   let fungibleAddress = "";
   let fungibleQuantity = "";
-  let maxFungibleQuantity: number | undefined = undefined;
+  let maxFungibleQuantity: PrecisionNumber | undefined = undefined;
 
   let nonFungibleKey = "";
 
@@ -97,7 +98,7 @@
           );
           worktop.removeAllFungible(fungibleAddress);
         } else {
-          q = parseFloat(fungibleQuantity);
+          q = new PrecisionNumber(fungibleQuantity);
           command = commands.sendQuantityToAccount(
             accountAddress!,
             fungibleAddress,

@@ -18,10 +18,11 @@
   import { bucketNumber, manifest } from "../stores/transaction";
   import { worktop } from "../stores/worktop";
   import QuantityInput from "../shared/QuantityInput.svelte";
+  import PrecisionNumber from "../PrecisionNumber";
 
   let fungibleAddress: string;
   let quantity = "";
-  let maxQuantity: number | undefined = undefined;
+  let maxQuantity: PrecisionNumber | undefined = undefined;
 
   let accountAddresses = [""];
   let remainingsAccountAddress = "";
@@ -49,11 +50,13 @@
   });
 
   $: if (fungibleAddress !== "") {
-    const nAddresses = accountAddresses.filter((a) => a !== "").length;
+    const nAddresses = new PrecisionNumber(
+      accountAddresses.filter((a) => a !== "").length
+    );
 
     const amount = $worktop.fungibles.get(fungibleAddress)?.amount;
     if (amount !== undefined && amount !== UNKNOWN_QUANTITY) {
-      maxQuantity = amount / nAddresses;
+      maxQuantity = amount.dividedBy(nAddresses);
     }
   }
 
@@ -81,7 +84,7 @@
       return;
     }
 
-    let q = parseFloat(quantity);
+    let q = new PrecisionNumber(quantity);
     for (let recipient of recipients) {
       const command = commands.trySendAmountFungibleToAccount(
         recipient,

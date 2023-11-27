@@ -16,6 +16,7 @@
   } from "../stores/errors";
   import { manifest } from "../stores/transaction";
   import { worktop } from "../stores/worktop";
+  import PrecisionNumber from "../PrecisionNumber";
 
   let accountAddress: string | null = null;
   let fungibles: Map<string, WalletFungible> = new Map();
@@ -63,8 +64,8 @@
       ) {
         throw new Error(CANNOT_PROCEED_WITH_UNKNOWN_QUANTITY);
       }
-      var q = parseFloat(fungibleQuantity);
-      if (q > 0) {
+      var q = new PrecisionNumber(fungibleQuantity);
+      if (q.isGreaterThanZero()) {
         if (q > accountQuantity) {
           q = accountQuantity;
         }
@@ -74,7 +75,7 @@
           console.error(`Could not find fungible resource ${fungibleAddress}`);
           return;
         }
-        worktop.addFungible(f.address, parseFloat(fungibleQuantity));
+        worktop.addFungible(f.address, new PrecisionNumber(fungibleQuantity));
         accounts.removeFungible(accountAddress, fungibleAddress, q);
         fungibleAddress = "";
       }

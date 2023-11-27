@@ -8,7 +8,7 @@
     validationErrors,
   } from "../stores/errors";
   import { worktop } from "../stores/worktop";
-  import { XRD, number_to_string } from "../../content";
+  import { XRD } from "../../content";
   import AddActionButton from "../shared/AddActionButton.svelte";
   import {
     validators_you_can_stake_to,
@@ -20,6 +20,7 @@
   import { bucketNumber, manifest } from "../stores/transaction";
   import QuantityInput from "../shared/QuantityInput.svelte";
   import { UNKNOWN_QUANTITY } from "../stores/accounts";
+  import PrecisionNumber from "../PrecisionNumber";
 
   let allXRDs = true;
   let quantityXRD = "";
@@ -42,7 +43,7 @@
   });
 
   $: if (allXRDs && avaiableXRDs && avaiableXRDs.amount !== UNKNOWN_QUANTITY) {
-    quantityXRD = number_to_string(avaiableXRDs.amount);
+    quantityXRD = avaiableXRDs.amount.toString();
   }
 
   function handleAddAction() {
@@ -56,7 +57,7 @@
     }
 
     let command = "";
-    let q = parseFloat(quantityXRD);
+    let q = new PrecisionNumber(quantityXRD);
     if (allXRDs) {
       command = commands.putAllResourceToBucket(XRD, $bucketNumber);
     } else {

@@ -1,9 +1,6 @@
 import { writable } from "svelte/store";
-import {
-  EPSILON,
-  find_fungible_symbol,
-  find_non_fungible_symbol,
-} from "../../content";
+import { find_fungible_symbol, find_non_fungible_symbol } from "../../content";
+import PrecisionNumber from "../PrecisionNumber";
 import { CANNOT_PROCEED_WITH_UNKNOWN_QUANTITY } from "./errors";
 
 export const UNKNOWN_QUANTITY = "[unknown quantity]";
@@ -12,7 +9,7 @@ export const UNKNOWN_ID = "unknown-id-";
 export interface WalletFungible {
   address: string;
   symbol: string;
-  amount: number | typeof UNKNOWN_QUANTITY;
+  amount: PrecisionNumber | typeof UNKNOWN_QUANTITY;
 }
 
 export interface WalletNonFungible {
@@ -55,7 +52,7 @@ function createAccounts() {
   function addFungible(
     accountAddress: string,
     address: string,
-    amount: number | typeof UNKNOWN_QUANTITY
+    amount: PrecisionNumber | typeof UNKNOWN_QUANTITY
   ) {
     const symbol = find_fungible_symbol(address);
     update((accounts) => {
@@ -68,7 +65,7 @@ function createAccounts() {
           } else if (amount === UNKNOWN_QUANTITY) {
             existingFungible.amount = UNKNOWN_QUANTITY;
           } else {
-            existingFungible.amount += amount;
+            existingFungible.amount = existingFungible.amount.plus(amount);
           }
           account.fungibles.set(address, existingFungible);
         } else {
@@ -94,7 +91,11 @@ function createAccounts() {
     });
   }
 
-  function removeFungible(accountAddress: string, address: string, q: number) {
+  function removeFungible(
+    accountAddress: string,
+    address: string,
+    q: PrecisionNumber
+  ) {
     update((accounts) => {
       const account = accounts.get(accountAddress);
       if (account) {
@@ -103,8 +104,8 @@ function createAccounts() {
           if (fungible.amount === UNKNOWN_QUANTITY) {
             throw new Error(CANNOT_PROCEED_WITH_UNKNOWN_QUANTITY);
           }
-          fungible.amount -= q;
-          if (fungible.amount < EPSILON) {
+          fungible.amount = fungible.amount.minus(q);
+          if (fungible.amount.isLessThanOrEqualTo(PrecisionNumber.ZERO())) {
             account.fungibles.delete(address);
           } else {
             account.fungibles.set(address, fungible);

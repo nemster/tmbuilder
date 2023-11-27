@@ -19,6 +19,6 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src/**/*.ts", "src/**/*.svelte"],
+  "include": ["src/lib/**/*.ts", "src/**/*.svelte", "test/**/*.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

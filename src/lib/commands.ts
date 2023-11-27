@@ -1,4 +1,6 @@
-function withdraw(account: string, resource: string, q: number) {
+import PrecisionNumber from "./PrecisionNumber";
+
+function withdraw(account: string, resource: string, q: PrecisionNumber) {
   return `CALL_METHOD
     Address("${account}")
     "withdraw"
@@ -71,7 +73,7 @@ function putAllResourceToBucket(resource: string, bucketNumber: number) {
 
 function putResourceToBucket(
   resourceAddress: string,
-  quantity: number,
+  quantity: PrecisionNumber,
   bucketNumber: number
 ) {
   return `TAKE_FROM_WORKTOP
@@ -136,7 +138,7 @@ CALL_METHOD
 function trySendAmountFungibleToAccount(
   accountAddress: string,
   fungibleAddress: string,
-  amount: number,
+  amount: PrecisionNumber,
   bucketNumber: number,
   fail: "refund" | "abort"
 ) {

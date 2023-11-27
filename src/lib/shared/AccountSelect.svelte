@@ -15,7 +15,7 @@
     class="select select-secondary select-sm w-3/5 text-end"
     bind:value={accountAddress}
   >
-    {#each Array.from($accounts) as [_addr, account]}
+    {#each Array.from($accounts.values()) as account}
       <option value={account.address}>{account.label}</option>
     {/each}
   </select>
