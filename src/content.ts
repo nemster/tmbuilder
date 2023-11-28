@@ -70,11 +70,11 @@ const defiplaza_component =
 let bucket_number = 1;
 let proof_number = 1;
 export const EPSILON = 0.000001;
-const lsu_pool_receipt =
+export const lsu_pool_receipt =
   "resource_rdx1nt3frmqu4v57dy55e90n0k3uy352zyy89vszzamvjld6vqvr98rls9";
-const lsu_pool =
+export const lsu_pool =
   "component_rdx1cppy08xgra5tv5melsjtj79c0ngvrlmzl8hhs7vwtzknp9xxs63mfp";
-const lsulp =
+export const lsulp =
   "resource_rdx1thksg5ng70g9mmy9ne7wz0sc7auzrrwy7fmgcxzel2gvp8pj0xxfmf";
 export const UNKNOWN_NFT_ID = "???";
 export const claim_amount: { [key: string]: PrecisionNumber } = {};
@@ -92,7 +92,7 @@ let staked_amount = new PrecisionNumber("0");
 const weft_claimer_nft =
   "resource_rdx1nt3vrt8xtdal6gn7ddv0zfzvxpqylxyfmr97setz8r3amhhk90yqmg";
 const weft_amount_to_collect: { [key: string]: PrecisionNumber } = {};
-const caviarnine_enabled_validators: { [key: string]: number } = {
+export const caviarnine_enabled_validators: { [key: string]: number } = {
   validator_rdx1s0g5uuw3a7ad7akueetzq5lpejzp9uw5glv2qnflvymgendvepgduj: 1,
   validator_rdx1s0lz5v68gtqwswu7lrx9yrjte4ts0l2saphmplsz68nsv2aux0xvfq: 1,
   validator_rdx1swkmn6yvrqjzpaytvug5fp0gzfy9zdzq7j7nlxe8wgjpg76vdcma8p: 1,
@@ -687,20 +687,20 @@ export function initContent() {
         "&nbsp;";
 
       // --- CAVIARNINE ---
-      if (
-        (this.selectedIndex == 14 || this.selectedIndex == 16) &&
-        document.querySelector<HTMLSelectElement>("#lsu7")!.options.length == 0
-      ) {
-        document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
-          "put some LSUs in the worktop first";
-      } else if (
-        this.selectedIndex == 15 &&
-        (fungibles_in_worktop[lsulp] == undefined ||
-          fungibles_in_worktop[lsulp].isZero())
-      ) {
-        document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
-          "put some LSULPs in the worktop first";
-      }
+      // if (
+      //   (this.selectedIndex == 14 || this.selectedIndex == 16) &&
+      //   document.querySelector<HTMLSelectElement>("#lsu7")!.options.length == 0
+      // ) {
+      //   document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
+      //     "put some LSUs in the worktop first";
+      // } else if (
+      //   this.selectedIndex == 15 &&
+      //   (fungibles_in_worktop[lsulp] == undefined ||
+      //     fungibles_in_worktop[lsulp].isZero())
+      // ) {
+      //   document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
+      //     "put some LSULPs in the worktop first";
+      // }
 
       // --- GABLE ---
       if (this.selectedIndex == 19 && gable_loan_quantity.isZero()) {
@@ -752,114 +752,6 @@ export function initContent() {
       ) {
         document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
           "you don't have a Weft Claimer NFT";
-      }
-    });
-
-  document
-    .querySelector<HTMLInputElement>("#all7")!
-    .addEventListener("change", function () {
-      document.querySelector<HTMLInputElement>("#quantity7")!.disabled =
-        this.checked;
-      if (this.checked) {
-        document.querySelector<HTMLInputElement>("#quantity7")!.value = "";
-      }
-    });
-
-  document
-    .querySelector<HTMLButtonElement>("#add_instruction7")!
-    .addEventListener("click", function () {
-      const lsu = document.querySelector<HTMLSelectElement>("#lsu7")!.value;
-      const all7 = document.querySelector<HTMLInputElement>("#all7")!.checked;
-
-      document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
-        "&nbsp;";
-
-      if (lsu.length > 0) {
-        const nft = document.querySelector<HTMLSelectElement>("#nft7")!.value;
-        let transaction_manifest = "";
-        let q = fungibles_in_worktop[lsu];
-        if (nft.length > 0) {
-          const parts = nft.split(" ");
-          transaction_manifest =
-            "CALL_METHOD\n" +
-            '    Address("' +
-            parts[0] +
-            '")\n' +
-            '    "create_proof_of_non_fungibles"\n' +
-            '    Address("' +
-            lsu_pool_receipt +
-            '")\n' +
-            "    Array<NonFungibleLocalId>(\n" +
-            '        NonFungibleLocalId("' +
-            parts[1] +
-            '")\n    )\n;\n' +
-            "CREATE_PROOF_FROM_AUTH_ZONE_OF_NON_FUNGIBLES\n" +
-            '    Address("' +
-            lsu_pool_receipt +
-            '")\n' +
-            "    Array<NonFungibleLocalId>(\n" +
-            '        NonFungibleLocalId("' +
-            parts[1] +
-            '")\n    )\n' +
-            '    Proof("proof' +
-            proof_number +
-            '")\n;\n';
-        }
-        if (all7) {
-          transaction_manifest +=
-            "TAKE_ALL_FROM_WORKTOP\n" +
-            '    Address("' +
-            lsu +
-            '")\n' +
-            '    Bucket("bucket' +
-            bucket_number +
-            '")\n;\n';
-          remove_fungible_from_worktop(lsu, "*");
-        } else {
-          const quantity =
-            document.querySelector<HTMLInputElement>("#quantity7")!.value;
-          if (!quantity.match(/^[0-9]+(\.[0-9]+)?$/)) {
-            document.querySelector<HTMLInputElement>("#warn")!.innerText =
-              "invalid quantity!";
-            return false;
-          }
-          q = new PrecisionNumber(quantity);
-          transaction_manifest +=
-            "TAKE_FROM_WORKTOP\n" +
-            '    Address("' +
-            lsu +
-            '")\n' +
-            '    Decimal("' +
-            quantity +
-            '")\n' +
-            '    Bucket("bucket' +
-            bucket_number +
-            '")\n;\n';
-          remove_fungible_from_worktop(lsu, quantity);
-        }
-        transaction_manifest +=
-          "CALL_METHOD\n" +
-          '    Address("' +
-          lsu_pool +
-          '")\n' +
-          '    "add_liquidity"\n' +
-          '    Bucket("bucket' +
-          bucket_number++ +
-          '")\n';
-        if (nft.length > 0) {
-          transaction_manifest +=
-            "    Enum<1u8>(\n" +
-            '        Proof("proof' +
-            proof_number++ +
-            '")\n    )\n;\n';
-        } else {
-          transaction_manifest += "    Enum<0u8>()\n;\n";
-          add_non_fungible_to_worktop(lsu_pool_receipt + " " + UNKNOWN_NFT_ID);
-        }
-        add_fungible_to_worktop(lsulp, q);
-        document.querySelector<HTMLTextAreaElement>(
-          "#transaction_manifest"
-        )!.value += transaction_manifest;
       }
     });
 

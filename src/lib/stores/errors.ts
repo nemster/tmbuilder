@@ -124,12 +124,24 @@ export function validateAvailableXRD(atLeast = new PrecisionNumber("90")) {
   }
 }
 
-export function validateAvailableFungibles() {
-  const availableFungibles = get(worktop).fungibles;
-  if (availableFungibles.size === 0) {
-    validationErrors.add(NO_FUNGIBLES_ON_WORKTOP);
-  } else if (get(validationErrors).has(NO_FUNGIBLES_ON_WORKTOP)) {
-    validationErrors.del(NO_FUNGIBLES_ON_WORKTOP);
+export function validateAvailableFungibles(
+  availableFungibles?: Map<string, WalletFungible>,
+  errorMessage: string = NO_FUNGIBLES_ON_WORKTOP
+) {
+  if (availableFungibles !== undefined) {
+    if (availableFungibles.size === 0) {
+      validationErrors.add(errorMessage);
+    } else if (get(validationErrors).has(errorMessage)) {
+      validationErrors.del(errorMessage);
+    }
+    return;
+  }
+
+  const allFungibles = get(worktop).fungibles;
+  if (allFungibles.size === 0) {
+    validationErrors.add(errorMessage);
+  } else if (get(validationErrors).has(errorMessage)) {
+    validationErrors.del(errorMessage);
   }
 }
 

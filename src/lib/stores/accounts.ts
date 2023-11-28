@@ -1,4 +1,4 @@
-import { writable } from "svelte/store";
+import { get, writable } from "svelte/store";
 import { find_fungible_symbol, find_non_fungible_symbol } from "../../content";
 import PrecisionNumber from "../PrecisionNumber";
 import { CANNOT_PROCEED_WITH_UNKNOWN_QUANTITY } from "./errors";
@@ -162,6 +162,22 @@ function createAccounts() {
     });
   }
 
+  function filterAllNonFungibles(
+    resourceAddress: string
+  ): Map<string, WalletNonFungible> {
+    const filteredNonFungibles = new Map<string, WalletNonFungible>();
+
+    for (const account of get(accounts).values()) {
+      for (const nonFungible of account.nonFungibles.values()) {
+        if (nonFungible.address === resourceAddress) {
+          filteredNonFungibles.set(nonFungible.key, nonFungible);
+        }
+      }
+    }
+
+    return filteredNonFungibles;
+  }
+
   return {
     subscribe,
     updateAccount,
@@ -169,6 +185,7 @@ function createAccounts() {
     addNonFungible,
     removeFungible,
     removeNonFungible,
+    filterAllNonFungibles,
   };
 }
 

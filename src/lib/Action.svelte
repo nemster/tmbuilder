@@ -10,6 +10,7 @@
   import SwapCoinsAtOciswap from "./actions/SwapCoinsAtOciswap.svelte";
   import AddLiquidityToOciswap from "./actions/AddLiquidityToOciswap.svelte";
   import WithdrawLiquidityFromOciswap from "./actions/WithdrawLiquidityFromOciswap.svelte";
+  import AddYourLSUsToCaviarnine from "./actions/AddYourLSUsToCaviarnine.svelte";
 
   let actions = {
     takeCoinsFromSelf: {
@@ -77,12 +78,20 @@
       description: "withdraw liquidity from Ociswap",
       disabled: false,
     },
+    caviarNineLabel: {
+      component: null,
+      description: "--- CAVIARNINE ---",
+      disabled: true,
+    },
+    addYourLSUsToCaviarnine: {
+      component: AddYourLSUsToCaviarnine,
+      description: "add your LSUs in Caviarnine LSU pool",
+      disabled: false,
+    },
   };
 
   /**
    *  
-        <option disabled>--- CAVIARNINE ---</option>
-        <option>add your LSUs in Caviarnine LSU pool</option>
         <option>retrieve LSUs from Caviarnine LSU pool</option>
         <option>swap LSUs on Caviarnine</option>
         <option disabled>--- GABLE ---</option>
