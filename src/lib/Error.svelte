@@ -4,10 +4,10 @@
 
   let errorToShow = "";
 
-  $: if ($validationErrors.size > 0) {
-    errorToShow = $validationErrors.values().next().value;
-  } else if ($actionError !== "") {
+  $: if ($actionError !== "") {
     errorToShow = $actionError;
+  } else if ($validationErrors.size > 0) {
+    errorToShow = $validationErrors.values().next().value;
   } else {
     errorToShow = "";
   }

@@ -9,6 +9,7 @@
   import ClaimYourUnstakedXRDs from "./actions/ClaimYourUnstakedXRDs.svelte";
   import SwapCoinsAtOciswap from "./actions/SwapCoinsAtOciswap.svelte";
   import AddLiquidityToOciswap from "./actions/AddLiquidityToOciswap.svelte";
+  import WithdrawLiquidityFromOciswap from "./actions/WithdrawLiquidityFromOciswap.svelte";
 
   let actions = {
     takeCoinsFromSelf: {
@@ -71,11 +72,15 @@
       description: "add liquidity to Ociswap",
       disabled: false,
     },
+    withdrawLiquidityFromOciswap: {
+      component: WithdrawLiquidityFromOciswap,
+      description: "withdraw liquidity from Ociswap",
+      disabled: false,
+    },
   };
 
   /**
    *  
-        <option>withdraw liquidity from Ociswap</option>
         <option disabled>--- CAVIARNINE ---</option>
         <option>add your LSUs in Caviarnine LSU pool</option>
         <option>retrieve LSUs from Caviarnine LSU pool</option>

@@ -215,6 +215,15 @@ function addLiquidity(component: string, bucketA: number, bucketB: number) {
 `;
 }
 
+function removeLiquidity(component: string, bucketNumber: number) {
+  return `CALL_METHOD
+    Address("${component}")
+    "remove_liquidity"
+    Bucket("bucket${bucketNumber}")
+;
+`;
+}
+
 export default {
   withdraw,
   withdrawNonFungibles,
@@ -234,4 +243,5 @@ export default {
   claimXrd,
   swap,
   addLiquidity,
+  removeLiquidity,
 };

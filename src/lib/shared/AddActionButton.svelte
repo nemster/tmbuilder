@@ -9,6 +9,7 @@
       if (e instanceof Error) {
         actionError.set(e.message);
       }
+      throw e;
     }
   }
 </script>

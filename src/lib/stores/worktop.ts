@@ -1,4 +1,4 @@
-import { derived, writable } from "svelte/store";
+import { derived, get, writable } from "svelte/store";
 import { find_fungible_symbol, find_non_fungible_symbol } from "../../content";
 import { ociswap_listed_coins } from "../../ociswap";
 import { claim_nft, pool_units } from "../../validators";
@@ -115,6 +115,20 @@ function createWorktop() {
     });
   }
 
+  function filterFungibles(resourceAddresses: string[]) {
+    const currentFungibles = get({ subscribe }).fungibles;
+    const filteredFungibles = new Map<string, WalletFungible>();
+
+    for (const address of resourceAddresses) {
+      const fungible = currentFungibles.get(address);
+      if (fungible !== undefined) {
+        filteredFungibles.set(address, fungible);
+      }
+    }
+
+    return filteredFungibles;
+  }
+
   return {
     subscribe,
     addFungible,
@@ -123,6 +137,7 @@ function createWorktop() {
     addNonFungible,
     removeNonFungible,
     clearWorktop,
+    filterFungibles,
   };
 }
 export const worktop = createWorktop();

@@ -1,7 +1,7 @@
 import { get, writable } from "svelte/store";
 import { XRD } from "../../content";
 import PrecisionNumber from "../PrecisionNumber";
-import { UNKNOWN_QUANTITY } from "./accounts";
+import { UNKNOWN_QUANTITY, WalletFungible } from "./accounts";
 import {
   worktop,
   worktopLSU,
@@ -148,7 +148,15 @@ export function validateAvailableCoins() {
   }
 }
 
-export function validateAvailableLSUs() {
+export function validateAvailableLSUs(fungibles?: Map<string, WalletFungible>) {
+  if (fungibles !== undefined) {
+    if (fungibles.size === 0) {
+      validationErrors.add(NO_LSU_ON_WORKTOP);
+    } else if (get(validationErrors).has(NO_LSU_ON_WORKTOP)) {
+      validationErrors.del(NO_LSU_ON_WORKTOP);
+    }
+    return;
+  }
   if (get(worktopLSU).size === 0) {
     validationErrors.add(NO_LSU_ON_WORKTOP);
   } else if (get(validationErrors).has(NO_LSU_ON_WORKTOP)) {

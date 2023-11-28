@@ -21,19 +21,15 @@ import {
 } from "@radixdlt/radix-dapp-toolkit";
 import { alphadex_listed_coins } from "./alphadex.ts";
 import { defiplaza_listed_coins } from "./defiplaza.ts";
+import { PrecisionNumber } from "./lib/PrecisionNumber.ts";
 import { accounts } from "./lib/stores/accounts.ts";
-import {
-  ociswap_listed_coins,
-  ociswap_lp_names,
-  ociswap_lp_pools,
-} from "./ociswap.ts";
+import { ociswap_listed_coins, ociswap_lp_names } from "./ociswap.ts";
 import {
   radixplanet_listed_coins,
   radixplanet_lp,
   radixplanet_pools,
 } from "./radixplanet.ts";
 import { claim_nft, pool_units, validators_names } from "./validators.ts";
-import { PrecisionNumber } from "./lib/PrecisionNumber.ts";
 
 interface fungibles_array {
   [index: string]: number;
@@ -260,19 +256,6 @@ export function add_fungible_to_worktop(
   //         send9!.options[send9!.options.length] = new Option(symbol, resource);
   //       }
   //     } else {
-  //       if (ociswap_listed_coins[resource] != undefined) {
-  //         const send_1_12 =
-  //           document.querySelector<HTMLSelectElement>("#send_1_12");
-  //         send_1_12!.options[send_1_12!.options.length] = new Option(
-  //           symbol,
-  //           resource
-  //         );
-  //         send_1_12!.dispatchEvent(new Event("change"));
-  //       } else if (ociswap_lp_names[resource] != undefined) {
-  //         const send13 = document.querySelector<HTMLSelectElement>("#send13");
-  //         send13!.options[send13!.options.length] = new Option(symbol, resource);
-  //         send13!.dispatchEvent(new Event("change"));
-  //       }
   //       if (defiplaza_listed_coins[resource] != undefined) {
   //         const send16 = document.querySelector<HTMLSelectElement>("#send16");
   //         send16!.options[send16!.options.length] = new Option(symbol, resource);
@@ -340,8 +323,6 @@ export function add_fungible_to_worktop(
   //   const send9 = document.querySelector<HTMLSelectElement>("#send9");
   //   const fungible10 = document.querySelector<HTMLSelectElement>("#fungible10");
   //   const send11 = document.querySelector<HTMLSelectElement>("#send11");
-  //   const send_1_12 = document.querySelector<HTMLSelectElement>("#send_1_12");
-  //   const send13 = document.querySelector<HTMLSelectElement>("#send13");
   //   const send16 = document.querySelector<HTMLSelectElement>("#send16");
   //   const send19 = document.querySelector<HTMLSelectElement>("#send19");
   //   if (fungibles_in_worktop[resource] != undefined) {
@@ -361,23 +342,6 @@ export function add_fungible_to_worktop(
   //           lsu7!.remove(i);
   //           send9!.remove(i);
   //           break;
-  //         }
-  //       }
-  //       if (ociswap_listed_coins[resource] != undefined) {
-  //         for (var i = send11!.length - 1; i >= 0; --i) {
-  //           if ((<HTMLOptionElement>send11![i]).value == resource) {
-  //             send11!.remove(i);
-  //             send_1_12!.remove(i);
-  //             send_1_12!.dispatchEvent(new Event("change"));
-  //             break;
-  //           }
-  //         }
-  //       } else if (ociswap_lp_pools[resource] != undefined) {
-  //         for (var i = send13!.length - 1; i >= 0; --i) {
-  //           if ((<HTMLOptionElement>send13![i]).value == resource) {
-  //             send13!.remove(i);
-  //             break;
-  //           }
   //         }
   //       }
   //       if (defiplaza_listed_coins[resource] != undefined) {
@@ -409,7 +373,6 @@ export function add_fungible_to_worktop(
   //     lsu5!.innerHTML = "";
   //     lsu7!.innerHTML = "";
   //     send9!.innerHTML = "";
-  //     send13!.innerHTML = "";
   //     send16!.innerHTML = "";
   //     send19!.innerHTML = "";
   //   }
@@ -722,16 +685,6 @@ export function initContent() {
     .addEventListener("change", function () {
       document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
         "&nbsp;";
-
-      // --- OCISWAP ---
-      if (
-        this.selectedIndex == 12 &&
-        document.querySelector<HTMLSelectElement>("#send13")!.options.length ==
-          0
-      ) {
-        document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
-          "put some LSUs in the worktop first";
-      }
 
       // --- CAVIARNINE ---
       if (
@@ -1099,146 +1052,6 @@ export function initContent() {
       document.querySelector<HTMLTextAreaElement>(
         "#transaction_manifest"
       )!.value += transaction_manifest;
-    });
-
-  document
-    .querySelector<HTMLInputElement>("#send13")!
-    .addEventListener("change", function () {
-      const send13 =
-        document.querySelector<HTMLSelectElement>("#send13")!.value;
-      if (!document.querySelector<HTMLInputElement>("#all13")!.checked) {
-        document.querySelector<HTMLInputElement>("#quantity13")!.value =
-          fungibles_in_worktop[send13].toString();
-      }
-    });
-
-  document
-    .querySelector<HTMLInputElement>("#all13")!
-    .addEventListener("change", function () {
-      if (!document.querySelector<HTMLInputElement>("#all13")!.checked) {
-        document.querySelector<HTMLInputElement>("#quantity13")!.value =
-          fungibles_in_worktop[
-            document.querySelector<HTMLSelectElement>("#send13")!.value
-          ].toString();
-
-        document.querySelector<HTMLInputElement>("#quantity13")!.disabled =
-          false;
-      } else {
-        document.querySelector<HTMLInputElement>("#quantity13")!.value = "";
-        document.querySelector<HTMLInputElement>("#quantity13")!.disabled =
-          true;
-      }
-    });
-
-  document
-    .querySelector<HTMLButtonElement>("#add_instruction13")!
-    .addEventListener("click", async function () {
-      document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
-        "&nbsp;";
-
-      const send13 = document.querySelector<HTMLSelectElement>("#send13");
-      if (send13!.selectedIndex < 0) {
-        document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
-          "select coins to send";
-        return false;
-      }
-
-      let quantity13 = PrecisionNumber.ZERO();
-      if (document.querySelector<HTMLInputElement>("#all13")!.checked) {
-        quantity13 = fungibles_in_worktop[send13!.value];
-      } else {
-        const q =
-          document.querySelector<HTMLSelectElement>("#quantity13")!.value;
-        if (!q.match(/^[0-9]+(\.[0-9]+)?$/)) {
-          document.querySelector<HTMLInputElement>("#warn")!.innerText =
-            "invalid quantity!";
-          return false;
-        }
-        quantity13 = new PrecisionNumber(q);
-      }
-
-      const component = ociswap_lp_pools[send13!.value];
-      let receive1 = "";
-      let receive2 = "";
-      const options = {
-        method: "GET",
-        headers: { accept: "application/json" },
-      };
-      fetch("https://api.ociswap.com/pools/" + component, options).then(
-        (r1) => {
-          if (!r1.ok) {
-            document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
-              "something went wrong";
-            return false;
-          }
-          r1.json().then(async (j1) => {
-            receive1 = j1.x.token.address;
-            receive2 = j1.y.token.address;
-
-            fetch(
-              "https://api.ociswap.com/preview/remove-liquidity?pool_address=" +
-                component +
-                "&liquidity_amount=" +
-                quantity13,
-              options
-            ).then((r2) => {
-              if (!r2.ok) {
-                document.querySelector<HTMLParagraphElement>(
-                  "#warn"
-                )!.innerHTML = "something went wrong";
-                return false;
-              }
-              r2.json().then(async (j2) => {
-                add_fungible_to_worktop(
-                  receive1,
-                  new PrecisionNumber(j2.x_amount.token)
-                );
-                add_fungible_to_worktop(
-                  receive2,
-                  new PrecisionNumber(j2.y_amount.token)
-                );
-              });
-            });
-          });
-        }
-      );
-
-      const textarea = document.querySelector<HTMLTextAreaElement>(
-        "#transaction_manifest"
-      );
-      if (document.querySelector<HTMLInputElement>("#all13")!.checked) {
-        textarea!.value +=
-          "TAKE_ALL_FROM_WORKTOP\n" +
-          '    Address("' +
-          send13!.value +
-          '")\n' +
-          '    Bucket("bucket' +
-          bucket_number +
-          '")\n;\n';
-        remove_fungible_from_worktop(send13!.value, "*");
-      } else {
-        textarea!.value +=
-          "TAKE_FROM_WORKTOP\n" +
-          '    Address("' +
-          send13!.value +
-          '")\n' +
-          '    Decimal("' +
-          quantity13 +
-          '")\n' +
-          '    Bucket("bucket' +
-          bucket_number +
-          '")\n;\n';
-        remove_fungible_from_worktop(send13!.value, String(quantity13));
-      }
-      textarea!.value +=
-        "CALL_METHOD\n" +
-        '    Address("' +
-        component +
-        '")\n' +
-        '    "remove_liquidity"\n' +
-        '    Bucket("bucket' +
-        bucket_number++ +
-        '")\n;\n';
     });
 
   document
