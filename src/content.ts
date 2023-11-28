@@ -682,22 +682,6 @@ export function initContent() {
       document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
         "&nbsp;";
 
-      // --- CAVIARNINE ---
-      // if (
-      //   (this.selectedIndex == 14 || this.selectedIndex == 16) &&
-      //   document.querySelector<HTMLSelectElement>("#lsu7")!.options.length == 0
-      // ) {
-      //   document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
-      //     "put some LSUs in the worktop first";
-      // } else if (
-      //   this.selectedIndex == 15 &&
-      //   (fungibles_in_worktop[lsulp] == undefined ||
-      //     fungibles_in_worktop[lsulp].isZero())
-      // ) {
-      //   document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
-      //     "put some LSULPs in the worktop first";
-      // }
-
       // --- GABLE ---
       if (this.selectedIndex == 19 && gable_loan_quantity.isZero()) {
         document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
@@ -749,84 +733,6 @@ export function initContent() {
         document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
           "you don't have a Weft Claimer NFT";
       }
-    });
-
-  document
-    .querySelector<HTMLInputElement>("#all9")!
-    .addEventListener("change", function () {
-      document.querySelector<HTMLInputElement>("#quantity9")!.disabled =
-        this.checked;
-      if (this.checked) {
-        document.querySelector<HTMLInputElement>("#quantity9")!.value = "";
-      }
-    });
-
-  document
-    .querySelector<HTMLButtonElement>("#add_instruction9")!
-    .addEventListener("click", function () {
-      const send = document.querySelector<HTMLSelectElement>("#send9")!.value;
-      let q = fungibles_in_worktop[send];
-      if (q == undefined) {
-        document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
-          "there are no LSU in the worktop";
-        return false;
-      }
-      document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
-        "&nbsp;";
-
-      const all = document.querySelector<HTMLInputElement>("#all9")!.checked;
-      const receive =
-        document.querySelector<HTMLSelectElement>("#receive9")!.value;
-      let transaction_manifest = "";
-      if (all) {
-        transaction_manifest =
-          "TAKE_ALL_FROM_WORKTOP\n" +
-          '    Address("' +
-          send +
-          '")\n' +
-          '    Bucket("bucket' +
-          bucket_number +
-          '")\n;\n';
-        remove_fungible_from_worktop(send, "*");
-      } else {
-        const quantity =
-          document.querySelector<HTMLInputElement>("#quantity9")!.value;
-        if (!quantity.match(/^[0-9]+(\.[0-9]+)?$/)) {
-          document.querySelector<HTMLInputElement>("#warn")!.innerText =
-            "invalid quantity!";
-          return false;
-        }
-        q = new PrecisionNumber(quantity);
-        transaction_manifest =
-          "TAKE_FROM_WORKTOP\n" +
-          '    Address("' +
-          send +
-          '")\n' +
-          '    Decimal("' +
-          quantity +
-          '")\n' +
-          '    Bucket("bucket' +
-          bucket_number +
-          '")\n;\n';
-        remove_fungible_from_worktop(send, quantity);
-      }
-
-      transaction_manifest +=
-        "CALL_METHOD\n" +
-        '    Address("' +
-        lsu_pool +
-        '")\n' +
-        '    "swap"\n' +
-        '    Bucket("bucket' +
-        bucket_number++ +
-        '")\n' +
-        '    Address("' +
-        receive +
-        '")\n;\n';
-      add_fungible_to_worktop(receive, q);
-      document.querySelector<HTMLTextAreaElement>(
-        "#transaction_manifest"
-      )!.value += transaction_manifest;
     });
 
   document

@@ -204,6 +204,20 @@ function swap(poolAddress: string, bucketNumber: number) {
 `;
 }
 
+function swapToAddress(
+  fromAddress: string,
+  bucketNumber: number,
+  toAddress: string
+) {
+  return `CALL_METHOD
+    Address("${fromAddress}")
+    "swap"
+    Bucket("bucket${bucketNumber}")
+    Address("${toAddress}")
+;
+`;
+}
+
 function addLiquidity(component: string, bucketA: number, bucketB: number) {
   return `CALL_METHOD
     Address("${component}")
@@ -272,6 +286,7 @@ export default {
   unstakeBucket,
   claimXrd,
   swap,
+  swapToAddress,
   addLiquidity,
   removeLiquidity,
   createProofOfNonFungibles,
