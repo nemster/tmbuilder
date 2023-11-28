@@ -4,7 +4,7 @@
   import SendCoinsToAccount from "./actions/SendCoinsToAccount.svelte";
   import AirdropFungibleCoins from "./actions/AirdropFungibleCoins.svelte";
   import Error from "./Error.svelte";
-  import StakeYourXrDs from "./actions/StakeYourXRDs.svelte";
+  import StakeYourXRDs from "./actions/StakeYourXRDs.svelte";
   import UnstakeYourLSUs from "./actions/UnstakeYourLSUs.svelte";
   import ClaimYourUnstakedXRDs from "./actions/ClaimYourUnstakedXRDs.svelte";
   import SwapCoinsAtOciswap from "./actions/SwapCoinsAtOciswap.svelte";
@@ -44,7 +44,7 @@
       disabled: true,
     },
     stakeYourXRDs: {
-      component: StakeYourXrDs,
+      component: StakeYourXRDs,
       description: "stake your XRDs",
       disabled: false,
     },
