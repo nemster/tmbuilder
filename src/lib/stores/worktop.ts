@@ -1,13 +1,12 @@
 import { derived, get, writable } from "svelte/store";
 import { find_fungible_symbol, find_non_fungible_symbol } from "../../content";
-import { ociswap_listed_coins } from "../../ociswap";
 import { claim_nft, pool_units } from "../../validators";
+import PrecisionNumber from "../PrecisionNumber";
 import {
   UNKNOWN_QUANTITY,
   WalletFungible,
   WalletNonFungible,
 } from "./accounts";
-import PrecisionNumber from "../PrecisionNumber";
 
 export interface Worktop {
   fungibles: Map<string, WalletFungible>;
@@ -169,30 +168,3 @@ export const worktopUnstakedXrdNft = derived<
 
   return filtered;
 });
-
-export interface WorktopOciswap {
-  // resource address -> component address
-  pools: Map<string, string>;
-  coins: Map<string, WalletFungible>;
-}
-
-export const worktopOciswap = derived<typeof worktop, WorktopOciswap>(
-  worktop,
-  ($worktop) => {
-    const pools = new Map();
-    const coins = new Map();
-
-    for (const [address, fungible] of $worktop.fungibles) {
-      if (address in ociswap_listed_coins) {
-        coins.set(address, fungible);
-      }
-
-      // TODO: pools
-    }
-
-    return {
-      pools,
-      coins,
-    };
-  }
-);

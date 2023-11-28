@@ -1,13 +1,9 @@
 import { get, writable } from "svelte/store";
 import { XRD } from "../../content";
 import PrecisionNumber from "../PrecisionNumber";
-import { UNKNOWN_QUANTITY, WalletFungible } from "./accounts";
-import {
-  worktop,
-  worktopLSU,
-  worktopOciswap,
-  worktopUnstakedXrdNft,
-} from "./worktop";
+import { UNKNOWN_QUANTITY } from "./accounts";
+import type { WalletFungible } from "./accounts";
+import { worktop, worktopLSU, worktopUnstakedXrdNft } from "./worktop";
 export const NO_COINS_SELECTED = "no coins selected!";
 export const NO_COINS_ON_WORKTOP = "put some coins on the worktop first";
 export const NO_ACCOUNT = "specify an account first";
@@ -172,16 +168,20 @@ export function validateAvailableStakeClaimNFT() {
   }
 }
 
-export function validateOciswapCoinOnWorktop() {
-  if (get(worktopOciswap).coins.size === 0) {
+export function validateOciswapCoinOnWorktop(
+  fungibles: Map<string, WalletFungible>
+) {
+  if (fungibles.size === 0) {
     validationErrors.add(NO_OCISWAP_COIN_ON_WORKTOP);
   } else if (get(validationErrors).has(NO_OCISWAP_COIN_ON_WORKTOP)) {
     validationErrors.del(NO_OCISWAP_COIN_ON_WORKTOP);
   }
 }
 
-export function validateOciswapPairOnWorktop() {
-  if (get(worktopOciswap).coins.size < 2) {
+export function validateOciswapPairOnWorktop(
+  fungibles: Map<string, WalletFungible>
+) {
+  if (fungibles.size < 2) {
     validationErrors.add(NO_OCISWAP_PAIR_ON_WORKTOP);
   } else if (get(validationErrors).has(NO_OCISWAP_PAIR_ON_WORKTOP)) {
     validationErrors.del(NO_OCISWAP_PAIR_ON_WORKTOP);

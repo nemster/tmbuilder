@@ -1,7 +1,7 @@
 <script lang="ts">
   import { afterUpdate, onDestroy, onMount } from "svelte";
   import { find_fungible_symbol } from "../../content";
-  import { ociswap_lp_pools } from "../../ociswap";
+  import { ociswap_listed_coins, ociswap_lp_pools } from "../../ociswap";
   import commands from "../commands";
   import AddActionButton from "../shared/AddActionButton.svelte";
   import QuantityInput from "../shared/QuantityInput.svelte";
@@ -15,8 +15,9 @@
     validationErrors,
   } from "../stores/errors";
   import { bucketNumber, manifest } from "../stores/transaction";
-  import { worktop, worktopOciswap } from "../stores/worktop";
+  import { worktop } from "../stores/worktop";
   import { UNKNOWN_QUANTITY } from "../stores/accounts";
+  import type { WalletFungible } from "../stores/accounts";
   import PrecisionNumber from "../PrecisionNumber";
 
   let addressCoin1 = "";
@@ -25,21 +26,27 @@
   let maxQuantity: PrecisionNumber | undefined = undefined;
   let possibleCoin2: Map<string, string> = new Map();
   let addressCoin2 = "";
+  let availableFungibles = new Map<string, WalletFungible>();
 
   onMount(() => {
     actionError.set("");
   });
 
   function updateSelectors() {
-    if (!$worktopOciswap.coins.has(addressCoin1)) {
+    if ($worktop) {
+      availableFungibles = worktop.filterFungibles(
+        Object.keys(ociswap_listed_coins)
+      );
+    }
+    if (!availableFungibles.has(addressCoin1)) {
       addressCoin1 = "";
     }
-    if (addressCoin1 === "" && $worktopOciswap.coins.size > 0) {
-      addressCoin1 = $worktopOciswap.coins.keys().next().value;
+    if (addressCoin1 === "" && availableFungibles.size > 0) {
+      addressCoin1 = availableFungibles.keys().next().value;
     }
 
     possibleCoin2.clear();
-    for (let resourceAddress of $worktopOciswap.coins.keys()) {
+    for (let resourceAddress of availableFungibles.keys()) {
       if (resourceAddress !== addressCoin1) {
         possibleCoin2.set(
           resourceAddress,
@@ -54,7 +61,7 @@
       addressCoin2 = possibleCoin2.keys().next().value;
     }
     const prevMaxQuantity = maxQuantity;
-    const amount = $worktopOciswap.coins.get(addressCoin1)?.amount;
+    const amount = availableFungibles.get(addressCoin1)?.amount;
     if (amount !== UNKNOWN_QUANTITY) {
       maxQuantity = amount;
     }
@@ -69,7 +76,7 @@
   afterUpdate(() => {
     updateSelectors();
     validateQuantity(quantity, maxQuantity);
-    validateOciswapPairOnWorktop();
+    validateOciswapPairOnWorktop(availableFungibles);
   });
 
   onDestroy(() => {
@@ -87,8 +94,8 @@
       return;
     }
 
-    const send_1_12 = $worktopOciswap.coins.get(addressCoin1);
-    const send_2_12 = $worktopOciswap.coins.get(addressCoin2);
+    const send_1_12 = availableFungibles.get(addressCoin1);
+    const send_2_12 = availableFungibles.get(addressCoin2);
 
     if (send_1_12 === undefined || send_2_12 === undefined) {
       actionError.set(NO_COINS_TO_SEND);
@@ -260,7 +267,7 @@
         class="select select-secondary select-sm w-3/5 text-end"
         bind:value={addressCoin1}
       >
-        {#each Array.from($worktopOciswap.coins.values()) as sendFungible}
+        {#each Array.from(availableFungibles.values()) as sendFungible}
           <option value={sendFungible.address}>
             {sendFungible.symbol}
           </option>
