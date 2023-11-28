@@ -27,6 +27,7 @@ export const SOMETHING_WENT_WRONG = "something went wrong";
 export const UNKNOWN_XRD_AMOUNT = "unknown XRD amount";
 export const CANNOT_PROCEED_WITH_UNKNOWN_QUANTITY =
   "unknown quantity on the worktop, choose another action";
+export const NO_LSULP_ON_WORTOP = "there are no LSULP in the worktop";
 
 export const actionError = writable("");
 

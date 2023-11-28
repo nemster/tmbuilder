@@ -50,8 +50,7 @@ function sendQuantityToAccount(
   quantity: string,
   bucketNumber: number
 ) {
-  return `
-  TAKE_FROM_WORKTOP
+  return `TAKE_FROM_WORKTOP
     Address("${resource}")
     Decimal("${quantity}")
     Bucket("bucket${bucketNumber}")

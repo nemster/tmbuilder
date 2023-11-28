@@ -202,6 +202,9 @@ export function find_fungible_symbol(resource: string) {
   if (radixplanet_lp[resource] !== undefined) {
     return radixplanet_lp[resource];
   }
+  if (resource === lsulp) {
+    return "LSULP";
+  }
   return resource;
 }
 
@@ -211,6 +214,9 @@ export function find_non_fungible_symbol(resource: string) {
   }
   if (claim_nft[resource] !== undefined) {
     return "Claim NFT " + validators_names[claim_nft[resource]].trim();
+  }
+  if (resource === lsu_pool_receipt) {
+    return "LSU Pool Receipt";
   }
   return resource;
 }
@@ -622,16 +628,6 @@ export function initContent() {
                   }
                 });
               } else if (non_fungible.resource_address == lsu_pool_receipt) {
-                const nft7 = document.querySelector<HTMLSelectElement>("#nft7");
-                nft7!.options[nft7!.options.length] = new Option(
-                  id,
-                  value.address + " " + id
-                );
-                const nft8 = document.querySelector<HTMLSelectElement>("#nft8");
-                nft8!.options[nft8!.options.length] = new Option(
-                  id,
-                  value.address + " " + id
-                );
               } else if (
                 claim_nft[non_fungible.resource_address] != undefined
               ) {
@@ -753,119 +749,6 @@ export function initContent() {
         document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
           "you don't have a Weft Claimer NFT";
       }
-    });
-
-  document
-    .querySelector<HTMLInputElement>("#all8")!
-    .addEventListener("change", function () {
-      document.querySelector<HTMLInputElement>("#quantity8")!.disabled =
-        this.checked;
-      if (this.checked) {
-        document.querySelector<HTMLInputElement>("#quantity8")!.value = "";
-      }
-    });
-
-  document
-    .querySelector<HTMLButtonElement>("#add_instruction8")!
-    .addEventListener("click", function () {
-      let q = fungibles_in_worktop[lsulp];
-      if (q == undefined) {
-        document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
-          "there are no LSULP in the worktop";
-        return false;
-      }
-      document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
-        "&nbsp;";
-
-      const lsu = document.querySelector<HTMLSelectElement>("#lsu8")!.value;
-      const all8 = document.querySelector<HTMLInputElement>("#all8")!.checked;
-      const nft = document.querySelector<HTMLSelectElement>("#nft8")!.value;
-      let transaction_manifest = "";
-      if (nft.length > 0) {
-        const parts = nft.split(" ");
-        transaction_manifest =
-          "CALL_METHOD\n" +
-          '    Address("' +
-          parts[0] +
-          '")\n' +
-          '    "create_proof_of_non_fungibles"\n' +
-          '    Address("' +
-          lsu_pool_receipt +
-          '")\n' +
-          "    Array<NonFungibleLocalId>(\n" +
-          '        NonFungibleLocalId("' +
-          parts[1] +
-          '")\n    )\n;\n' +
-          "CREATE_PROOF_FROM_AUTH_ZONE_OF_NON_FUNGIBLES\n" +
-          '    Address("' +
-          lsu_pool_receipt +
-          '")\n' +
-          "    Array<NonFungibleLocalId>(\n" +
-          '        NonFungibleLocalId("' +
-          parts[1] +
-          '")\n    )\n' +
-          '    Proof("proof' +
-          proof_number +
-          '")\n;\n';
-      }
-      if (all8) {
-        transaction_manifest +=
-          "TAKE_ALL_FROM_WORKTOP\n" +
-          '    Address("' +
-          lsulp +
-          '")\n' +
-          '    Bucket("bucket' +
-          bucket_number +
-          '")\n;\n';
-        remove_fungible_from_worktop(lsulp, "*");
-      } else {
-        const quantity =
-          document.querySelector<HTMLInputElement>("#quantity8")!.value;
-        if (!quantity.match(/^[0-9]+(\.[0-9]+)?$/)) {
-          document.querySelector<HTMLInputElement>("#warn")!.innerText =
-            "invalid quantity!";
-          return false;
-        }
-        q = new PrecisionNumber(quantity);
-        transaction_manifest +=
-          "TAKE_FROM_WORKTOP\n" +
-          '    Address("' +
-          lsulp +
-          '")\n' +
-          '    Decimal("' +
-          quantity +
-          '")\n' +
-          '    Bucket("bucket' +
-          bucket_number +
-          '")\n;\n';
-        remove_fungible_from_worktop(lsulp, quantity);
-      }
-      transaction_manifest +=
-        "CALL_METHOD\n" +
-        '    Address("' +
-        lsu_pool +
-        '")\n' +
-        '    "remove_liquidity"\n' +
-        '    Bucket("bucket' +
-        bucket_number++ +
-        '")\n' +
-        '    Address("' +
-        lsu +
-        '")\n';
-      if (nft.length > 0) {
-        transaction_manifest +=
-          "    Enum<1u8>(\n" +
-          '        Proof("proof' +
-          proof_number++ +
-          '")\n    )\n;\n';
-      } else {
-        transaction_manifest += "    Enum<0u8>()\n;\n";
-        add_non_fungible_to_worktop(lsu_pool_receipt + " " + UNKNOWN_NFT_ID);
-      }
-      add_fungible_to_worktop(lsu, q);
-      document.querySelector<HTMLTextAreaElement>(
-        "#transaction_manifest"
-      )!.value += transaction_manifest;
     });
 
   document
