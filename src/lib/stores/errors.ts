@@ -28,6 +28,8 @@ export const UNKNOWN_XRD_AMOUNT = "unknown XRD amount";
 export const CANNOT_PROCEED_WITH_UNKNOWN_QUANTITY =
   "unknown quantity on the worktop, choose another action";
 export const NO_LSULP_ON_WORTOP = "there are no LSULP in the worktop";
+export const CANNOT_HANDLE_MULTIPLE_LOANS = "can't handle multiple loans";
+export const NO_LOAN = "get a loan first";
 
 export const actionError = writable("");
 

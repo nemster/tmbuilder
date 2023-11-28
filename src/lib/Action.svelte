@@ -13,6 +13,9 @@
   import AddYourLSUsToCaviarnine from "./actions/AddYourLSUsToCaviarnine.svelte";
   import RetrieveLSUsFromCaviarnine from "./actions/RetrieveLSUsFromCaviarnine.svelte";
   import SwapLSUsOnCaviarnine from "./actions/SwapLSUsOnCaviarnine.svelte";
+  import GableGetFlashloan from "./actions/GableGetFlashloan.svelte";
+  import GableRepayFlashloan from "./actions/GableRepayFlashloan.svelte";
+  import GableProvideLiquidity from "./actions/GableProvideLiquidity.svelte";
 
   let actions = {
     takeCoinsFromSelf: {
@@ -100,14 +103,30 @@
       description: "swap LSUs on Caviarnine",
       disabled: false,
     },
+    gableLabel: {
+      component: null,
+      description: "--- GABLE ---",
+      disabled: true,
+    },
+    gableGetFlashloan: {
+      component: GableGetFlashloan,
+      description: "get flashloan",
+      disabled: false,
+    },
+    gableRepayFlashloan: {
+      component: GableRepayFlashloan,
+      description: "repay flashloan",
+      disabled: false,
+    },
+    gableProvideLiquidity: {
+      component: GableProvideLiquidity,
+      description: "provide liquidity to Gable",
+      disabled: false,
+    },
   };
 
   /**
    *  
-        <option disabled>--- GABLE ---</option>
-        <option>get flashloan</option>
-        <option>repay flashloan</option>
-        <option>provide liquidity to Gable</option>
         <option disabled>--- DEFIPLAZA ---</option>
         <option>swap coins at DefiPlaza</option>
         <option disabled>--- ALPHADEX ---</option>

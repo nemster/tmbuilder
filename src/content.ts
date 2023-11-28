@@ -50,14 +50,14 @@ const fungibles_symbols: { [key: string]: string } = {
     "WEFT Weft Finance",
 };
 let gable_loan_quantity = new PrecisionNumber("0");
-const gable_loan_fees = new PrecisionNumber("0.001");
-const gable_component =
+export const gable_loan_fees = new PrecisionNumber("0.001");
+export const gable_component =
   "component_rdx1cpmh7lyg0hx6efv5q79lv6rqxdqpuh27y99nzm0jpwu2u44ne243ws";
-const gable_transient_nft =
+export const gable_transient_nft =
   "resource_rdx1ngxzt7uq9l2wm5gd8vefcq5pkwcqwrn530a98p72mnkjzjev8hlxdn";
-const gable_lsu =
+export const gable_lsu =
   "resource_rdx1thrz4g8g83802lumrtrdsrhjd6k5uxhxhgkrwjg0jn75cvxfc99nap";
-const gable_liquidity_nft =
+export const gable_liquidity_nft =
   "resource_rdx1nfxg3t4eyls2qycqqrp6df8wkz3n2r04ex20443jtsgz5c23wsf74w";
 const non_fungibles_symbols: { [key: string]: string } = {
   resource_rdx1ngxzt7uq9l2wm5gd8vefcq5pkwcqwrn530a98p72mnkjzjev8hlxdn:
@@ -217,6 +217,9 @@ export function find_non_fungible_symbol(resource: string) {
   }
   if (resource === lsu_pool_receipt) {
     return "LSU Pool Receipt";
+  }
+  if (resource === gable_liquidity_nft) {
+    return "Gable Liquidity NFT";
   }
   return resource;
 }
@@ -736,101 +739,6 @@ export function initContent() {
     });
 
   document
-    .querySelector<HTMLButtonElement>("#add_instruction14")!
-    .addEventListener("click", function () {
-      document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
-        "&nbsp;";
-
-      if (gable_loan_quantity.isGreaterThanZero()) {
-        document.querySelector<HTMLInputElement>("#warn")!.innerText =
-          "can't handle multiple loans";
-        return false;
-      }
-
-      const quantity =
-        document.querySelector<HTMLInputElement>("#quantity14")!.value;
-      if (!quantity.match(/^[0-9]+(\.[0-9]+)?$/)) {
-        document.querySelector<HTMLInputElement>("#warn")!.innerText =
-          "invalid quantity!";
-        return false;
-      }
-
-      document.querySelector<HTMLTextAreaElement>(
-        "#transaction_manifest"
-      )!.value +=
-        "CALL_METHOD\n" +
-        '    Address("' +
-        gable_component +
-        '")\n' +
-        '    "get_flashloan"\n' +
-        '    Decimal("' +
-        quantity +
-        '")\n;\n';
-      gable_loan_quantity = new PrecisionNumber(quantity);
-      add_fungible_to_worktop(XRD, gable_loan_quantity);
-      add_non_fungible_to_worktop(gable_transient_nft + " " + UNKNOWN_NFT_ID);
-    });
-
-  document
-    .querySelector<HTMLButtonElement>("#add_instruction15")!
-    .addEventListener("click", function () {
-      document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
-        "&nbsp;";
-
-      if (gable_loan_quantity.isZero()) {
-        document.querySelector<HTMLInputElement>("#warn")!.innerText =
-          "no loan to repay";
-        return false;
-      }
-
-      const xrd_to_refund = gable_loan_quantity.multipliedBy(
-        gable_loan_fees.plus(new PrecisionNumber("1"))
-      );
-      if (fungibles_in_worktop[XRD] < xrd_to_refund) {
-        document.querySelector<HTMLInputElement>("#warn")!.innerText =
-          "not enogh XRDs in the worktop";
-        return false;
-      }
-
-      document.querySelector<HTMLTextAreaElement>(
-        "#transaction_manifest"
-      )!.value +=
-        "TAKE_FROM_WORKTOP\n" +
-        '    Address("' +
-        XRD +
-        '")\n' +
-        '    Decimal("' +
-        xrd_to_refund +
-        '")\n' +
-        '    Bucket("bucket' +
-        bucket_number +
-        '")\n;\n' +
-        "TAKE_ALL_FROM_WORKTOP\n" +
-        '    Address("' +
-        gable_transient_nft +
-        '")\n' +
-        '    Bucket("bucket' +
-        (bucket_number + 1) +
-        '")\n;\n' +
-        "CALL_METHOD\n" +
-        '    Address("' +
-        gable_component +
-        '")\n' +
-        '    "repay_flashloan"\n' +
-        '    Bucket("bucket' +
-        bucket_number++ +
-        '")\n' +
-        '    Bucket("bucket' +
-        bucket_number++ +
-        '")\n;\n';
-      gable_loan_quantity = PrecisionNumber.ZERO();
-      remove_fungible_from_worktop(XRD, String(xrd_to_refund));
-      remove_non_fungible_from_worktop(
-        gable_transient_nft + " " + UNKNOWN_NFT_ID
-      );
-    });
-
-  document
     .querySelector<HTMLInputElement>("#send16")!
     .addEventListener("change", function () {
       const send16 =
@@ -1164,91 +1072,6 @@ export function initContent() {
           }
         });
       });
-    });
-
-  document
-    .querySelector<HTMLInputElement>("#all18")!
-    .addEventListener("change", function () {
-      if (!document.querySelector<HTMLInputElement>("#all18")!.checked) {
-        if (fungibles_in_worktop[gable_lsu] != undefined) {
-          document.querySelector<HTMLInputElement>("#quantity18")!.value =
-            String(fungibles_in_worktop[gable_lsu]);
-        }
-        document.querySelector<HTMLInputElement>("#quantity18")!.disabled =
-          false;
-      } else {
-        document.querySelector<HTMLInputElement>("#quantity18")!.value = "";
-        document.querySelector<HTMLInputElement>("#quantity18")!.disabled =
-          true;
-      }
-    });
-
-  document
-    .querySelector<HTMLButtonElement>("#add_instruction18")!
-    .addEventListener("click", async function () {
-      document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
-        "&nbsp;";
-
-      let quantity18: PrecisionNumber;
-      if (document.querySelector<HTMLInputElement>("#all18")!.checked) {
-        quantity18 = fungibles_in_worktop[gable_lsu];
-      } else {
-        const q =
-          document.querySelector<HTMLSelectElement>("#quantity18")!.value;
-        if (!q.match(/^[0-9]+(\.[0-9]+)?$/)) {
-          document.querySelector<HTMLInputElement>("#warn")!.innerText =
-            "invalid quantity!";
-          return false;
-        }
-        if (
-          new PrecisionNumber(q).isGreaterThan(fungibles_in_worktop[gable_lsu])
-        ) {
-          quantity18 = fungibles_in_worktop[gable_lsu];
-        } else {
-          quantity18 = new PrecisionNumber(q);
-        }
-      }
-
-      if (quantity18 == fungibles_in_worktop[gable_lsu]) {
-        remove_fungible_from_worktop(gable_lsu, "*");
-        document.querySelector<HTMLTextAreaElement>(
-          "#transaction_manifest"
-        )!.value +=
-          "TAKE_ALL_FROM_WORKTOP\n" +
-          '    Address("' +
-          gable_lsu +
-          '")\n' +
-          '    Bucket("bucket' +
-          bucket_number +
-          '")\n;\n';
-      } else {
-        remove_fungible_from_worktop(gable_lsu, String(quantity18));
-        document.querySelector<HTMLTextAreaElement>(
-          "#transaction_manifest"
-        )!.value +=
-          "TAKE_FROM_WORKTOP\n" +
-          '    Address("' +
-          gable_lsu +
-          '")\n' +
-          '    Decimal("' +
-          quantity18 +
-          '")\n' +
-          '    Bucket("bucket' +
-          bucket_number +
-          '")\n;\n';
-      }
-      document.querySelector<HTMLTextAreaElement>(
-        "#transaction_manifest"
-      )!.value +=
-        "CALL_METHOD\n" +
-        '    Address("' +
-        gable_component +
-        '")\n' +
-        '    "deposit_lsu"\n' +
-        '    Bucket("bucket' +
-        bucket_number++ +
-        '")\n;\n';
-      add_non_fungible_to_worktop(gable_liquidity_nft + " " + UNKNOWN_NFT_ID);
     });
 
   document

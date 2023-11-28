@@ -268,6 +268,37 @@ function createProofFromAuthZoneOfNonFungibles(
 `;
 }
 
+function getFlashLoan(componentAddress: string, quantity: PrecisionNumber) {
+  return `CALL_METHOD
+    Address("${componentAddress}")
+    "get_flashloan"
+    Decimal("${quantity}")
+;
+`;
+}
+
+function repayFlashLoan(
+  componentAddress: string,
+  bucket1: number,
+  bucket2: number
+) {
+  return `CALL_METHOD
+    Address("${componentAddress}")
+    "repay_flashloan"
+    Bucket("bucket${bucket1}")
+    Bucket("bucket${bucket2}")
+;`;
+}
+
+function depositLSU(componentAddress: string, bucketNumber: number) {
+  return `CALL_METHOD
+    Address("${componentAddress}")
+    "deposit_lsu"
+    Bucket("bucket${bucketNumber}")
+;
+`;
+}
+
 export default {
   withdraw,
   withdrawNonFungibles,
@@ -291,4 +322,7 @@ export default {
   removeLiquidity,
   createProofOfNonFungibles,
   createProofFromAuthZoneOfNonFungibles,
+  getFlashLoan,
+  repayFlashLoan,
+  depositLSU,
 };
