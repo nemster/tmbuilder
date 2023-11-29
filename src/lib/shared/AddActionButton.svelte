@@ -2,9 +2,9 @@
   import { actionError } from "../stores/errors";
 
   export let handleAddAction: () => void;
-  function tryHandleAddAction() {
+  async function tryHandleAddAction() {
     try {
-      handleAddAction();
+      await handleAddAction();
     } catch (e: unknown) {
       if (e instanceof Error) {
         actionError.set(e.message);

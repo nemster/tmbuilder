@@ -13,7 +13,7 @@
   import { UNKNOWN_ID, UNKNOWN_QUANTITY } from "../stores/accounts";
   import {
     CANNOT_PROCEED_WITH_UNKNOWN_QUANTITY,
-    NO_LSU_ON_WORKTOP,
+    NO_GABLE_LSU,
     actionError,
     validateQuantity,
     validationErrors,
@@ -44,7 +44,7 @@
     }
 
     if (!availableGableLSU) {
-      throw new Error(NO_LSU_ON_WORKTOP);
+      throw new Error(NO_GABLE_LSU);
     }
 
     if (availableGableLSU.amount === UNKNOWN_QUANTITY) {

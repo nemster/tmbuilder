@@ -30,6 +30,9 @@ export const CANNOT_PROCEED_WITH_UNKNOWN_QUANTITY =
 export const NO_LSULP_ON_WORTOP = "there are no LSULP in the worktop";
 export const CANNOT_HANDLE_MULTIPLE_LOANS = "can't handle multiple loans";
 export const NO_LOAN = "get a loan first";
+export const NO_GABLE_LSU = "put some Gable LSUs in the worktop first";
+export const NO_DEFIPLAZA_COINS_ON_WORTOP =
+  "put some coin listed on DefiPlaza in the worktop first";
 
 export const actionError = writable("");
 

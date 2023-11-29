@@ -49,7 +49,7 @@ const fungibles_symbols: { [key: string]: string } = {
   resource_rdx1tk3fxrz75ghllrqhyq8e574rkf4lsq2x5a0vegxwlh3defv225cth3:
     "WEFT Weft Finance",
 };
-let gable_loan_quantity = new PrecisionNumber("0");
+
 export const gable_loan_fees = new PrecisionNumber("0.001");
 export const gable_component =
   "component_rdx1cpmh7lyg0hx6efv5q79lv6rqxdqpuh27y99nzm0jpwu2u44ne243ws";
@@ -65,7 +65,7 @@ const non_fungibles_symbols: { [key: string]: string } = {
   resource_rdx1nt3vrt8xtdal6gn7ddv0zfzvxpqylxyfmr97setz8r3amhhk90yqmg:
     "Weft Claimer Nft",
 };
-const defiplaza_component =
+export const defiplaza_component =
   "component_rdx1cze7e7437y9pmntk94w72eyanngw522j8yf07aa27frn63m9ezkfeu";
 let bucket_number = 1;
 let proof_number = 1;
@@ -685,29 +685,6 @@ export function initContent() {
       document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
         "&nbsp;";
 
-      // --- GABLE ---
-      if (this.selectedIndex == 19 && gable_loan_quantity.isZero()) {
-        document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
-          "get a loan first";
-      } else if (
-        this.selectedIndex == 20 &&
-        (fungibles_in_worktop[gable_lsu] == undefined ||
-          fungibles_in_worktop[gable_lsu].isZero())
-      ) {
-        document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
-          "put some Gable LSUs in the worktop first";
-      }
-
-      // --- DEFIPLAZA ---
-      if (
-        this.selectedIndex == 22 &&
-        document.querySelector<HTMLSelectElement>("#send16")!.options.length ==
-          0
-      ) {
-        document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
-          "put some coin listed on DefiPlaza in the worktop first";
-      }
-
       // --- ALPHADEX ---
       if (
         this.selectedIndex == 24 &&
@@ -736,150 +713,6 @@ export function initContent() {
         document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
           "you don't have a Weft Claimer NFT";
       }
-    });
-
-  document
-    .querySelector<HTMLInputElement>("#send16")!
-    .addEventListener("change", function () {
-      const send16 =
-        document.querySelector<HTMLSelectElement>("#send16")!.value;
-      const receive16 = document.querySelector<HTMLSelectElement>("#receive16");
-      if (!document.querySelector<HTMLInputElement>("#all16")!.checked) {
-        document.querySelector<HTMLInputElement>("#quantity16")!.value = String(
-          fungibles_in_worktop[send16]
-        );
-      }
-      receive16!.innerHTML = "";
-      for (const receive of Object.keys(defiplaza_listed_coins)) {
-        if (receive != send16) {
-          receive16!.options[receive16!.options.length] = new Option(
-            find_fungible_symbol(receive),
-            receive
-          );
-        }
-      }
-    });
-
-  document
-    .querySelector<HTMLInputElement>("#all16")!
-    .addEventListener("change", function () {
-      if (!document.querySelector<HTMLInputElement>("#all16")!.checked) {
-        document.querySelector<HTMLInputElement>("#quantity16")!.value = String(
-          fungibles_in_worktop[
-            document.querySelector<HTMLSelectElement>("#send16")!.value
-          ]
-        );
-        document.querySelector<HTMLInputElement>("#quantity16")!.disabled =
-          false;
-      } else {
-        document.querySelector<HTMLInputElement>("#quantity16")!.value = "";
-        document.querySelector<HTMLInputElement>("#quantity16")!.disabled =
-          true;
-      }
-    });
-
-  document
-    .querySelector<HTMLButtonElement>("#add_instruction16")!
-    .addEventListener("click", async function () {
-      document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
-        "&nbsp;";
-
-      const send16 =
-        document.querySelector<HTMLSelectElement>("#send16")!.value;
-      if (send16 == "") {
-        document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
-          "select a coin to send";
-        return false;
-      }
-
-      let quantity16: PrecisionNumber;
-      if (document.querySelector<HTMLInputElement>("#all16")!.checked) {
-        quantity16 = fungibles_in_worktop[send16];
-        remove_fungible_from_worktop(send16, "*");
-        document.querySelector<HTMLTextAreaElement>(
-          "#transaction_manifest"
-        )!.value +=
-          "TAKE_ALL_FROM_WORKTOP\n" +
-          '    Address("' +
-          send16 +
-          '")\n' +
-          '    Bucket("bucket' +
-          bucket_number +
-          '")\n;\n';
-      } else {
-        const q =
-          document.querySelector<HTMLSelectElement>("#quantity16")!.value;
-        if (!q.match(/^[0-9]+(\.[0-9]+)?$/)) {
-          document.querySelector<HTMLInputElement>("#warn")!.innerText =
-            "invalid quantity!";
-          return false;
-        }
-        if (new PrecisionNumber(q) > fungibles_in_worktop[send16]) {
-          quantity16 = fungibles_in_worktop[send16];
-          remove_fungible_from_worktop(send16, "*");
-          document.querySelector<HTMLTextAreaElement>(
-            "#transaction_manifest"
-          )!.value +=
-            "TAKE_ALL_FROM_WORKTOP\n" +
-            '    Address("' +
-            send16 +
-            '")\n' +
-            '    Bucket("bucket' +
-            bucket_number +
-            '")\n;\n';
-        } else {
-          quantity16 = new PrecisionNumber(q);
-          remove_fungible_from_worktop(send16, q);
-          document.querySelector<HTMLTextAreaElement>(
-            "#transaction_manifest"
-          )!.value +=
-            "TAKE_FROM_WORKTOP\n" +
-            '    Address("' +
-            send16 +
-            '")\n' +
-            '    Decimal("' +
-            q +
-            '")\n' +
-            '    Bucket("bucket' +
-            bucket_number +
-            '")\n;\n';
-        }
-      }
-
-      const receive16 =
-        document.querySelector<HTMLSelectElement>("#receive16")!.value;
-
-      const url =
-        "https://tmbuilder.stakingcoins.eu/defiplaza.php?inputToken=" +
-        send16 +
-        "&outputToken=" +
-        receive16 +
-        "&inputAmount=" +
-        quantity16;
-      fetch(url).then((r) => {
-        if (r.ok) {
-          r.json().then((j) => {
-            add_fungible_to_worktop(receive16, j.quoteToken.amount);
-            document.querySelector<HTMLTextAreaElement>(
-              "#transaction_manifest"
-            )!.value +=
-              "CALL_METHOD\n" +
-              '    Address("' +
-              defiplaza_component +
-              '")\n' +
-              '    "swap"\n' +
-              '    Bucket("bucket' +
-              bucket_number++ +
-              '")\n' +
-              '    Address("' +
-              receive16 +
-              '")\n;\n';
-          });
-        }
-      });
-      document
-        .querySelector<HTMLSelectElement>("#send16")!
-        .dispatchEvent(new Event("change"));
     });
 
   document

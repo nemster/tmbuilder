@@ -16,6 +16,7 @@
   import GableGetFlashloan from "./actions/GableGetFlashloan.svelte";
   import GableRepayFlashloan from "./actions/GableRepayFlashloan.svelte";
   import GableProvideLiquidity from "./actions/GableProvideLiquidity.svelte";
+  import DefiplazaSwapCoins from "./actions/DefiplazaSwapCoins.svelte";
 
   let actions = {
     takeCoinsFromSelf: {
@@ -123,12 +124,20 @@
       description: "provide liquidity to Gable",
       disabled: false,
     },
+    defiplazaLabel: {
+      component: null,
+      description: "--- DEFIPLAZA ---",
+      disabled: true,
+    },
+    defiplazaSwapCoins: {
+      component: DefiplazaSwapCoins,
+      description: "swap coins at DefiPlaza",
+      disabled: false,
+    },
   };
 
   /**
    *  
-        <option disabled>--- DEFIPLAZA ---</option>
-        <option>swap coins at DefiPlaza</option>
         <option disabled>--- ALPHADEX ---</option>
         <option>swap coins at AlphaDEX</option>
         <option disabled>--- RADIXPLANET ---</option>
