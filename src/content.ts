@@ -83,12 +83,12 @@ const backeum_trophies =
   "resource_rdx1ng8ugxt6tj0e22fvf6js4e3x5k8uwaqvz9tl8u924u54h7zxeh6jnp";
 const my_backeum_collection_id =
   "component_rdx1cqzr66e6vc5mp7hsqjjnyzmhdzmamafnn7dfyc2yn7mz7r3g7k3mwp";
-let donor = false;
+export let donor = false;
 export const my_validator_address =
   "validator_rdx1sva6pmkgm5yacumw4p6k0xsfnqg598xkj9p4e2a58dl6gcrqpx7z86";
 const my_lsu_address =
   "resource_rdx1t4pl597e7lp6flduhd3a6tp9jsqw2vzgyj9jxtk8y3dawum5aahap0";
-let staked_amount = new PrecisionNumber("0");
+export let staked_amount = new PrecisionNumber("0");
 const weft_claimer_nft =
   "resource_rdx1nt3vrt8xtdal6gn7ddv0zfzvxpqylxyfmr97setz8r3amhhk90yqmg";
 const weft_amount_to_collect: { [key: string]: PrecisionNumber } = {};
@@ -685,16 +685,6 @@ export function initContent() {
       document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
         "&nbsp;";
 
-      // --- ALPHADEX ---
-      if (
-        this.selectedIndex == 24 &&
-        document.querySelector<HTMLSelectElement>("#send17")!.options.length ==
-          0
-      ) {
-        document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
-          "put some coin listed on AlphaDEX in the worktop first";
-      }
-
       // --- RADIXPLANET ---
       if (
         this.selectedIndex == 26 &&
@@ -713,198 +703,6 @@ export function initContent() {
         document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
           "you don't have a Weft Claimer NFT";
       }
-    });
-
-  document
-    .querySelector<HTMLInputElement>("#send17")!
-    .addEventListener("change", function () {
-      const send17 =
-        document.querySelector<HTMLSelectElement>("#send17")!.value;
-      const receive17 = document.querySelector<HTMLSelectElement>("#receive17");
-      if (!document.querySelector<HTMLInputElement>("#all17")!.checked) {
-        document.querySelector<HTMLInputElement>("#quantity17")!.value = String(
-          fungibles_in_worktop[send17]
-        );
-      }
-      receive17!.innerHTML = "";
-      for (const receive of Object.keys(alphadex_listed_coins)) {
-        if (receive != send17) {
-          receive17!.options[receive17!.options.length] = new Option(
-            find_fungible_symbol(receive),
-            receive
-          );
-        }
-      }
-    });
-
-  document
-    .querySelector<HTMLInputElement>("#all17")!
-    .addEventListener("change", function () {
-      if (!document.querySelector<HTMLInputElement>("#all17")!.checked) {
-        document.querySelector<HTMLInputElement>("#quantity17")!.value = String(
-          fungibles_in_worktop[
-            document.querySelector<HTMLSelectElement>("#send17")!.value
-          ]
-        );
-        document.querySelector<HTMLInputElement>("#quantity17")!.disabled =
-          false;
-      } else {
-        document.querySelector<HTMLInputElement>("#quantity17")!.value = "";
-        document.querySelector<HTMLInputElement>("#quantity17")!.disabled =
-          true;
-      }
-    });
-
-  document
-    .querySelector<HTMLButtonElement>("#add_instruction17")!
-    .addEventListener("click", async function () {
-      document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
-        "&nbsp;";
-
-      const send17 =
-        document.querySelector<HTMLSelectElement>("#send17")!.value;
-      if (send17 == "") {
-        document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
-          "select a coin to send";
-        return false;
-      }
-
-      let quantity17: PrecisionNumber;
-      if (document.querySelector<HTMLInputElement>("#all17")!.checked) {
-        quantity17 = fungibles_in_worktop[send17];
-      } else {
-        const q =
-          document.querySelector<HTMLSelectElement>("#quantity17")!.value;
-        if (!q.match(/^[0-9]+(\.[0-9]+)?$/)) {
-          document.querySelector<HTMLInputElement>("#warn")!.innerText =
-            "invalid quantity!";
-          return false;
-        }
-        if (
-          new PrecisionNumber(q).isGreaterThan(fungibles_in_worktop[send17])
-        ) {
-          quantity17 = fungibles_in_worktop[send17];
-        } else {
-          quantity17 = new PrecisionNumber(q);
-        }
-      }
-
-      const receive17 =
-        document.querySelector<HTMLSelectElement>("#receive17")!.value;
-      let fee_badge = "5";
-      if (
-        donor ||
-        staked_amount.isGreaterThanOrEqualTo(new PrecisionNumber("5000"))
-      ) {
-        fee_badge = "6";
-      }
-      const body = JSON.stringify({
-        fromTokenAddress: send17,
-        fromTokenAmount: String(quantity17),
-        toTokenAddress: receive17,
-        maxSlippage: "1",
-        platformId: fee_badge,
-      });
-
-      fetch("https://api.alphadex.net/v0/quote/swap", {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        body: body,
-      }).then((r1) => {
-        if (r1.status != 200 && r1.status != 406) {
-          document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
-            "something went wrong";
-          return false;
-        }
-        r1.json().then(async (j1) => {
-          if (r1.status == 200) {
-            if (quantity17 == fungibles_in_worktop[send17]) {
-              remove_fungible_from_worktop(send17, "*");
-              document.querySelector<HTMLTextAreaElement>(
-                "#transaction_manifest"
-              )!.value +=
-                "TAKE_ALL_FROM_WORKTOP\n" +
-                '    Address("' +
-                send17 +
-                '")\n' +
-                '    Bucket("bucket' +
-                bucket_number +
-                '")\n;\n';
-            } else {
-              remove_fungible_from_worktop(send17, String(quantity17));
-              document.querySelector<HTMLTextAreaElement>(
-                "#transaction_manifest"
-              )!.value +=
-                "TAKE_FROM_WORKTOP\n" +
-                '    Address("' +
-                send17 +
-                '")\n' +
-                '    Decimal("' +
-                quantity17 +
-                '")\n' +
-                '    Bucket("bucket' +
-                bucket_number +
-                '")\n;\n';
-            }
-          } else {
-            quantity17 = new PrecisionNumber(j1.quotes[0].fromAmount);
-            remove_fungible_from_worktop(send17, String(quantity17));
-            document.querySelector<HTMLTextAreaElement>(
-              "#transaction_manifest"
-            )!.value +=
-              "TAKE_FROM_WORKTOP\n" +
-              '    Address("' +
-              send17 +
-              '")\n' +
-              '    Decimal("' +
-              quantity17 +
-              '")\n' +
-              '    Bucket("bucket' +
-              bucket_number +
-              '")\n;\n';
-          }
-          let next = "";
-          for (const swaps of j1.quotes) {
-            let to_coin: string;
-            if (send17 == XRD || next != "") {
-              to_coin = receive17;
-            } else {
-              to_coin = XRD;
-            }
-            document.querySelector<HTMLTextAreaElement>(
-              "#transaction_manifest"
-            )!.value +=
-              next +
-              "CALL_METHOD\n" +
-              '    Address("' +
-              swaps.pairAddress +
-              '")\n' +
-              '    "swap"\n' +
-              '    Bucket("bucket' +
-              bucket_number++ +
-              '")\n' +
-              '    Decimal("100")\n' +
-              "    " +
-              fee_badge +
-              "u32\n;\n";
-            if (to_coin == receive17) {
-              add_fungible_to_worktop(receive17, swaps.toAmount);
-            } else {
-              next =
-                "TAKE_ALL_FROM_WORKTOP\n" +
-                '    Address("' +
-                to_coin +
-                '")\n' +
-                '    Bucket("bucket' +
-                bucket_number +
-                '")\n;\n';
-            }
-          }
-        });
-      });
     });
 
   document
