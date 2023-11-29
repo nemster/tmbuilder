@@ -24,26 +24,13 @@ import { defiplaza_listed_coins } from "./defiplaza.ts";
 import { PrecisionNumber } from "./lib/PrecisionNumber.ts";
 import { accounts } from "./lib/stores/accounts.ts";
 import { ociswap_listed_coins, ociswap_lp_names } from "./ociswap.ts";
-import {
-  radixplanet_listed_coins,
-  radixplanet_lp,
-  radixplanet_pools,
-} from "./radixplanet.ts";
+import { radixplanet_listed_coins, radixplanet_lp } from "./radixplanet.ts";
 import { claim_nft, pool_units, validators_names } from "./validators.ts";
-
-interface fungibles_array {
-  [index: string]: number;
-}
-interface fungibles_array_array {
-  [index: string]: fungibles_array;
-}
-interface non_fungibles_array_array {
-  [index: string]: string[];
-}
+import { amountToCollect as weftAmountToCollect } from "./lib/stores/weft.ts";
 
 export const XRD =
   "resource_rdx1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxradxrd";
-const weft =
+export const weft =
   "resource_rdx1tk3fxrz75ghllrqhyq8e574rkf4lsq2x5a0vegxwlh3defv225cth3";
 const fungibles_symbols: { [key: string]: string } = {
   resource_rdx1tk3fxrz75ghllrqhyq8e574rkf4lsq2x5a0vegxwlh3defv225cth3:
@@ -67,8 +54,7 @@ const non_fungibles_symbols: { [key: string]: string } = {
 };
 export const defiplaza_component =
   "component_rdx1cze7e7437y9pmntk94w72eyanngw522j8yf07aa27frn63m9ezkfeu";
-let bucket_number = 1;
-let proof_number = 1;
+
 export const EPSILON = 0.000001;
 export const lsu_pool_receipt =
   "resource_rdx1nt3frmqu4v57dy55e90n0k3uy352zyy89vszzamvjld6vqvr98rls9";
@@ -89,9 +75,8 @@ export const my_validator_address =
 const my_lsu_address =
   "resource_rdx1t4pl597e7lp6flduhd3a6tp9jsqw2vzgyj9jxtk8y3dawum5aahap0";
 export let staked_amount = new PrecisionNumber("0");
-const weft_claimer_nft =
+export const weft_claimer_nft =
   "resource_rdx1nt3vrt8xtdal6gn7ddv0zfzvxpqylxyfmr97setz8r3amhhk90yqmg";
-const weft_amount_to_collect: { [key: string]: PrecisionNumber } = {};
 export const caviarnine_enabled_validators: { [key: string]: number } = {
   validator_rdx1s0g5uuw3a7ad7akueetzq5lpejzp9uw5glv2qnflvymgendvepgduj: 1,
   validator_rdx1s0lz5v68gtqwswu7lrx9yrjte4ts0l2saphmplsz68nsv2aux0xvfq: 1,
@@ -172,11 +157,6 @@ export const caviarnine_enabled_validators: { [key: string]: number } = {
   validator_rdx1s0qtrarfm5eu9ewvtzud96q9mjm2u63qr99newtm6h28q9slmz9jdp: 1,
 };
 
-export const fungibles_in_worktop: { [key: string]: PrecisionNumber } = {};
-export const non_fungibles_in_worktop = [] as string[];
-export const fungibles_in_accounts: fungibles_array_array = {};
-export const non_fungibles_in_accounts: non_fungibles_array_array = {};
-
 export function find_fungible_symbol(resource: string) {
   if (fungibles_symbols[resource] !== undefined) {
     return fungibles_symbols[resource];
@@ -222,228 +202,6 @@ export function find_non_fungible_symbol(resource: string) {
     return "Gable Liquidity NFT";
   }
   return resource;
-}
-
-export function add_fungible_to_worktop(
-  resource: string,
-  quantity: PrecisionNumber
-) {
-  console.error(
-    `add_fungible_to_worktop call, resource=${resource}, quantity=${quantity}`
-  );
-  //   if (fungibles_in_worktop[resource] == undefined) {
-  //     fungibles_in_worktop[resource] = quantity;
-  //     const symbol = find_fungible_symbol(resource);
-  //     const resource2 = document.querySelector<HTMLSelectElement>("#fungible2");
-  //     const resource3 = document.querySelector<HTMLSelectElement>("#fungible3");
-  //     const resource10 = document.querySelector<HTMLSelectElement>("#fungible10");
-  //     if (resource2) {
-  //       resource2!.options[resource2!.options.length] = new Option(
-  //         symbol,
-  //         resource
-  //       );
-  //     }
-  //     if (resource3) {
-  //       resource3!.options[resource3!.options.length] = new Option(
-  //         symbol,
-  //         resource
-  //       );
-  //     }
-  //     if (resource10) {
-  //       resource10!.options[resource10!.options.length] = new Option(
-  //         symbol,
-  //         resource
-  //       );
-  //     }
-  //     if (pool_units[resource] != undefined) {
-  //       const lsu5 = document.querySelector<HTMLSelectElement>("#lsu5");
-  //       lsu5!.options[lsu5!.options.length] = new Option(symbol, resource);
-  //       if (caviarnine_enabled_validators[pool_units[resource]] != undefined) {
-  //         const lsu7 = document.querySelector<HTMLSelectElement>("#lsu7");
-  //         const send9 = document.querySelector<HTMLSelectElement>("#send9");
-  //         lsu7!.options[lsu7!.options.length] = new Option(symbol, resource);
-  //         send9!.options[send9!.options.length] = new Option(symbol, resource);
-  //       }
-  //     } else {
-  //       if (defiplaza_listed_coins[resource] != undefined) {
-  //         const send16 = document.querySelector<HTMLSelectElement>("#send16");
-  //         send16!.options[send16!.options.length] = new Option(symbol, resource);
-  //         send16!.dispatchEvent(new Event("change"));
-  //       }
-  //       if (alphadex_listed_coins[resource] != undefined) {
-  //         const send17 = document.querySelector<HTMLSelectElement>("#send17");
-  //         send17!.options[send17!.options.length] = new Option(symbol, resource);
-  //         send17!.dispatchEvent(new Event("change"));
-  //       }
-  //       if (radixplanet_listed_coins[resource] != undefined) {
-  //         const send19 = document.querySelector<HTMLSelectElement>("#send19");
-  //         send19!.options[send19!.options.length] = new Option(symbol, resource);
-  //         send19!.dispatchEvent(new Event("change"));
-  //       }
-  //     }
-  //   } else {
-  //     fungibles_in_worktop[resource] += quantity;
-  //   }
-  // }
-  // export function add_non_fungible_to_worktop(resource: string) {
-  //   if (non_fungibles_in_worktop.indexOf(resource) == -1) {
-  //     non_fungibles_in_worktop.push(resource);
-  //     const res = resource.split(" ");
-  //     const symbol = find_non_fungible_symbol(res[0]);
-  //     const resource2 =
-  //       document.querySelector<HTMLSelectElement>("#non_fungible2");
-  //     const resource3 =
-  //       document.querySelector<HTMLSelectElement>("#non_fungible3");
-  //     resource2!.options[resource2!.options.length] = new Option(
-  //       symbol + " " + res[1],
-  //       resource
-  //     );
-  //     resource3!.options[resource3!.options.length] = new Option(
-  //       symbol + " " + res[1],
-  //       resource
-  //     );
-  //   }
-  // }
-  // export function add_fungible_to_account(
-  //   account: string,
-  //   fungible: string,
-  //   quantity: number
-  // ) {
-  //   if (fungibles_in_accounts[account][fungible] == undefined) {
-  //     fungibles_in_accounts[account][fungible] = quantity;
-  //   } else {
-  //     fungibles_in_accounts[account][fungible] += quantity;
-  //   }
-  // }
-  // export function add_non_fungible_to_account(
-  //   account: string,
-  //   non_fungible: string
-  // ) {
-  //   non_fungibles_in_accounts[account].push(non_fungible);
-  // }
-  // export function remove_fungible_from_worktop(
-  //   resource: string,
-  //   quantity: string
-  // ) {
-  //   const resource2 = document.querySelector<HTMLSelectElement>("#fungible2");
-  //   const resource3 = document.querySelector<HTMLSelectElement>("#fungible3");
-  //   const lsu5 = document.querySelector<HTMLSelectElement>("#lsu5");
-  //   const lsu7 = document.querySelector<HTMLSelectElement>("#lsu7");
-  //   const send9 = document.querySelector<HTMLSelectElement>("#send9");
-  //   const fungible10 = document.querySelector<HTMLSelectElement>("#fungible10");
-  //   const send11 = document.querySelector<HTMLSelectElement>("#send11");
-  //   const send16 = document.querySelector<HTMLSelectElement>("#send16");
-  //   const send19 = document.querySelector<HTMLSelectElement>("#send19");
-  //   if (fungibles_in_worktop[resource] != undefined) {
-  //     if (quantity == "*") {
-  //       delete fungibles_in_worktop[resource];
-  //       for (var i = resource2!.length - 1; i >= 0; --i) {
-  //         if ((<HTMLOptionElement>resource2![i]).value == resource) {
-  //           resource2!.remove(i);
-  //           resource3!.remove(i);
-  //           fungible10!.remove(i - 1);
-  //           break;
-  //         }
-  //       }
-  //       for (var i = lsu5!.length - 1; i >= 0; --i) {
-  //         if ((<HTMLOptionElement>lsu5![i]).value == resource) {
-  //           lsu5!.remove(i);
-  //           lsu7!.remove(i);
-  //           send9!.remove(i);
-  //           break;
-  //         }
-  //       }
-  //       if (defiplaza_listed_coins[resource] != undefined) {
-  //         for (var i = send16!.length - 1; i >= 0; --i) {
-  //           if ((<HTMLOptionElement>send16![i]).value == resource) {
-  //             send16!.remove(i);
-  //             break;
-  //           }
-  //         }
-  //       }
-  //       if (radixplanet_listed_coins[resource] != undefined) {
-  //         for (var i = send19!.length - 1; i >= 0; --i) {
-  //           if ((<HTMLOptionElement>send19![i]).value == resource) {
-  //             send19!.remove(i);
-  //             break;
-  //           }
-  //         }
-  //       }
-  //     } else {
-  //       fungibles_in_worktop[resource] -= parseFloat(quantity);
-  //       if (fungibles_in_worktop[resource] < EPSILON) {
-  //         fungibles_in_worktop[resource] = 0;
-  //       }
-  //     }
-  //   } else if (resource == "*") {
-  //     fungibles_in_worktop = {};
-  //     resource2!.innerHTML = "<option></option>";
-  //     resource3!.innerHTML = "<option></option>";
-  //     lsu5!.innerHTML = "";
-  //     lsu7!.innerHTML = "";
-  //     send9!.innerHTML = "";
-  //     send16!.innerHTML = "";
-  //     send19!.innerHTML = "";
-  //   }
-}
-
-export function remove_fungible_from_worktop(
-  resource: string,
-  quantity: string
-) {
-  console.error(
-    `remove_fungible_from_worktop call, resource=${resource}, quantity=${quantity}`
-  );
-}
-
-export function add_non_fungible_to_worktop(resource: string) {
-  console.error(`add_non_fungible_to_worktop call, resource=${resource}`);
-}
-
-export function remove_non_fungible_from_worktop(non_fungible: string) {
-  console.error(
-    "remove_non_fungible_from_worktop call, non_fungible=",
-    non_fungible
-  );
-  // const resource2 = document.querySelector<HTMLSelectElement>("#non_fungible2");
-  // const resource3 = document.querySelector<HTMLSelectElement>("#non_fungible3");
-  // const resource6 = document.querySelector<HTMLSelectElement>("#nft6");
-  // if (non_fungible == "*") {
-  //   non_fungibles_in_worktop = [];
-  //   resource2!.innerHTML = "<option></option>";
-  //   resource3!.innerHTML = "<option></option>";
-  //   resource6!.innerHTML = "";
-  // } else {
-  //   const parts = non_fungible.split(" ");
-  //   if (parts[1] == UNKNOWN_NFT_ID) {
-  //     for (var i = non_fungibles_in_worktop.length - 1; i >= 0; i--) {
-  //       if (non_fungibles_in_worktop[i].includes(parts[0])) {
-  //         non_fungibles_in_worktop.splice(i, 1);
-  //         resource2!.remove(i + 1);
-  //         resource3!.remove(i + 1);
-  //       }
-  //     }
-  //     for (var i = resource6!.length - 1; i >= 0; i--) {
-  //       if ((<HTMLOptionElement>resource6![i]).value.includes(parts[0])) {
-  //         resource6!.remove(i);
-  //         break;
-  //       }
-  //     }
-  //   } else {
-  //     const index = non_fungibles_in_worktop.indexOf(non_fungible);
-  //     if (index > -1) {
-  //       non_fungibles_in_worktop.splice(index, 1);
-  //       resource2!.remove(index + 1);
-  //       resource3!.remove(index + 1);
-  //       for (var i = resource6!.length - 1; i >= 0; i--) {
-  //         if ((<HTMLOptionElement>resource6![i]).value == non_fungible) {
-  //           resource6!.remove(i);
-  //           break;
-  //         }
-  //       }
-  //     }
-  //   }
-  // }
 }
 
 export let gatewayApi: GatewayApiClient;
@@ -577,8 +335,6 @@ export function initContent() {
                 );
                 get_non_fungible_data(weft_claimer_nft, id).then((v) => {
                   for (const nf of v.non_fungible_ids) {
-                    weft_amount_to_collect[nf.non_fungible_id] =
-                      PrecisionNumber.ZERO();
                     for (const field of (<ProgrammaticScryptoSborValueTuple>(
                       nf.data!.programmatic_json
                     )).fields) {
@@ -589,23 +345,23 @@ export function initContent() {
                           ProgrammaticScryptoSborValueTuple
                         >entry.value).fields) {
                           if (field2.field_name == "amount") {
-                            weft_amount_to_collect[nf.non_fungible_id] =
-                              weft_amount_to_collect[nf.non_fungible_id].plus(
-                                new PrecisionNumber(
-                                  (<ProgrammaticScryptoSborValueDecimal>(
-                                    field2
-                                  )).value
-                                )
-                              );
+                            weftAmountToCollect.add(
+                              nf.non_fungible_id,
+                              new PrecisionNumber(
+                                (<ProgrammaticScryptoSborValueDecimal>(
+                                  field2
+                                )).value
+                              )
+                            );
                           } else if (field2.field_name == "collected_amount") {
-                            weft_amount_to_collect[nf.non_fungible_id] =
-                              weft_amount_to_collect[nf.non_fungible_id].minus(
-                                new PrecisionNumber(
-                                  (<ProgrammaticScryptoSborValueDecimal>(
-                                    field2
-                                  )).value
-                                )
-                              );
+                            weftAmountToCollect.remove(
+                              nf.non_fungible_id,
+                              new PrecisionNumber(
+                                (<ProgrammaticScryptoSborValueDecimal>(
+                                  field2
+                                )).value
+                              )
+                            );
                           }
                         }
                       }
@@ -664,86 +420,6 @@ export function initContent() {
       });
     }
   });
-
-  const lsuSelect8 = document.querySelector<HTMLSelectElement>("#lsu8");
-  const receiveSelect9 = document.querySelector<HTMLSelectElement>("#receive9");
-  for (const lsu of Object.keys(pool_units)) {
-    if (
-      lsuSelect8 &&
-      caviarnine_enabled_validators[pool_units[lsu]] != undefined
-    ) {
-      const symbol = find_fungible_symbol(lsu);
-      lsuSelect8!.options[lsuSelect8!.options.length] = new Option(symbol, lsu);
-      receiveSelect9!.options[receiveSelect9!.options.length] = new Option(
-        symbol,
-        lsu
-      );
-    }
-  }
-
-  document
-    .querySelector<HTMLSelectElement>("#action")!
-    .addEventListener("change", function () {
-      document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
-        "&nbsp;";
-
-      // --- WEFT ---
-      if (
-        this.selectedIndex == 28 &&
-        document.querySelector<HTMLSelectElement>("#nft20")!.options.length == 0
-      ) {
-        document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
-          "you don't have a Weft Claimer NFT";
-      }
-    });
-
-  document
-    .querySelector<HTMLButtonElement>("#add_instruction20")!
-    .addEventListener("click", function () {
-      const nft = document.querySelector<HTMLSelectElement>("#nft20")!.value;
-      if (nft) {
-        document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
-          "&nbsp;";
-      } else {
-        document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
-          "you don't have a Weft Claimer NFT";
-        return false;
-      }
-
-      const a_i = nft.split(" ");
-
-      document.querySelector<HTMLTextAreaElement>(
-        "#transaction_manifest"
-      )!.value +=
-        "CALL_METHOD\n" +
-        '    Address("' +
-        a_i[0] +
-        '")\n' +
-        '    "create_proof_of_non_fungibles"\n' +
-        '    Address("' +
-        weft_claimer_nft +
-        '")\n' +
-        "    Array<NonFungibleLocalId>(\n" +
-        '        NonFungibleLocalId("' +
-        a_i[1] +
-        '")\n' +
-        "    )\n;\n" +
-        "POP_FROM_AUTH_ZONE\n" +
-        '    Proof("proof' +
-        proof_number +
-        '")\n;\n' +
-        "CALL_METHOD\n" +
-        '    Address("component_rdx1crys4t0nvfjzwvsa2pt3zgsmaaaqql8squkannhzcfh36j6u993dnz")\n' +
-        '    "claim"\n' +
-        "    1u8\n" +
-        '    Decimal("' +
-        weft_amount_to_collect[a_i[1]] +
-        '")\n' +
-        '    Proof("proof' +
-        proof_number++ +
-        '")\n;\n';
-      add_fungible_to_worktop(weft, weft_amount_to_collect[a_i[1]]);
-    });
 
   async function send_to_wallet() {
     const result = await rdt.walletApi.sendTransaction({

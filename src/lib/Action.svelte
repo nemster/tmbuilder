@@ -19,6 +19,7 @@
   import DefiplazaSwapCoins from "./actions/DefiplazaSwapCoins.svelte";
   import AlfadexSwapCoins from "./actions/AlfadexSwapCoins.svelte";
   import RadixplanetSwapCoins from "./actions/RadixplanetSwapCoins.svelte";
+  import RedeemYourWeft from "./actions/RedeemYourWeft.svelte";
 
   let actions = {
     takeCoinsFromSelf: {
@@ -156,13 +157,17 @@
       description: "swap coins at RadixPlanet",
       disabled: false,
     },
+    weftLabel: {
+      component: null,
+      description: "--- WEFT ---",
+      disabled: true,
+    },
+    redeemYourWeft: {
+      component: RedeemYourWeft,
+      description: "redeem your WEFT",
+      disabled: false,
+    },
   };
-
-  /**
-   *  
-        <option disabled>--- WEFT ---</option>
-        <option>redeem your WEFT</option>
-   */
 
   let selectedAction = actions.takeCoinsFromSelf;
 </script>

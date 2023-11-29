@@ -114,7 +114,6 @@
     const lsu = fungibleAddress;
     const nft = nonFungibleKey;
     let q = lsulpFungible.amount;
-    document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML = "&nbsp;";
     let command = "";
     if (nft.length > 0) {
       const [nftAddress, nftId] = nft.split(" ");

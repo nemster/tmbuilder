@@ -35,6 +35,7 @@ export const NO_DEFIPLAZA_COINS_ON_WORTOP =
   "put some coin listed on DefiPlaza in the worktop first";
 export const NO_ALPHADEX_COINS_ON_WORKTOP =
   "put some coin listed on AlphaDEX in the worktop first";
+export const NO_WEFT_CLAIMER_NFT = "you don't have a Weft Claimer NFT";
 
 export const actionError = writable("");
 

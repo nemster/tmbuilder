@@ -148,9 +148,8 @@
       r1.json().then((j1) => {
         quantity2 = quantity2 as PrecisionNumber;
         if (j1.data[0] == undefined) {
-          document.querySelector<HTMLParagraphElement>("#warn")!.innerHTML =
-            "no such pool";
-          return false;
+          actionError.set("no such pool");
+          return;
         }
         component = j1.data[0].address;
         if (j1.data[0].x.token.address == send2) {
