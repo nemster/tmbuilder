@@ -13,6 +13,7 @@
   } from "../stores/errors";
   import { bucketNumber, manifest } from "../stores/transaction";
   import { worktop, worktopUnstakedXrdNft } from "../stores/worktop";
+  import PrecisionNumber from "../PrecisionNumber";
 
   let claimNftKey = "";
 
@@ -32,7 +33,7 @@
     claimNftKey = $worktopUnstakedXrdNft.values().next().value.key;
   }
 
-  function handleAddAction() {
+  async function handleAddAction() {
     // TODO: check claim_epoch
     actionError.set("");
     if ($validationErrors.size > 0) {
@@ -60,7 +61,8 @@
     bucketNumber.increment();
     worktop.removeNonFungible(claimNftKey);
 
-    let amount: number | typeof UNKNOWN_QUANTITY = 0;
+    let amount: PrecisionNumber | typeof UNKNOWN_QUANTITY =
+      PrecisionNumber.ZERO();
 
     // claim_amount gets updated only in the wallet subscription
     if (claim_amount[nft.id] !== undefined) {

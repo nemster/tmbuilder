@@ -1,7 +1,7 @@
 <script lang="ts">
   import { actionError } from "../stores/errors";
 
-  export let handleAddAction: () => void;
+  export let handleAddAction: () => Promise<void>;
   async function tryHandleAddAction() {
     try {
       await handleAddAction();

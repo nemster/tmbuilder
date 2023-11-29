@@ -129,7 +129,7 @@
     }
   }
 
-  function handleAddAction() {
+  async function handleAddAction() {
     actionError.set("");
     if ($validationErrors.size > 0) {
       return;
