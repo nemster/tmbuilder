@@ -12,12 +12,12 @@
     validationErrors,
   } from "../stores/errors";
   import AddActionButton from "./AddActionButton.svelte";
-  import QuantityInput from "./QuantityInput.svelte";
+  import QuantityInputWithAll from "./QuantityInputWithAll.svelte";
 
   export let handleAddAction: () => Promise<void>;
-  export let listedFungibleAddresses: string[];
+  export let listedFungibleAddresses: string[] | undefined = undefined;
   export let noFungiblesOnWorktopError: string = NO_FUNGIBLES_ON_WORKTOP;
-  export let availableFungibles: Map<string, WalletFungible>;
+  export let sendFungibles: Map<string, WalletFungible>;
   export let sendFungibleAddress = "";
   export let quantity = "";
   export let allQuantity = true;
@@ -25,31 +25,50 @@
   // fungible address -> fungible symbol
   let receiveFungibles: Map<string, string> = new Map();
   export let receiveFungibleAddress = "";
+  export let customReceiveFungibles: Map<string, string> | undefined =
+    undefined;
 
   onMount(() => {
     actionError.set("");
   });
 
+  $: if (customReceiveFungibles !== undefined) {
+    receiveFungibles = customReceiveFungibles;
+    if (
+      receiveFungibleAddress === "" ||
+      !receiveFungibles.has(receiveFungibleAddress)
+    ) {
+      receiveFungibleAddress = receiveFungibles.keys().next().value;
+    }
+  }
+
   function updateSelectors() {
-    if (!availableFungibles.has(sendFungibleAddress)) {
+    if (!sendFungibles.has(sendFungibleAddress)) {
       sendFungibleAddress = "";
     }
-    if (sendFungibleAddress === "" && availableFungibles.size > 0) {
-      sendFungibleAddress = availableFungibles.keys().next().value;
+    if (sendFungibleAddress === "" && sendFungibles.size > 0) {
+      sendFungibleAddress = sendFungibles.keys().next().value;
     }
 
-    receiveFungibles.clear();
-    for (let resourceAddress of listedFungibleAddresses) {
-      if (resourceAddress !== sendFungibleAddress) {
-        receiveFungibles.set(
-          resourceAddress,
-          find_fungible_symbol(resourceAddress)
-        );
+    if (listedFungibleAddresses !== undefined) {
+      receiveFungibles.clear();
+      for (let resourceAddress of listedFungibleAddresses) {
+        if (resourceAddress !== sendFungibleAddress) {
+          receiveFungibles.set(
+            resourceAddress,
+            find_fungible_symbol(resourceAddress)
+          );
+        }
       }
+
+      // update svelte state
+      receiveFungibles = receiveFungibles;
     }
 
-    // update svelte state
-    receiveFungibles = receiveFungibles;
+    if (customReceiveFungibles !== undefined) {
+      receiveFungibles = customReceiveFungibles;
+    }
+
     if (
       receiveFungibleAddress === "" ||
       !receiveFungibles.has(receiveFungibleAddress)
@@ -57,7 +76,7 @@
       receiveFungibleAddress = receiveFungibles.keys().next().value;
     }
     const prevMaxQuantity = maxQuantity;
-    const amount = availableFungibles.get(sendFungibleAddress)?.amount;
+    const amount = sendFungibles.get(sendFungibleAddress)?.amount;
     if (amount !== UNKNOWN_QUANTITY) {
       maxQuantity = amount;
     }
@@ -72,7 +91,7 @@
   afterUpdate(() => {
     updateSelectors();
     validateQuantity(quantity, maxQuantity);
-    validateAvailableFungibles(availableFungibles, noFungiblesOnWorktopError);
+    validateAvailableFungibles(sendFungibles, noFungiblesOnWorktopError);
   });
 
   onDestroy(() => {
@@ -93,20 +112,14 @@
         class="select select-secondary select-sm w-3/5 text-end"
         bind:value={sendFungibleAddress}
       >
-        {#each Array.from(availableFungibles.values()) as sendFungible}
+        {#each Array.from(sendFungibles.values()) as sendFungible}
           <option value={sendFungible.address}>
             {sendFungible.symbol}
           </option>
         {/each}
       </select>
     </label>
-    <div class="label space-x-2 !mt-0 pt-0">
-      <label class="label cursor-pointer space-x-4 px-0">
-        <span class="label-text">all</span>
-        <input class="checkbox" type="checkbox" bind:checked={allQuantity} />
-      </label>
-      <QuantityInput bind:value={quantity} hidden={allQuantity} />
-    </div>
+    <QuantityInputWithAll bind:value={quantity} bind:all={allQuantity} />
 
     <label class="label">
       <span class="label-text">Coin to receive</span>

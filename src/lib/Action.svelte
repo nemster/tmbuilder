@@ -18,6 +18,7 @@
   import GableProvideLiquidity from "./actions/GableProvideLiquidity.svelte";
   import DefiplazaSwapCoins from "./actions/DefiplazaSwapCoins.svelte";
   import AlfadexSwapCoins from "./actions/AlfadexSwapCoins.svelte";
+  import RadixplanetSwapCoins from "./actions/RadixplanetSwapCoins.svelte";
 
   let actions = {
     takeCoinsFromSelf: {
@@ -145,12 +146,20 @@
       description: "swap coins at AlphaDEX",
       disabled: false,
     },
+    radixplanetLabel: {
+      component: null,
+      description: "--- RADIXPLANET ---",
+      disabled: true,
+    },
+    radixplanetSwapCoins: {
+      component: RadixplanetSwapCoins,
+      description: "swap coins at RadixPlanet",
+      disabled: false,
+    },
   };
 
   /**
    *  
-        <option disabled>--- RADIXPLANET ---</option>
-        <option>swap coins at RadixPlanet</option>
         <option disabled>--- WEFT ---</option>
         <option>redeem your WEFT</option>
    */

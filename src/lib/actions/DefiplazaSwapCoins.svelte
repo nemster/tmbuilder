@@ -17,7 +17,7 @@
   import { bucketNumber, manifest } from "../stores/transaction";
   import { worktop } from "../stores/worktop";
 
-  let availableFungibles = new Map<string, WalletFungible>();
+  let sendFungibles = new Map<string, WalletFungible>();
 
   let sendFungibleAddress = "";
   let quantity = "";
@@ -27,7 +27,7 @@
   let listedFungibleAddresses = Object.keys(defiplaza_listed_coins);
 
   $: if ($worktop) {
-    availableFungibles = worktop.filterFungibles(listedFungibleAddresses);
+    sendFungibles = worktop.filterFungibles(listedFungibleAddresses);
   }
 
   async function handleAddAction() {
@@ -42,7 +42,7 @@
     if (!allQuantity && quantity === "") {
       throw new Error(NO_QUANTITY);
     }
-    const sendFungible = availableFungibles.get(sendFungibleAddress);
+    const sendFungible = sendFungibles.get(sendFungibleAddress);
     if (sendFungible === undefined) {
       throw new Error(NO_COINS_TO_SEND);
     }
@@ -102,7 +102,7 @@
 
 <SwapFungibles
   noFungiblesOnWorktopError={NO_DEFIPLAZA_COINS_ON_WORTOP}
-  {availableFungibles}
+  {sendFungibles}
   bind:sendFungibleAddress
   bind:quantity
   bind:allQuantity
