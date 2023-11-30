@@ -14,6 +14,7 @@ import {
   ProgrammaticScryptoSborValueString,
   ProgrammaticScryptoSborValueTuple,
   ProgrammaticScryptoSborValueU64,
+  ProgrammaticScryptoSborValueU8,
 } from "@radixdlt/babylon-gateway-api-sdk";
 import {
   DataRequestBuilder,
@@ -327,12 +328,6 @@ export function initContent() {
                 id
               );
               if (non_fungible.resource_address == weft_claimer_nft) {
-                const nft20 =
-                  document.querySelector<HTMLSelectElement>("#nft20");
-                nft20!.options[nft20!.options.length] = new Option(
-                  id,
-                  value.address + " " + id
-                );
                 get_non_fungible_data(weft_claimer_nft, id).then((v) => {
                   for (const nf of v.non_fungible_ids) {
                     for (const field of (<ProgrammaticScryptoSborValueTuple>(
@@ -346,7 +341,7 @@ export function initContent() {
                         >entry.value).fields) {
                           if (field2.field_name == "amount") {
                             weftAmountToCollect.add(
-                              nf.non_fungible_id,
+                              nf.non_fungible_id + (<ProgrammaticScryptoSborValueU8>entry.key).value,
                               new PrecisionNumber(
                                 (<ProgrammaticScryptoSborValueDecimal>(
                                   field2
@@ -355,7 +350,7 @@ export function initContent() {
                             );
                           } else if (field2.field_name == "collected_amount") {
                             weftAmountToCollect.remove(
-                              nf.non_fungible_id,
+                              nf.non_fungible_id + (<ProgrammaticScryptoSborValueU8>entry.key).value,
                               new PrecisionNumber(
                                 (<ProgrammaticScryptoSborValueDecimal>(
                                   field2
