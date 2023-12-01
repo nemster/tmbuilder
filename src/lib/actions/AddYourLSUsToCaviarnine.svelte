@@ -34,7 +34,7 @@
   let quantity = "";
   let maxQuantity: PrecisionNumber | undefined = undefined;
 
-  let avalableNonFungibles: Map<string, WalletNonFungible> = new Map();
+  let avalableNonFungibles: Map<string, NonFungibleFound> = new Map();
 
   let nonFungibleKey = "";
 
@@ -55,7 +55,6 @@
 
       availableFungibles = worktop.filterFungibles(poolUnitsCaviarnine);
 
-      // TODO: maybe checking the worktop also
       avalableNonFungibles = accounts.filterAllNonFungibles(lsu_pool_receipt);
     }
 
@@ -120,9 +119,9 @@
     let command = "";
     let q = fungible.amount;
     if (nft.length > 0) {
-      const [nftAddress, nftId] = nft.split(" ");
+      const [account, nftAddress, nftId] = nft.split(" ");
       command += commands.createProofOfNonFungibles(
-        nftAddress,
+        account,
         lsu_pool_receipt,
         nftId
       );
@@ -185,9 +184,8 @@
         bind:value={nonFungibleKey}
         class="select select-secondary select-sm w-3/5 text-end"
       >
-        <option value={""} />
         {#each Array.from(avalableNonFungibles.values()) as nonFungible}
-          <option value={nonFungible.key}
+          <option value={`${nonFungible.account} ${nonFungible.key}`}
             >{`${nonFungible.symbol} ${nonFungible.id}`}</option
           >
         {/each}

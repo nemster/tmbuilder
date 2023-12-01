@@ -238,14 +238,14 @@ function removeLiquidity(component: string, bucketNumber: number) {
 }
 
 function createProofOfNonFungibles(
+  accountAddress: string,
   nftAddress: string,
-  receiptAddress: string,
   nftId: string
 ) {
   return `CALL_METHOD
-    Address("${nftAddress}")
+    Address("${accountAddress}")
     "create_proof_of_non_fungibles"
-    Address("${receiptAddress}")
+    Address("${nftAddress}")
     Array<NonFungibleLocalId>(
         NonFungibleLocalId("${nftId}")
     )
@@ -254,16 +254,16 @@ function createProofOfNonFungibles(
 }
 
 function createProofFromAuthZoneOfNonFungibles(
-  receptAddress: string,
+  nftAddress: string,
   nftId: string,
-  proffNumber: number
+  proofNumber: number
 ) {
   return `CREATE_PROOF_FROM_AUTH_ZONE_OF_NON_FUNGIBLES
-    Address("${receptAddress}")
+    Address("${nftAddress}")
     Array<NonFungibleLocalId>(
         NonFungibleLocalId("${nftId}")
     )
-    Proof("proof${proffNumber}")
+    Proof("proof${proofNumber}")
 ;
 `;
 }
