@@ -31,6 +31,14 @@ export interface WalletAccount {
   nonFungibles: Map<string, WalletNonFungible>;
 }
 
+export interface NonFungibleFound {
+  key: string;
+  address: string;
+  symbol: string;
+  id: string;
+  account: string;
+}
+
 function createAccounts() {
   const { subscribe, update } = writable<Map<string, WalletAccount>>(new Map());
 
@@ -164,13 +172,19 @@ function createAccounts() {
 
   function filterAllNonFungibles(
     resourceAddress: string
-  ): Map<string, WalletNonFungible> {
-    const filteredNonFungibles = new Map<string, WalletNonFungible>();
+  ): Map<string, NonFungibleFound> {
+    const filteredNonFungibles = new Map<string, NonFungibleFound>();
 
     for (const account of get(accounts).values()) {
       for (const nonFungible of account.nonFungibles.values()) {
         if (nonFungible.address === resourceAddress) {
-          filteredNonFungibles.set(nonFungible.key, nonFungible);
+          filteredNonFungibles.set(nonFungible.key, {
+            key: nonFungible.key,
+            address: nonFungible.address,
+	    symbol: nonFungible.symbol,
+            id: nonFungible.id,
+            account: account.address
+	  });
         }
       }
     }

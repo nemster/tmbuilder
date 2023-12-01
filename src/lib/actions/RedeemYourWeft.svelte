@@ -64,7 +64,7 @@
     if (amount1 != undefined) {
 
       command += `CALL_METHOD
-    Address("${nft.address}")
+    Address("${nft.account}")
     "create_proof_of_non_fungibles"
     Address("${weft_claimer_nft}")
     Array<NonFungibleLocalId>(
@@ -90,7 +90,7 @@ CALL_METHOD
     if (amount2 != undefined) {
 
       command += `CALL_METHOD
-    Address("${nft.address}")
+    Address("${nft.account}")
     "create_proof_of_non_fungibles"
     Address("${weft_claimer_nft}")
     Array<NonFungibleLocalId>(
