@@ -164,6 +164,7 @@
       bucketNumber.increment();
       updateSelectors();
     });
+    actionError.set(DONE);
   }
 </script>
 

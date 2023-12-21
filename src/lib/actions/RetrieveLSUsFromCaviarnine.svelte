@@ -157,6 +157,7 @@
     }
     worktop.addFungible(lsu, q);
     manifest.update((m) => m + command);
+    actionError.set(DONE);
   }
 </script>
 

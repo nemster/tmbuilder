@@ -5,7 +5,9 @@
   let errorToShow = "";
 
   $: if ($actionError !== "") {
-    errorToShow = $actionError;
+    if ($actionError !== DONE) {
+      errorToShow = $actionError;
+    }
   } else if ($validationErrors.size > 0) {
     errorToShow = $validationErrors.values().next().value;
   } else {

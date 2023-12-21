@@ -71,6 +71,7 @@
       amount = UNKNOWN_QUANTITY;
     }
     worktop.addFungible(XRD, amount);
+    actionError.set(DONE);
   }
 </script>
 

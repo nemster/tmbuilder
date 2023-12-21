@@ -159,6 +159,7 @@
       console.error(e);
       throw new Error(`Something went wrong when fetching AlphaDEX data`);
     }
+    actionError.set(DONE);
   }
 </script>
 

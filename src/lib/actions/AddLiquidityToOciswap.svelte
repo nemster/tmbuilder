@@ -255,6 +255,7 @@
         });
       });
     });
+    actionError.set(DONE);
   }
 </script>
 

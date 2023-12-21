@@ -80,6 +80,7 @@
     bucketNumber.increment();
     worktop.addNonFungible(`${gable_liquidity_nft} ${UNKNOWN_ID}${nanoid()}`);
     manifest.update((m) => m + command);
+    actionError.set(DONE);
   }
 </script>
 

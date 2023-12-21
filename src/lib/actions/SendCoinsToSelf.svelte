@@ -146,6 +146,7 @@
         nonFungibleKey = "";
       }
     }
+    actionError.set(DONE);
   }
 </script>
 

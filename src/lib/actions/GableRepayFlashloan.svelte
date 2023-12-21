@@ -78,6 +78,7 @@
     loanQuantity.set(PrecisionNumber.ZERO());
     worktop.removeFungible(XRD, xrdToRefund);
     worktop.removeNonFungible(gableLoanNft.key);
+    actionError.set(DONE);
   }
 </script>
 

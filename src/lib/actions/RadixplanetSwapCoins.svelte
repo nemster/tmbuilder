@@ -175,6 +175,7 @@
       console.error(e);
       throw new Error(`Something went wrong when fetching RadixPlanet data`);
     }
+    actionError.set(DONE);
   }
 </script>
 

@@ -114,6 +114,7 @@ CALL_METHOD
     }
 
     manifest.update((m) => m + command);
+    actionError.set(DONE);
   }
 </script>
 

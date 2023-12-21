@@ -77,6 +77,7 @@
         worktop.addNonFungible(`${nft} ${UNKNOWN_ID}${nanoid()}`);
       }
     }
+    actionError.set(DONE);
   }
 </script>
 

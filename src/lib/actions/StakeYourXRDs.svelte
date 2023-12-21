@@ -74,6 +74,7 @@
         break;
       }
     }
+    actionError.set(DONE);
   }
 </script>
 

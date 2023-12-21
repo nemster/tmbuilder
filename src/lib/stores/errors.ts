@@ -4,6 +4,7 @@ import PrecisionNumber from "../PrecisionNumber";
 import { UNKNOWN_QUANTITY } from "./accounts";
 import type { WalletFungible } from "./accounts";
 import { worktop, worktopLSU, worktopUnstakedXrdNft } from "./worktop";
+export const DONE = "done";
 export const NO_COINS_SELECTED = "no coins selected!";
 export const NO_COINS_ON_WORKTOP = "put some coins on the worktop first";
 export const NO_ACCOUNT = "specify an account first";

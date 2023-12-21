@@ -149,6 +149,7 @@
     worktop.addFungible(receiveAddress, q);
     manifest.update((m) => m + command);
     updateSelectors();
+    actionError.set(DONE);
   }
 </script>
 

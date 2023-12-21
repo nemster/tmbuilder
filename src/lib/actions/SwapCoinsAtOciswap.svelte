@@ -198,6 +198,7 @@
         });
       }
     });
+    actionError.set(DONE);
   }
 </script>
 
