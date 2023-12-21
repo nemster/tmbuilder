@@ -28,6 +28,7 @@ import { ociswap_listed_coins, ociswap_lp_names } from "./ociswap.ts";
 import { radixplanet_listed_coins, radixplanet_lp } from "./radixplanet.ts";
 import { claim_nft, pool_units, validators_names } from "./validators.ts";
 import { amountToCollect as weftAmountToCollect } from "./lib/stores/weft.ts";
+import { manifest } from "./lib/stores/transaction";
 
 export const XRD =
   "resource_rdx1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxradxrd";
@@ -426,6 +427,7 @@ export function initContent() {
       document.querySelector<HTMLTextAreaElement>(
         "#transaction_manifest"
       )!.value = "";
+      manifest.set("");
     }
   }
 
