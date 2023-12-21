@@ -54,8 +54,6 @@
       );
 
       availableFungibles = worktop.filterFungibles(poolUnitsCaviarnine);
-
-      avalableNonFungibles = accounts.filterAllNonFungibles(lsu_pool_receipt);
     }
 
     if (fungibleAddress === "" && availableFungibles.size > 0) {
@@ -73,6 +71,12 @@
       (quantity === "" || prevMaxQuantity !== maxQuantity)
     ) {
       quantity = maxQuantity.toString();
+    }
+
+    avalableNonFungibles = accounts.filterAllNonFungibles(lsu_pool_receipt);
+    for (const [key, nft] of avalableNonFungibles) {
+      nonFungibleKey = nft.account + ' ' + key;
+      break;
     }
   }
 
