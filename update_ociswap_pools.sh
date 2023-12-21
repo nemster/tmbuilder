@@ -45,11 +45,11 @@ do
 done
 
 echo 'export const ociswap_lp_names: {[key: string]: string}= {' >>src/ociswap.ts
-awk '{print "  \"" $2 "\": \"Ociswap LP " $1 "\","}' <$LPS >>src/ociswap.ts
+uniq <$LPS | awk '{print "  \"" $2 "\": \"Ociswap LP " $1 "\","}' >>src/ociswap.ts
 echo '};' >>src/ociswap.ts
 
 echo 'export const ociswap_lp_pools: {[key: string]: string}= {' >>src/ociswap.ts
-awk '{print "  \"" $2 "\": \"" $3 "\","}' <$LPS >>src/ociswap.ts
+uniq <$LPS | awk '{print "  \"" $2 "\": \"" $3 "\","}' >>src/ociswap.ts
 echo '};' >>src/ociswap.ts
 
 rm $LPS
