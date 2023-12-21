@@ -15,6 +15,7 @@
     CANNOT_PROCEED_WITH_UNKNOWN_QUANTITY,
     NO_GABLE_LSU,
     actionError,
+    validateAvailableFungibles,
     validateQuantity,
     validationErrors,
   } from "../stores/errors";
@@ -30,6 +31,7 @@
   });
 
   afterUpdate(() => {
+    validateAvailableFungibles(availableGableLSU, NO_GABLE_LSU);
     validateQuantity(quantity);
   });
 
