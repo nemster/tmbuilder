@@ -23,6 +23,8 @@ export const NO_OCISWAP_COIN_ON_WORKTOP =
   "put some coin listed on Ociswap in the worktop first";
 export const NO_OCISWAP_PAIR_ON_WORKTOP =
   "put two different coins listed on Ociswap in the worktop first";
+export const NO_OCISWAP_LP_ON_WORKTOP =
+  "put some Ociswap LPs in the worktop first";
 export const NO_COINS_TO_SEND = "no coins to send!";
 export const SOMETHING_WENT_WRONG = "something went wrong";
 export const UNKNOWN_XRD_AMOUNT = "unknown XRD amount";

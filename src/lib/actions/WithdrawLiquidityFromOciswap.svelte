@@ -10,8 +10,9 @@
   import {
     NO_COINS_TO_SEND,
     NO_QUANTITY,
+    NO_OCISWAP_LP_ON_WORKTOP,
     actionError,
-    validateAvailableLSUs,
+    validateAvailableFungibles,
     validateQuantity,
     validationErrors,
   } from "../stores/errors";
@@ -64,7 +65,7 @@
   afterUpdate(() => {
     updateSelectors();
     validateQuantity(quantity, maxQuantity);
-    validateAvailableLSUs(availableFungibles);
+    validateAvailableFungibles(availableFungibles, NO_OCISWAP_LP_ON_WORKTOP);
   });
 
   onDestroy(() => {
