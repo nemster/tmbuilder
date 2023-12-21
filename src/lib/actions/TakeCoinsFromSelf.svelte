@@ -70,12 +70,7 @@
           q = accountQuantity;
         }
         command = commands.withdraw(accountAddress, fungibleAddress, q);
-        const f = fungibles.get(fungibleAddress);
-        if (!f) {
-          console.error(`Could not find fungible resource ${fungibleAddress}`);
-          return;
-        }
-        worktop.addFungible(f.address, new PrecisionNumber(fungibleQuantity));
+        worktop.addFungible(fungibleAddress, q);
         accounts.removeFungible(accountAddress, fungibleAddress, q);
         fungibleAddress = "";
       }
