@@ -5,6 +5,7 @@
   import { accounts } from "../stores/accounts";
   import {
     NO_WEFT_CLAIMER_NFT,
+    DONE,
     actionError,
     validationErrors,
   } from "../stores/errors";

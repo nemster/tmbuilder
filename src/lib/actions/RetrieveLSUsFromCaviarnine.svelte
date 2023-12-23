@@ -19,6 +19,7 @@
     NO_COINS_SELECTED,
     NO_LSULP_ON_WORTOP,
     NO_QUANTITY,
+    DONE,
     actionError,
     validateAvailableFungibles,
     validateQuantity,

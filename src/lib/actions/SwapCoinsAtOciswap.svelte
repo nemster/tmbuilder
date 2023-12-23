@@ -9,6 +9,7 @@
   import type { WalletFungible } from "../stores/accounts";
   import {
     NO_COINS_TO_SEND,
+    DONE,
     actionError,
     validateOciswapCoinOnWorktop,
     validateQuantity,

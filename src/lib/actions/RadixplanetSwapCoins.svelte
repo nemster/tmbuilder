@@ -10,6 +10,7 @@
     CANNOT_PROCEED_WITH_UNKNOWN_QUANTITY,
     NO_COINS_TO_SEND,
     NO_QUANTITY,
+    DONE,
     actionError,
     validationErrors,
   } from "../stores/errors";

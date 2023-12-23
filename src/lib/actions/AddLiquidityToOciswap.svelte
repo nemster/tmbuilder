@@ -9,6 +9,7 @@
     CANNOT_PROCEED_WITH_UNKNOWN_QUANTITY,
     NO_COINS_TO_SEND,
     SOMETHING_WENT_WRONG,
+    DONE,
     actionError,
     validateOciswapPairOnWorktop,
     validateQuantity,

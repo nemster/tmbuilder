@@ -14,6 +14,7 @@
   import {
     CANNOT_PROCEED_WITH_UNKNOWN_QUANTITY,
     NO_GABLE_LSU,
+    DONE,
     actionError,
     validateAvailableFungibles,
     validateQuantity,

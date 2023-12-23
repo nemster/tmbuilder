@@ -11,6 +11,7 @@
     NO_ALPHADEX_COINS_ON_WORKTOP,
     NO_COINS_TO_SEND,
     NO_QUANTITY,
+    DONE,
     actionError,
     validationErrors,
   } from "../stores/errors";

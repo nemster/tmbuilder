@@ -2,6 +2,7 @@
   import { onMount, afterUpdate, onDestroy } from "svelte";
   import {
     NO_QUANTITY,
+    DONE,
     actionError,
     validateAvailableXRD,
     validateQuantity,

@@ -17,6 +17,7 @@
     NO_COINS_SELECTED,
     NO_LSU_ON_WORKTOP,
     NO_QUANTITY,
+    DONE,
     actionError,
     validateAvailableFungibles,
     validateQuantity,

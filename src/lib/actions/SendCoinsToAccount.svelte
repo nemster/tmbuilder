@@ -10,6 +10,7 @@
     NO_ACCOUNT,
     NO_COINS_SELECTED,
     NO_QUANTITY,
+    DONE,
     actionError,
     validateAccount,
     validateAvailableCoins,

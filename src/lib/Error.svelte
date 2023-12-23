@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { actionError, validationErrors } from "./stores/errors";
+  import { actionError, validationErrors, DONE } from "./stores/errors";
   let hidden = "";
 
   let errorToShow = "";

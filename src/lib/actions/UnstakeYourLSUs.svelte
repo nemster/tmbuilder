@@ -8,6 +8,7 @@
   import { UNKNOWN_ID, UNKNOWN_QUANTITY } from "../stores/accounts";
   import {
     NO_QUANTITY,
+    DONE,
     actionError,
     validateAvailableLSUs,
     validateQuantity,

@@ -11,6 +11,7 @@
     NO_COINS_TO_SEND,
     NO_DEFIPLAZA_COINS_ON_WORTOP,
     NO_QUANTITY,
+    DONE,
     actionError,
     validationErrors,
   } from "../stores/errors";

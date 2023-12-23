@@ -11,6 +11,7 @@
     NO_COINS_TO_SEND,
     NO_QUANTITY,
     NO_OCISWAP_LP_ON_WORKTOP,
+    DONE,
     actionError,
     validateAvailableFungibles,
     validateQuantity,
