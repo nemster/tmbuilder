@@ -58,7 +58,9 @@
     let nftId= nftKey.split(" ")[1];
     let amount1 = $amountToCollect.get(nftId + 1);
     let amount2 = $amountToCollect.get(nftId + 2);
-    if (amount1 === undefined && amount2 === undefined) {
+    let amount3 = $amountToCollect.get(nftId + 3);
+    let amount4 = $amountToCollect.get(nftId + 4);
+    if (amount1 === undefined && amount2 === undefined && amount3 === undefined && amount4 === undefined) {
       throw new Error("Nothing to collect");
     }
 
@@ -112,6 +114,58 @@ CALL_METHOD
       proofNumber.increment();
       worktop.addFungible(weft, amount2);
       amountToCollect.remove(nftId + 2, amount2);
+    }
+
+    if (amount3 != undefined) {
+
+      command += `CALL_METHOD
+    Address("${nft.account}")
+    "create_proof_of_non_fungibles"
+    Address("${weft_claimer_nft}")
+    Array<NonFungibleLocalId>(
+        NonFungibleLocalId("${nft.id}")
+    )
+;
+POP_FROM_AUTH_ZONE
+    Proof("proof${$proofNumber}")
+;
+CALL_METHOD
+    Address("component_rdx1crys4t0nvfjzwvsa2pt3zgsmaaaqql8squkannhzcfh36j6u993dnz")
+    "claim"
+    3u8
+    Decimal("${amount3}")
+    Proof("proof${$proofNumber}")
+;
+`;
+      proofNumber.increment();
+      worktop.addFungible(weft, amount3);
+      amountToCollect.remove(nftId + 3, amount3);
+    }
+
+    if (amount4 != undefined) {
+
+      command += `CALL_METHOD
+    Address("${nft.account}")
+    "create_proof_of_non_fungibles"
+    Address("${weft_claimer_nft}")
+    Array<NonFungibleLocalId>(
+        NonFungibleLocalId("${nft.id}")
+    )
+;
+POP_FROM_AUTH_ZONE
+    Proof("proof${$proofNumber}")
+;
+CALL_METHOD
+    Address("component_rdx1crys4t0nvfjzwvsa2pt3zgsmaaaqql8squkannhzcfh36j6u993dnz")
+    "claim"
+    4u8
+    Decimal("${amount4}")
+    Proof("proof${$proofNumber}")
+;
+`;
+      proofNumber.increment();
+      worktop.addFungible(weft, amount4);
+      amountToCollect.remove(nftId + 4, amount4);
     }
 
     manifest.update((m) => m + command);

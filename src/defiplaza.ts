@@ -12,4 +12,9 @@ export const defiplaza_listed_coins: {[key: string]: string}= {
   "resource_rdx1tknu3dqlkysz9lt08s7spuvllz3kk2k2yccslfpdk73t4lnznl9jck": "GAB GAB",
   "resource_rdx1t4zrksrzh7ucny7r57ss99nsrxscqwh8crjn6k22m8e9qyxh8c05pl": "rdk Radket",
   "resource_rdx1thn6xa5vjdh5zagqzvxkxpd70r6eadpzmzr83m20ayp3yhxrjavxz5": "PLANET RadixPlanetTokenV2",
+  "resource_rdx1tkmwanknxau3f62kvufsk7sn80gaqhtllz8dasuq2en7nzdfka4t2t": "ida XIDAR",
+  "resource_rdx1t5h0252zhla4qkxhruqglf46vufx067py8e98v3rthd0dnqfxn6qta": "smk Samuskycoin",
+  "resource_rdx1th7jrjlpfz5dxtpa6v2thsxarqa5mgygcqm8qgm37ntyy6dj7l7dxs": "radit Radit",
+  "resource_rdx1tkk83magp3gjyxrpskfsqwkg4g949rmcjee4tu2xmw93ltw2cz94sq": "CAVIAR Caviar",
+  "resource_rdx1t4nxvalrqpqaxv9cvmghk5yyl5u47mgj33npthwfupszvm8ezgy5x0": "rds RADISHToken",
 };
