@@ -66,7 +66,7 @@
       }
       var q = new PrecisionNumber(fungibleQuantity);
       if (q.isGreaterThanZero()) {
-        if (q > accountQuantity) {
+        if (q.isGreaterThan(accountQuantity)) {
           q = accountQuantity;
         }
         command = commands.withdraw(accountAddress, fungibleAddress, q);
