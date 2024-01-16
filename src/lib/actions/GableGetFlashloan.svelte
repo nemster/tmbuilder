@@ -60,7 +60,6 @@
       />
     </div>
   </div>
-  <div>
-    <AddActionButton {handleAddAction} />
-  </div>
+
+  <AddActionButton {handleAddAction} />
 </div>

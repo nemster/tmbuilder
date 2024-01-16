@@ -17,9 +17,9 @@
   $: text = fungiblesText + "\n" + nonFungiblesText;
 </script>
 
-<div class="relative my-6">
-  <div class="absolute right-1 -top-6 text flex font-thin">
-    <div>resources in worktop</div>
+<div class="relative">
+  <div class="absolute right-2 top-2 text flex font-thin text-secondary italic">
+    <div>worktop</div>
   </div>
   <textarea id="worktop" value={text} class="textarea bg-base-300" readonly />
 </div>

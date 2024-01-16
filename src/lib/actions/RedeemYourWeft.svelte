@@ -55,17 +55,21 @@
       return;
     }
 
-    let nftId= nftKey.split(" ")[1];
+    let nftId = nftKey.split(" ")[1];
     let amount1 = $amountToCollect.get(nftId + 1);
     let amount2 = $amountToCollect.get(nftId + 2);
     let amount3 = $amountToCollect.get(nftId + 3);
     let amount4 = $amountToCollect.get(nftId + 4);
-    if (amount1 === undefined && amount2 === undefined && amount3 === undefined && amount4 === undefined) {
+    if (
+      amount1 === undefined &&
+      amount2 === undefined &&
+      amount3 === undefined &&
+      amount4 === undefined
+    ) {
       throw new Error("Nothing to collect");
     }
 
     if (amount1 != undefined) {
-
       command += `CALL_METHOD
     Address("${nft.account}")
     "create_proof_of_non_fungibles"
@@ -91,7 +95,6 @@ CALL_METHOD
     }
 
     if (amount2 != undefined) {
-
       command += `CALL_METHOD
     Address("${nft.account}")
     "create_proof_of_non_fungibles"
@@ -117,7 +120,6 @@ CALL_METHOD
     }
 
     if (amount3 != undefined) {
-
       command += `CALL_METHOD
     Address("${nft.account}")
     "create_proof_of_non_fungibles"
@@ -143,7 +145,6 @@ CALL_METHOD
     }
 
     if (amount4 != undefined) {
-
       command += `CALL_METHOD
     Address("${nft.account}")
     "create_proof_of_non_fungibles"
@@ -189,7 +190,5 @@ CALL_METHOD
       </select>
     </label>
   </div>
-  <div>
-    <AddActionButton {handleAddAction} />
-  </div>
+  <AddActionButton {handleAddAction} />
 </div>

@@ -6,6 +6,7 @@
   import AddActionButton from "../shared/AddActionButton.svelte";
   import { UNKNOWN_ID, UNKNOWN_QUANTITY } from "../stores/accounts";
   import {
+    DONE,
     NO_STAKE_CLAIM_NFT_ON_WORKTOP,
     actionError,
     validateAvailableStakeClaimNFT,
@@ -91,7 +92,6 @@
       </select>
     </label>
   </div>
-  <div>
-    <AddActionButton {handleAddAction} />
-  </div>
+
+  <AddActionButton {handleAddAction} />
 </div>

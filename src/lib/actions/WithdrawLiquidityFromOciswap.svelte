@@ -198,7 +198,5 @@
       <QuantityInput bind:value={quantity} hidden={allQuantity} />
     </div>
   </div>
-  <div>
-    <AddActionButton {handleAddAction} />
-  </div>
+  <AddActionButton {handleAddAction} />
 </div>
