@@ -17,7 +17,7 @@
   <div class="flex flex-col h-screen">
     <div class="flex-grow p-4">
       <Navbar />
-      <div class="flex space-x-4">
+      <div class="flex space-x-2">
         <div class="basis-5/12">
           <Actions />
         </div>
