@@ -35,4 +35,7 @@ export const defiplaza_listed_coins: {[key: string]: string}= {
   "resource_rdx1tht6klwfdez8yu8wlr0tcvd5hwsathlh3eyqsslxp9wun8hqc6jg7p": "pantix Pantix",
   "resource_rdx1t5egwd52s2xemaa6r8jkhj0vs4q82ym93efn4g4267de4fwnfww7cy": "scorp AbandonedScorpions",
   "resource_rdx1tk7g72c0uv2g83g3dqtkg6jyjwkre6qnusgjhrtz0cj9u54djgnk3c": "cassie Cassie",
+  "resource_rdx1t5fml6k3hs9w2563syafujxxz5sh9qjaekfcf4jzek3axde8n0p6cz": "pump Pump",
+  "resource_rdx1t5xv44c0u99z096q00mv74emwmxwjw26m98lwlzq6ddlpe9f5cuc7s": "EARLY EARLY",
+  "resource_rdx1t45js47zxtau85v0tlyayerzrgfpmguftlfwfr5fxzu42qtu72tnt0": "bobby Bobby",
 };
