@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Fuse from "fuse.js";
   import TakeCoinsFromSelf from "./actions/TakeCoinsFromSelf.svelte";
   import SendCoinsToSelf from "./actions/SendCoinsToSelf.svelte";
   import SendCoinsToAccount from "./actions/SendCoinsToAccount.svelte";
@@ -20,15 +21,17 @@
   import RadixplanetSwapCoins from "./actions/RadixplanetSwapCoins.svelte";
   import RedeemYourWeft from "./actions/RedeemYourWeft.svelte";
   import ActionError from "./ActionError.svelte";
-  import { onMount } from "svelte";
 
   interface Action {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     component: any;
     title: string;
     disabled: boolean;
-    selected: boolean;
   }
+
+  let filteredActions: Action[] = [];
+  let searchInput: HTMLInputElement;
+  let selectedAction: Action;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function createAction(component: any, title: string): Action {
@@ -36,7 +39,6 @@
       component,
       title,
       disabled: false,
-      selected: false,
     };
   }
 
@@ -74,53 +76,80 @@
 
   function resetSelection() {
     actions = actions.map((a) => ({ ...a, selected: false }));
-    // Remove focus from all elements
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.blur();
     }
+    searchInput.focus();
   }
 
-  onMount(() => {
-    const handleKeydown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        resetSelection();
+  function selectAction(i: number) {
+    selectedAction = filteredActions[i];
+  }
+
+  function handleKeyDown(event: KeyboardEvent) {
+    if (event.key === "Escape") {
+      if (search) {
+        search = "";
       }
-    };
+      resetSelection();
+    } else if (event.key === "/") {
+      event.preventDefault();
+      searchInput.focus();
+    }
+  }
 
-    window.addEventListener("keydown", handleKeydown);
+  let search = "";
 
-    return () => {
-      window.removeEventListener("keydown", handleKeydown);
-    };
+  let fuse = new Fuse(actions, {
+    keys: ["title"],
+    includeScore: true,
   });
+
+  $: filteredActions = search
+    ? fuse.search(search).map(({ item }) => item)
+    : actions;
+
+  $: if (search && filteredActions.length > 0) {
+    selectedAction = filteredActions[0];
+  }
 </script>
 
+<svelte:window on:keydown={handleKeyDown} />
+
 <div class="join join-vertical w-full">
-  {#each actions as action}
-    <div
-      class={`collapse bg-base-200 join-item border border-base-300 ${
-        action.disabled ? " text-base-300" : ""
-      }${action.selected ? " bg-base-300" : ""}`}
+  <div class="join-item bg-secondary flex px-4">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      class="w-4 h-auto"
+      viewBox="0 0 512 512"
+      ><path
+        fill="currentColor"
+        d="M416 208c0 45.9-14.9 88.3-40 122.7l126.6 126.7c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0s208 93.1 208 208M208 352a144 144 0 1 0 0-288a144 144 0 1 0 0 288"
+      /></svg
     >
-      <input
-        type="radio"
-        name="my-accordion-1"
-        checked={action.selected}
-        disabled={action.disabled}
-        on:change={() => {
-          actions.forEach((a) => {
-            a.selected = false;
-          });
-          action.selected = true;
-        }}
-      />
-      <div class="collapse-title text-xl font-medium flex justify-between pr-4">
-        <span class="my-auto">
-          {action.title}
-        </span>
-        {#if action.selected}
+    <input
+      id="searchInput"
+      bind:this={searchInput}
+      bind:value={search}
+      class="input input-ghost focus:bg-transparent focus:border-none w-full"
+      placeholder="Search..."
+    />
+    <kbd class="kbd h-1 my-auto shadow-none text-secondary">/</kbd>
+  </div>
+
+  {#each filteredActions as action, index}
+    {#if selectedAction === action}
+      <div
+        class={`bg-base-300 join-item border border-base-300 p-2 ${
+          action.disabled ? " text-base-300" : ""
+        }`}
+      >
+        <div class="font-bold flex justify-between py-1">
+          <span class="my-auto leading-none">
+            {action.title}
+          </span>
           <button
-            class="btn btn-link !no-underline text-secondary z-10 my-auto"
+            class="btn btn-sm btn-link !no-underline text-secondary my-auto"
             on:click={resetSelection}
           >
             (esc)
@@ -134,18 +163,31 @@
               /></svg
             >
           </button>
-        {/if}
-      </div>
-      {#if action.selected}
-        <div
-          class="collapse-content flex flex-col space-y-4 justify-between w-full"
-        >
+        </div>
+        <div class="flex flex-col space-y-4 justify-between w-full">
           <ActionError />
           <div class="flex flex-1 justify-end">
             <svelte:component this={action.component} />
           </div>
         </div>
-      {/if}
-    </div>
+      </div>
+    {:else}
+      <button
+        class={`bg-base-200 join-item border border-base-300 text-left p-2 ${
+          action.disabled ? " text-base-300" : ""
+        }`}
+        on:click={() => {
+          selectAction(index);
+        }}
+      >
+        {action.title}
+      </button>
+    {/if}
   {/each}
 </div>
+
+<style>
+  #searchInput {
+    outline: none;
+  }
+</style>
