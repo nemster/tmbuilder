@@ -23,7 +23,7 @@
 
 <div
   role="alert"
-  class={`flex items-center p-2 space-x-2 bg-error text-error-content rounded-box ${hidden}`}
+  class={`m-1 flex items-center p-2 space-x-2 bg-error text-error-content rounded-box ${hidden}`}
 >
   <svg
     xmlns="http://www.w3.org/2000/svg"

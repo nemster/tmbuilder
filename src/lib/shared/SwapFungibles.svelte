@@ -135,7 +135,5 @@
       </select>
     </label>
   </div>
-  <div>
-    <AddActionButton handleAddAction={handleAddActionWithSelectorsUpdate} />
-  </div>
+  <AddActionButton handleAddAction={handleAddActionWithSelectorsUpdate} />
 </div>

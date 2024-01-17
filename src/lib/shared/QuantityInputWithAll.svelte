@@ -11,9 +11,9 @@
 
 <label class={`label pt-0 ${hidden ? "hidden" : ""} ${classes}`}>
   <span class="label-text">{label}</span>
-  <div class="flex flex-row justify-between w-3/5 place-items-center">
+  <div class="flex flex-row justify-between w-3/5 space-x-2 place-items-center">
     <input
-      class="input input-secondary bg-secondary input-sm text-end"
+      class="input input-secondary bg-secondary input-sm min-w-0 w-full text-end"
       type="text"
       disabled={inputDisabled}
       bind:value

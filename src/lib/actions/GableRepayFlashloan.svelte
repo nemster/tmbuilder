@@ -84,7 +84,5 @@
 </script>
 
 <div class="flex w-full justify-end">
-  <div>
-    <AddActionButton {handleAddAction} />
-  </div>
+  <AddActionButton {handleAddAction} />
 </div>
