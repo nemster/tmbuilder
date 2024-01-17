@@ -15,9 +15,9 @@
 
 <main class="prose max-w-none">
   <div class="flex flex-col h-screen">
-    <div class="flex-grow p-4">
+    <div class="flex-grow p-4 flex flex-col">
       <Navbar />
-      <div class="flex space-x-2">
+      <div class="flex space-x-2 flex-grow">
         <div class="basis-5/12">
           <Actions />
         </div>

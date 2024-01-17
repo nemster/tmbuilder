@@ -45,7 +45,7 @@
   </div>
   <textarea
     id="transaction_manifest"
-    class="textarea not-prose bg-neutral rounded-none rounded-b-lg"
+    class="textarea not-prose bg-neutral rounded-none flex-grow rounded-b-lg"
     bind:value={textToCopy}
     readonly
   />
