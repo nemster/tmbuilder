@@ -140,7 +140,7 @@
   {#each filteredActions as action, index}
     {#if selectedAction === action}
       <div
-        class={`bg-base-300 join-item border border-base-300 p-2 ${
+        class={`bg-base-300 join-item border border-secondary p-2 z-10 ${
           action.disabled ? " text-base-300" : ""
         }`}
       >
@@ -173,7 +173,7 @@
       </div>
     {:else}
       <button
-        class={`bg-base-200 join-item border border-base-300 text-left p-2 ${
+        class={`bg-base-200 join-item border border-base-300 text-left p-2 focus:border-secondary focus:border-2 focus:outline-none ${
           action.disabled ? " text-base-300" : ""
         }`}
         on:click={() => {

@@ -10,4 +10,6 @@ body {
 textarea {
   resize: none;
   line-height: 1.25 !important;
+  height: 100%;
+  width: 100%;
 }

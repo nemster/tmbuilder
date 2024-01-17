@@ -21,7 +21,7 @@
         <div class="basis-5/12">
           <Actions />
         </div>
-        <div class="basis-7/12 flex flex-col">
+        <div class="basis-7/12 flex flex-col space-y-2">
           <Worktop />
           <TransactionManifest />
         </div>
