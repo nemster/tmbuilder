@@ -38,4 +38,11 @@ export const defiplaza_listed_coins: {[key: string]: string}= {
   "resource_rdx1t5fml6k3hs9w2563syafujxxz5sh9qjaekfcf4jzek3axde8n0p6cz": "pump Pump",
   "resource_rdx1t5xv44c0u99z096q00mv74emwmxwjw26m98lwlzq6ddlpe9f5cuc7s": "EARLY EARLY",
   "resource_rdx1t45js47zxtau85v0tlyayerzrgfpmguftlfwfr5fxzu42qtu72tnt0": "bobby Bobby",
+  "resource_rdx1th97uresrzurjnygxm5sm6h83m2cqu3v78zk4c8f2et7n658mqrvu3": "STEEL CryptoConan",
+  "resource_rdx1t5w44wm96zsqjq4a2s2qxxarlay9hdwvcm68fudscx3262yas2xm0e": "rzr Reizor",
+  "resource_rdx1tkktjr0ew96se7wpsqxxvhp2vr67jc8anq04r5xkgxq3f0rg9pcj0c": "DEXTR DeXter",
+  "resource_rdx1t4p39fd9n7zr7jpzljdha25axxlhcmtwqwt2a0j2tn9hkrjrn0yfwa": "ron2dlt Implementing~DLT",
+  "resource_rdx1t5hn3rcmcphhmmwk383au92xw3wl72n7g98s0rpdp35lk4hr8sudnx": "HODL HODL",
+  "resource_rdx1th2mtmt5rt9x9gp5uusqvj7pz9ghwm9h9ycqpdnvz8hkte3ctwkfsp": "SMILE Smile",
+  "resource_rdx1tkux7w0wjev74gkga4087zexqk0v9yfkstmx2eupanj39tmanqcj0h": "PAPER PaperHands",
 };
