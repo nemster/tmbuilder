@@ -13,9 +13,6 @@
   import AddYourLSUsToCaviarnine from "./actions/AddYourLSUsToCaviarnine.svelte";
   import RetrieveLSUsFromCaviarnine from "./actions/RetrieveLSUsFromCaviarnine.svelte";
   import SwapLSUsOnCaviarnine from "./actions/SwapLSUsOnCaviarnine.svelte";
-  import GableGetFlashloan from "./actions/GableGetFlashloan.svelte";
-  import GableRepayFlashloan from "./actions/GableRepayFlashloan.svelte";
-  import GableProvideLiquidity from "./actions/GableProvideLiquidity.svelte";
   import DefiplazaSwapCoins from "./actions/DefiplazaSwapCoins.svelte";
   import AlfadexSwapCoins from "./actions/AlfadexSwapCoins.svelte";
   import RadixplanetSwapCoins from "./actions/RadixplanetSwapCoins.svelte";
@@ -65,9 +62,6 @@
       "Retrieve LSUs from Caviarnine LSU pool"
     ),
     createAction(SwapLSUsOnCaviarnine, "Swap LSUs on Caviarnine"),
-    createAction(GableGetFlashloan, "Get Gable flashloan"),
-    createAction(GableRepayFlashloan, "Repay Gable flashloan"),
-    createAction(GableProvideLiquidity, "Provide liquidity to Gable"),
     createAction(DefiplazaSwapCoins, "Swap coins at DefiPlaza"),
     createAction(AlfadexSwapCoins, "Swap coins at AlphaDEX"),
     createAction(RadixplanetSwapCoins, "Swap coins at RadixPlanet"),
