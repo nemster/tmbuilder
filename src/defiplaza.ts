@@ -72,4 +72,11 @@ export const defiplaza_listed_coins: {[key: string]: string}= {
   "resource_rdx1t4a42s786rs0nz6lv3skg2kvk94alxrpd5v73q9e7jrt33fsalcg0m": "FOMO FOMO",
   "resource_rdx1t5vjqccrdtvxruu0p2hwqpts326kpz674grrzulcquly5ue0sg7wxk": "EDG EDGE",
   "resource_rdx1t5u04cs3u2yxqkcwku7jdvdvv9cu739jsx0rdwu97682lr0rn92qdh": "MRD Memerad",
+  "resource_rdx1th42ay5yjg6ujak3ygnc6yerzx0ld622chz5tlnwjr7elcp3u48l2q": "NOW NOW",
+  "resource_rdx1t4kc5ljyrwlxvg54s6gnctt7nwwgx89h9r2gvrpm369s23yhzyyzlx": "WOWO WOWO",
+  "resource_rdx1tkl7neutr8v8zve44gvq8x6amkglwkp3cmdd2kn2s439c3k27hql6m": "BOX BankofXRD",
+  "resource_rdx1t4v2jke9xkcrqra9sf3lzgpxwdr590npkt03vufty4pwuu205q03az": "HIT addix",
+  "resource_rdx1t5jp9haxx5gh5c30jr46afqr33gh7pm409a4urxvmr765d8fs5wjn7": "SINX SingularityX",
+  "resource_rdx1tk4y4ct50fzgyjygm7j3y6r3cw5rgsatyfnwdz64yp5t388v0atw8w": "DAN DAN",
+  "resource_rdx1thmjcqjnlfm56v7k5g2szfrc44jn22x8tjh7xyczjpswmsnasjl5l9": "MOX MoxStudio",
 };
