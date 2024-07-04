@@ -14,7 +14,7 @@ do
   then
     break
   fi
-  sleep 1
+  sleep 0.5
 done
 echo '};' >>src/ociswap.ts
 
@@ -34,22 +34,24 @@ do
         --header 'accept: application/json' --header 'Content-Type: application/json' \
         --data '{"addresses": ["'$COMPONENT'"]}' |
 	jq -r '" " + (.items[] | (.metadata.items[] | select(.key == "lp_address") | .value.typed.value) + " " + .address)'
-      sleep 1
-    done >>$LPS
+      sleep 0.5
+    done
   CURSOR=`echo $OUT |
 	  jq .next_cursor`
   if [ "$CURSOR" == "0" ]
   then
     break
   fi
-done
+done |
+  sort |
+  uniq >$LPS
 
 echo 'export const ociswap_lp_names: {[key: string]: string}= {' >>src/ociswap.ts
-uniq <$LPS | awk '{print "  \"" $2 "\": \"Ociswap LP " $1 "\","}' >>src/ociswap.ts
+awk '{print "  \"" $2 "\": \"Ociswap LP " $1 "\","}' <$LPS >>src/ociswap.ts
 echo '};' >>src/ociswap.ts
 
 echo 'export const ociswap_lp_pools: {[key: string]: string}= {' >>src/ociswap.ts
-uniq <$LPS | awk '{print "  \"" $2 "\": \"" $3 "\","}' >>src/ociswap.ts
+awk '{print "  \"" $2 "\": \"" $3 "\","}' <$LPS >>src/ociswap.ts
 echo '};' >>src/ociswap.ts
 
 rm $LPS
